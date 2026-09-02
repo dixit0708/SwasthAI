@@ -33,7 +33,10 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="loginPassword">Password</label>
-                        <input type="password" id="loginPassword" class="form-control" required placeholder="Enter your password">
+                        <div class="form-password">
+                            <input type="password" id="loginPassword" class="form-control" required placeholder="Enter your password">
+                            <button type="button" class="form-password__toggle" id="loginPasswordToggle" aria-label="Show password"><i class="fas fa-eye"></i></button>
+                        </div>
                     </div>
                     <div class="auth-check-row">
                         <label class="form-check"><input type="checkbox"> Remember me</label>
@@ -45,12 +48,10 @@
             </div>
         </div>
         <div class="auth-shell__visual">
+            <div class="auth-scene" id="authScene"></div>
             <div class="auth-shell__visual-content">
                 <h2>Your health, all in one place.</h2>
                 <p>Pick up right where you left off — assessments, records, insights and your family's health, all in one account.</p>
-                <div class="auth-shell__visual-stat"><i class="fas fa-brain"></i><div><strong>5 AI Health Models</strong><span>Ready for your next assessment</span></div></div>
-                <div class="auth-shell__visual-stat"><i class="fas fa-chart-line"></i><div><strong>Health Insights</strong><span>Your trends, tracked over time</span></div></div>
-                <div class="auth-shell__visual-stat"><i class="fas fa-users"></i><div><strong>Family Profiles</strong><span>Manage health for everyone you care for</span></div></div>
             </div>
         </div>
     </div>
@@ -58,6 +59,12 @@
     <div id="site-footer"></div>
 
     <script src="js/site-nav.js"></script>
+    <script src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/auth-scene.js"></script>
+    <script>
+        SwasthAuth.initPasswordToggle('#loginPasswordToggle', '#loginPassword');
+        SwasthAuth.initAuthScene({ scene: '#authScene', email: '#loginEmail', password: '#loginPassword' });
+    </script>
 </body>
 </html>

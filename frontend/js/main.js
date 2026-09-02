@@ -11,6 +11,27 @@ const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: r
 // Easing function for smooth animations (easeOutExpo)
 const easeOutExpo = (t) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
 
+// === Lenis Smooth Scroll ===
+let lenis = null;
+
+function initLenis() {
+  if (typeof Lenis === 'undefined' || prefersReducedMotion()) return;
+
+  lenis = new Lenis({
+    duration: 1.2,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    smoothWheel: true,
+    wheelMultiplier: 1,
+    touchMultiplier: 1.5
+  });
+
+  function raf(time) {
+    lenis.raf(time);
+    requestAnimationFrame(raf);
+  }
+  requestAnimationFrame(raf);
+}
+
 // === Navbar ===
 function initNavbar() {
   const navbar = document.querySelector('.navbar');
@@ -120,6 +141,12 @@ function initSmoothScroll() {
       
       if (targetElement) {
         e.preventDefault();
+
+        if (lenis) {
+          lenis.scrollTo(targetElement, { offset: -navbarHeight });
+          return;
+        }
+
         const elementPosition = targetElement.getBoundingClientRect().top;
         const offsetPosition = elementPosition + window.pageYOffset - navbarHeight;
 
@@ -228,6 +255,7 @@ function initCounters() {
 
 // === Initialize ===
 document.addEventListener('DOMContentLoaded', () => {
+  initLenis();
   initNavbar();
   initMobileNav();
   initSmoothScroll();

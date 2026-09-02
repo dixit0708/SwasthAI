@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwasthAI - Prediction Diabetes</title>
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="app-layout" class="app-layout">
+        <aside id="sidebar-container" class="sidebar"></aside>
+        <div class="main-content">
+            <header id="header-container" class="top-header"></header>
+            <main class="page-content">
+                <!-- PAGE CONTENT: prediction-diabetes -->
+                
+    <div class="mb-4">
+        <a href="predictions.html" class="text-secondary"><i class="fas fa-arrow-left"></i> Back to Predictions</a>
+        <h1 class="mt-2">Diabetes Risk Assessment</h1>
+    </div>
+
+    <div class="grid" style="grid-template-columns: 2fr 1fr;">
+        <div class="card">
+            <div class="card-header">Patient Health Data</div>
+            <div class="card-body">
+                <form id="diabetesForm">
+                    <div class="grid" style="grid-template-columns: 1fr 1fr;">
+                        <div class="form-group"><label class="form-label">Age</label><input type="number" class="form-control" required></div>
+                        <div class="form-group"><label class="form-label">BMI</label><input type="number" step="0.1" class="form-control" required></div>
+                        <div class="form-group"><label class="form-label">Glucose Level</label><input type="number" class="form-control" required></div>
+                        <div class="form-group"><label class="form-label">Blood Pressure</label><input type="number" class="form-control" required></div>
+                    </div>
+                    <button type="button" class="btn btn-primary mt-4" onclick="showDemoResult()">Run AI Model (Demo)</button>
+                </form>
+            </div>
+        </div>
+        
+        <div>
+            <div class="card mb-4" id="resultCard" style="display: none; border: 2px solid var(--primary);">
+                <div class="card-header bg-primary text-white">Analysis Complete</div>
+                <div class="card-body text-center">
+                    <div class="badge badge-warning mb-2">Demo Interface</div>
+                    <h2 class="text-danger">High Risk (82%)</h2>
+                    <p class="text-muted">AI model integration pending.</p>
+                    <p style="font-size: 0.9rem;">Please consult a physician for a formal diagnosis.</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body bg-surface-alt">
+                    <h4 class="text-warning"><i class="fas fa-info-circle"></i> Important Safety Notice</h4>
+                    <p style="font-size: 0.9rem;" class="mt-2 text-secondary">This tool is a prototype demonstrating machine learning integration. Do not use this for actual medical decision making.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function showDemoResult() {
+            document.getElementById('resultCard').style.display = 'block';
+        }
+    </script>
+    
+            </main>
+        </div>
+    </div>
+    <script src="js/components.js"></script>
+    <script src="js/prediction-diabetes.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

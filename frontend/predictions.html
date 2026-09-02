@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwasthAI - Predictions</title>
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="app-layout" class="app-layout">
+        <aside id="sidebar-container" class="sidebar"></aside>
+        <div class="main-content">
+            <header id="header-container" class="top-header"></header>
+            <main class="page-content">
+                <!-- PAGE CONTENT: predictions -->
+                
+    <div class="mb-4">
+        <h1>AI Disease Risk Predictions</h1>
+        <p class="text-secondary">Select an AI model below to run an assessment. <br><strong class="text-warning"><i class="fas fa-exclamation-triangle"></i> Disclaimer:</strong> These are AI-assisted screening tools and do NOT provide definitive medical diagnoses.</p>
+    </div>
+
+    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+        <div class="card">
+            <div class="card-body text-center">
+                <div style="background: #e0f2fe; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-tint text-primary" style="font-size: 1.5rem;"></i>
+                </div>
+                <h3>Diabetes Risk</h3>
+                <p class="text-muted mb-4">Assess your risk based on health metrics like glucose, BMI, and age.</p>
+                <div class="badge badge-primary mb-4">Tabular Data</div>
+                <a href="prediction-diabetes.html" class="btn btn-primary btn-block">Start Assessment</a>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body text-center">
+                <div style="background: #fee2e2; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-heart text-danger" style="font-size: 1.5rem;"></i>
+                </div>
+                <h3>Heart Disease Risk</h3>
+                <p class="text-muted mb-4">Evaluate cardiovascular risk factors using clinical parameters.</p>
+                <div class="badge badge-primary mb-4">Tabular Data</div>
+                <a href="prediction-heart.html" class="btn btn-primary btn-block">Start Assessment</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body text-center">
+                <div style="background: #e0e7ff; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                    <i class="fas fa-lungs text-info" style="font-size: 1.5rem;"></i>
+                </div>
+                <h3>Pneumonia Detection</h3>
+                <p class="text-muted mb-4">Upload a chest X-ray image for AI-assisted pneumonia screening.</p>
+                <div class="badge badge-warning mb-4">Image Upload</div>
+                <a href="prediction-pneumonia.html" class="btn btn-primary btn-block">Upload X-Ray</a>
+            </div>
+        </div>
+    </div>
+    
+            </main>
+        </div>
+    </div>
+    <script src="js/components.js"></script>
+    <script src="js/predictions.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

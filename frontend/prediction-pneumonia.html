@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwasthAI - Prediction Pneumonia</title>
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="app-layout" class="app-layout">
+        <aside id="sidebar-container" class="sidebar"></aside>
+        <div class="main-content">
+            <header id="header-container" class="top-header"></header>
+            <main class="page-content">
+                <!-- PAGE CONTENT: prediction-pneumonia -->
+                
+    <div class="mb-4">
+        <a href="predictions.html" class="text-secondary"><i class="fas fa-arrow-left"></i> Back to Predictions</a>
+        <h1 class="mt-2">Pneumonia Detection (X-Ray)</h1>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div id="uploadArea" style="border: 2px dashed var(--border); border-radius: var(--radius-lg); padding: var(--sp-8); text-align: center; cursor: pointer; background: var(--bg-surface-alt);">
+                <i class="fas fa-cloud-upload-alt text-primary mb-4" style="font-size: 3rem;"></i>
+                <h3>Drag & Drop X-Ray Image</h3>
+                <p class="text-muted mb-4">Supported formats: JPEG, PNG (Max 10MB)</p>
+                <button class="btn btn-outline" onclick="simulateUpload()">Browse Files</button>
+            </div>
+            
+            <div id="processingArea" style="display: none; text-align: center; padding: var(--sp-8);">
+                <i class="fas fa-circle-notch fa-spin text-primary" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                <h3>AI is analyzing the image in-memory...</h3>
+            </div>
+            
+            <div id="resultArea" style="display: none; text-align: center; padding: var(--sp-8);">
+                <div class="badge badge-warning mb-2">Demo Interface</div>
+                <h2 class="text-success">Normal (95% Confidence)</h2>
+                <p class="text-muted">AI model integration pending. No pneumonia detected in sample.</p>
+                <button class="btn btn-outline mt-4" onclick="resetUpload()">Upload Another</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        function simulateUpload() {
+            document.getElementById('uploadArea').style.display = 'none';
+            document.getElementById('processingArea').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('processingArea').style.display = 'none';
+                document.getElementById('resultArea').style.display = 'block';
+            }, 2000);
+        }
+        function resetUpload() {
+            document.getElementById('resultArea').style.display = 'none';
+            document.getElementById('uploadArea').style.display = 'block';
+        }
+    </script>
+    
+            </main>
+        </div>
+    </div>
+    <script src="js/components.js"></script>
+    <script src="js/prediction-pneumonia.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

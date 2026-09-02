@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwasthAI - Doctors</title>
+    <meta name="description" content="Find the right healthcare professional. Search verified doctors by specialty, location, experience, consultation type and availability.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/landing.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/doctors.css">
+</head>
+<body data-page="doctors">
+
+    <div id="site-header"></div>
+
+    <!-- HERO with integrated search -->
+    <section class="page-hero page-hero--center">
+        <div class="container">
+            <span class="eyebrow animate-on-scroll"><i class="fas fa-stethoscope"></i> Doctor Discovery</span>
+            <h1 class="page-hero__title animate-on-scroll" data-delay="100">Find the right healthcare professional.</h1>
+            <p class="page-hero__subtitle animate-on-scroll" data-delay="200">Search verified specialists by condition, location, experience and consultation type — demo profiles shown below.</p>
+
+            <div class="doctor-search animate-on-scroll" data-delay="300">
+                <div class="doctor-search__input">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="doctorSearchInput" class="form-control" placeholder="Search by doctor name or specialty...">
+                </div>
+                <div class="doctor-search__input">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <input type="text" class="form-control" placeholder="Location (optional)" style="padding-left: var(--sp-8);">
+                </div>
+                <button id="doctorSearchBtn" class="btn btn-primary btn-lg"><i class="fas fa-search"></i> Search</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- DIRECTORY -->
+    <section class="section" style="padding-top: 0;">
+        <div class="container">
+            <div class="doctor-directory">
+                <!-- FILTERS -->
+                <aside class="filter-panel animate-on-scroll">
+                    <div class="filter-group">
+                        <div class="filter-group__title">Specialty</div>
+                        <label class="filter-option"><input type="checkbox" class="js-doctor-filter js-filter-specialty" value="cardiology"> Cardiology</label>
+                        <label class="filter-option"><input type="checkbox" class="js-doctor-filter js-filter-specialty" value="endocrinology"> Endocrinology</label>
+                        <label class="filter-option"><input type="checkbox" class="js-doctor-filter js-filter-specialty" value="dermatology"> Dermatology</label>
+                        <label class="filter-option"><input type="checkbox" class="js-doctor-filter js-filter-specialty" value="general"> General Physician</label>
+                        <label class="filter-option"><input type="checkbox" class="js-doctor-filter js-filter-specialty" value="pediatrics"> Pediatrics</label>
+                        <label class="filter-option"><input type="checkbox" class="js-doctor-filter js-filter-specialty" value="neurology"> Neurology</label>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-group__title">Experience</div>
+                        <label class="filter-option"><input type="radio" name="experience" class="js-doctor-filter js-filter-experience" value="0" checked> Any</label>
+                        <label class="filter-option"><input type="radio" name="experience" class="js-doctor-filter js-filter-experience" value="5"> 5+ years</label>
+                        <label class="filter-option"><input type="radio" name="experience" class="js-doctor-filter js-filter-experience" value="10"> 10+ years</label>
+                        <label class="filter-option"><input type="radio" name="experience" class="js-doctor-filter js-filter-experience" value="15"> 15+ years</label>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-group__title">Consultation Type</div>
+                        <label class="filter-option"><input type="checkbox" class="js-doctor-filter js-filter-mode" value="video"> <i class="fas fa-video"></i>&nbsp; Video Consult</label>
+                        <label class="filter-option"><input type="checkbox" class="js-doctor-filter js-filter-mode" value="in-person"> <i class="fas fa-hospital"></i>&nbsp; In-Person</label>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-group__title">Availability</div>
+                        <label class="filter-option"><input type="checkbox" class="js-doctor-filter js-filter-availability" value="today"> Available Today</label>
+                        <label class="filter-option"><input type="checkbox" class="js-doctor-filter js-filter-availability" value="week"> Available This Week</label>
+                    </div>
+                    <button type="button" id="doctorFilterReset" class="btn btn-ghost btn-sm btn-block">Reset Filters</button>
+                </aside>
+
+                <!-- RESULTS -->
+                <div>
+                    <div class="doctor-results__head">
+                        <span class="doctor-results__count" id="doctorCount">8 doctors found</span>
+                        <span class="badge badge-neutral"><i class="fas fa-user-friends"></i> Demo profiles for illustration</span>
+                    </div>
+                    <div class="doctor-list" id="doctorList"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="section text-center" style="background: var(--bg-surface);">
+        <div class="container animate-on-scroll">
+            <h2 class="section-heading">Not sure who to book?</h2>
+            <p class="section-subtitle" style="max-width: 560px; margin: 0 auto var(--sp-8);">Create your profile and share your health data so we can suggest the right specialist for you.</p>
+            <a href="register.html" class="btn btn-primary btn-lg">Get Started <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </section>
+
+    <div id="site-footer"></div>
+
+    <script src="js/site-nav.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/doctors.js"></script>
+</body>
+</html>

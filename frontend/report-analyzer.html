@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwasthAI - Report Analyzer</title>
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="app-layout" class="app-layout">
+        <aside id="sidebar-container" class="sidebar"></aside>
+        <div class="main-content">
+            <header id="header-container" class="top-header"></header>
+            <main class="page-content">
+                <!-- PAGE CONTENT: report-analyzer -->
+                
+    <div class="mb-4">
+        <h1>Medical Report Analyzer</h1>
+        <p class="text-secondary">Upload a medical report to get an AI-generated summary and actionable insights.</p>
+    </div>
+
+    <div class="grid" style="grid-template-columns: 1fr 1fr;">
+        <div class="card">
+            <div class="card-header">Upload Report</div>
+            <div class="card-body">
+                <div id="uploadAreaReport" style="border: 2px dashed var(--border); border-radius: var(--radius-lg); padding: var(--sp-8); text-align: center; cursor: pointer; background: var(--bg-surface-alt);">
+                    <i class="fas fa-file-pdf text-info mb-4" style="font-size: 3rem;"></i>
+                    <h3>Drag & Drop Report</h3>
+                    <p class="text-muted mb-4">Supported formats: PDF, JPEG, PNG (Max 15MB)</p>
+                    <button class="btn btn-outline" onclick="simulateReportUpload()">Browse Files</button>
+                </div>
+                <div id="processingAreaReport" style="display: none; text-align: center; padding: var(--sp-8);">
+                    <i class="fas fa-circle-notch fa-spin text-info" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <h3>Extracting text and analyzing (Demo)...</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="reportResultArea" style="display: none; border-color: var(--info);">
+            <div class="card-header bg-surface-alt">Analysis Results <span class="badge badge-warning">Demo Data</span></div>
+            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                <h4 class="text-info mb-2">Summary</h4>
+                <p class="text-muted mb-4" style="font-size: 0.9rem;">The CBC report indicates mild anemia, characterized by slightly lowered Hemoglobin and RBC counts. White blood cell counts are normal.</p>
+                
+                <h4 class="text-danger mb-2">Abnormal Values</h4>
+                <ul class="mb-4 text-muted" style="font-size: 0.9rem; padding-left: 1.5rem;">
+                    <li>Hemoglobin: 11.2 g/dL (Normal: 12.0 - 15.5)</li>
+                    <li>RBC Count: 3.9 million/mcL (Normal: 4.1 - 5.1)</li>
+                </ul>
+
+                <h4 class="mb-2">Questions to ask your doctor</h4>
+                <ul class="text-muted" style="font-size: 0.9rem; padding-left: 1.5rem;">
+                    <li>Should I take iron supplements?</li>
+                    <li>Are there dietary changes I should make?</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script>
+        function simulateReportUpload() {
+            document.getElementById('uploadAreaReport').style.display = 'none';
+            document.getElementById('processingAreaReport').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('processingAreaReport').style.display = 'none';
+                document.getElementById('reportResultArea').style.display = 'block';
+            }, 2500);
+        }
+    </script>
+    
+            </main>
+        </div>
+    </div>
+    <script src="js/components.js"></script>
+    <script src="js/report-analyzer.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

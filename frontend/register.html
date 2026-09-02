@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwasthAI - Create Account</title>
+    <meta name="description" content="Create your free SwasthAI account to start AI health assessments, track your vitals and manage your family's health.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/landing.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/auth.css">
+</head>
+<body data-page="register">
+
+    <div id="site-header"></div>
+
+    <div class="auth-shell">
+        <div class="auth-shell__form">
+            <div class="auth-shell__form-inner">
+                <h1>Create your account</h1>
+                <p>Start your personalized health journey — free.</p>
+                <form onsubmit="event.preventDefault(); window.location.href='dashboard.html';">
+                    <div class="form-group">
+                        <label class="form-label" for="regName">Full Name</label>
+                        <input type="text" id="regName" class="form-control" required placeholder="Jordan Patel">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="regEmail">Email Address</label>
+                        <input type="email" id="regEmail" class="form-control" required placeholder="name@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="regPassword">Password</label>
+                        <input type="password" id="regPassword" class="form-control" required placeholder="Create a password" minlength="8">
+                        <span class="form-text">At least 8 characters.</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="regConfirm">Confirm Password</label>
+                        <input type="password" id="regConfirm" class="form-control" required placeholder="Re-enter your password" minlength="8">
+                    </div>
+                    <div class="auth-check-row">
+                        <label class="form-check"><input type="checkbox" required> I agree to the Terms of Service and Privacy Policy</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg btn-block">Create Account</button>
+                </form>
+                <p class="auth-footer-note">Already have an account? <a href="login.html">Log in</a></p>
+            </div>
+        </div>
+        <div class="auth-shell__visual">
+            <div class="auth-shell__visual-content">
+                <h2>Join the SwasthAI ecosystem.</h2>
+                <p>One account for AI risk assessment, report analysis, health tracking, family profiles and doctor booking.</p>
+                <div class="auth-shell__visual-stat"><i class="fas fa-bolt"></i><div><strong>Set up in under 2 minutes</strong><span>Start with just the basics</span></div></div>
+                <div class="auth-shell__visual-stat"><i class="fas fa-shield-alt"></i><div><strong>Your data stays yours</strong><span>Used only to personalize your guidance</span></div></div>
+                <div class="auth-shell__visual-stat"><i class="fas fa-user-friends"></i><div><strong>Free to start</strong><span>Add family profiles anytime</span></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="site-footer"></div>
+
+    <script src="js/site-nav.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

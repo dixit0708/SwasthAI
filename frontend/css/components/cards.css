@@ -1,0 +1,34 @@
+/* ==========================================================================
+   Cards
+   ========================================================================== */
+
+.card {
+    background-color: var(--surface-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.card-header {
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--surface-color);
+}
+
+.card-header h1,
+.card-header h2,
+.card-header h3,
+.card-header h4 {
+    margin-bottom: 0;
+}
+
+.card-body {
+    padding: var(--spacing-4);
+}
+
+.card-footer {
+    padding: var(--spacing-4);
+    border-top: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+}

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwasthAI - AI Health</title>
+    <meta name="description" content="Explore SwasthAI's AI-powered health assessment system: five capabilities covering disease risk prediction from health data and medical image analysis.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/landing.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/ai-health.css">
+</head>
+<body data-page="ai-health">
+
+    <div id="site-header"></div>
+
+    <!-- HERO -->
+    <section class="page-hero page-hero--center">
+        <div class="container">
+            <span class="eyebrow animate-on-scroll"><i class="fas fa-brain"></i> AI Health</span>
+            <h1 class="page-hero__title animate-on-scroll" data-delay="100">Intelligence for a deeper<br>understanding of your health.</h1>
+            <p class="page-hero__subtitle animate-on-scroll" data-delay="200">SwasthAI's AI-powered health assessment system evaluates structured health data and medical images to help you understand risk early — so you can act on it, not just react to it.</p>
+            <div class="ai-health-hero__stats animate-on-scroll" data-delay="300">
+                <div class="ai-health-hero__stat"><strong class="counter" data-target="5">0</strong><span>AI Capabilities</span></div>
+                <div class="ai-health-hero__stat"><strong>2</strong><span>Data Types Supported</span></div>
+                <div class="ai-health-hero__stat"><strong>3</strong><span>Tabular Risk Models</span></div>
+                <div class="ai-health-hero__stat"><strong>2</strong><span>Image Analysis Models</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 01 DIABETES -->
+    <section class="capability accent-blue">
+        <div class="container">
+            <div class="capability__grid">
+                <div class="animate-on-scroll">
+                    <p class="capability__index">01 &middot; Structured Health Data</p>
+                    <h2 class="capability__title">Diabetes Risk Assessment</h2>
+                    <p class="capability__desc">Enter clinical metrics like glucose level, BMI, blood pressure and age. SwasthAI's model evaluates the combination against patterns learned from clinical data to estimate your diabetes risk category.</p>
+                    <p class="capability__block-title">How it works</p>
+                    <ol class="capability__steps">
+                        <li>Fill in a short structured health-data form</li>
+                        <li>The model scores your inputs against known risk patterns</li>
+                        <li>Receive a risk category with the factors that influenced it</li>
+                    </ol>
+                    <p class="capability__block-title">Required input</p>
+                    <div class="input-chips">
+                        <span class="input-chip">Glucose Level</span>
+                        <span class="input-chip">BMI</span>
+                        <span class="input-chip">Blood Pressure</span>
+                        <span class="input-chip">Age</span>
+                        <span class="input-chip">Insulin Level</span>
+                        <span class="input-chip">Family History</span>
+                    </div>
+                    <a href="prediction-diabetes.html" class="btn btn-primary btn-lg">Assess Diabetes Risk <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="capability__visual animate-on-scroll" data-delay="150">
+                    <div class="capability__visual-icon"><i class="fas fa-tint"></i></div>
+                    <p class="capability__block-title">Sample Input Summary</p>
+                    <div class="capability__metric-row"><span>Glucose</span><div class="capability__metric-bar"><div class="capability__metric-fill" style="width: 74%;"></div></div><span>142 mg/dL</span></div>
+                    <div class="capability__metric-row"><span>BMI</span><div class="capability__metric-bar"><div class="capability__metric-fill" style="width: 58%;"></div></div><span>27.4</span></div>
+                    <div class="capability__metric-row"><span>Blood Pressure</span><div class="capability__metric-bar"><div class="capability__metric-fill" style="width: 65%;"></div></div><span>128/82</span></div>
+                    <div class="capability__result" style="background:#FFFBEB; color: var(--warning);"><i class="fas fa-exclamation-circle"></i> Moderate Risk — lifestyle factors flagged for review</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 02 HEART -->
+    <section class="capability capability--reverse accent-red">
+        <div class="container">
+            <div class="capability__grid">
+                <div class="animate-on-scroll">
+                    <p class="capability__index">02 &middot; Structured Health Data</p>
+                    <h2 class="capability__title">Heart Disease Risk Assessment</h2>
+                    <p class="capability__desc">Cardiovascular risk depends on many interacting factors. SwasthAI weighs cholesterol, resting ECG results, exercise-induced patterns and more to surface a clear risk signal from data that's usually scattered across reports.</p>
+                    <p class="capability__block-title">How it works</p>
+                    <ol class="capability__steps">
+                        <li>Provide cardiac and lifestyle indicators from your records</li>
+                        <li>The model cross-references established cardiovascular risk factors</li>
+                        <li>Get a risk category plus the top contributing factors</li>
+                    </ol>
+                    <p class="capability__block-title">Required input</p>
+                    <div class="input-chips">
+                        <span class="input-chip">Resting ECG</span>
+                        <span class="input-chip">Cholesterol</span>
+                        <span class="input-chip">Max Heart Rate</span>
+                        <span class="input-chip">Exercise Angina</span>
+                        <span class="input-chip">Chest Pain Type</span>
+                        <span class="input-chip">Age &amp; Sex</span>
+                    </div>
+                    <a href="prediction-heart.html" class="btn btn-primary btn-lg">Assess Heart Disease Risk <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="capability__visual animate-on-scroll" data-delay="150">
+                    <div class="capability__visual-icon"><i class="fas fa-heart"></i></div>
+                    <p class="capability__block-title">Sample Input Summary</p>
+                    <div class="capability__metric-row"><span>Cholesterol</span><div class="capability__metric-bar"><div class="capability__metric-fill" style="width: 60%;"></div></div><span>198 mg/dL</span></div>
+                    <div class="capability__metric-row"><span>Max HR</span><div class="capability__metric-bar"><div class="capability__metric-fill" style="width: 80%;"></div></div><span>162 bpm</span></div>
+                    <div class="capability__metric-row"><span>Resting BP</span><div class="capability__metric-bar"><div class="capability__metric-fill" style="width: 55%;"></div></div><span>124/78</span></div>
+                    <div class="capability__result" style="background:#ECFDF5; color: var(--success);"><i class="fas fa-check-circle"></i> Low Risk — indicators within expected range</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 03 LIVER -->
+    <section class="capability accent-amber">
+        <div class="container">
+            <div class="capability__grid">
+                <div class="animate-on-scroll">
+                    <p class="capability__index">03 &middot; Structured Health Data</p>
+                    <h2 class="capability__title">Liver Disease Risk Assessment</h2>
+                    <p class="capability__desc">Liver function panels contain early warning signs that are easy to miss without context. SwasthAI screens bilirubin, albumin and enzyme levels together to flag patterns worth a closer look.</p>
+                    <p class="capability__block-title">How it works</p>
+                    <ol class="capability__steps">
+                        <li>Enter values from a recent liver function test</li>
+                        <li>The model checks enzyme and protein levels against clinical thresholds</li>
+                        <li>Receive a screening result highlighting any abnormal indicators</li>
+                    </ol>
+                    <p class="capability__block-title">Required input</p>
+                    <div class="input-chips">
+                        <span class="input-chip">Total Bilirubin</span>
+                        <span class="input-chip">Albumin</span>
+                        <span class="input-chip">SGPT / SGOT</span>
+                        <span class="input-chip">Alkaline Phosphotase</span>
+                        <span class="input-chip">Age &amp; Sex</span>
+                    </div>
+                    <a href="prediction-liver.html" class="btn btn-primary btn-lg">Assess Liver Disease Risk <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="capability__visual animate-on-scroll" data-delay="150">
+                    <div class="capability__visual-icon"><i class="fas fa-flask"></i></div>
+                    <p class="capability__block-title">Sample Input Summary</p>
+                    <div class="capability__metric-row"><span>Bilirubin</span><div class="capability__metric-bar"><div class="capability__metric-fill" style="width: 45%;"></div></div><span>0.9 mg/dL</span></div>
+                    <div class="capability__metric-row"><span>Albumin</span><div class="capability__metric-bar"><div class="capability__metric-fill" style="width: 68%;"></div></div><span>4.1 g/dL</span></div>
+                    <div class="capability__metric-row"><span>SGPT</span><div class="capability__metric-bar"><div class="capability__metric-fill" style="width: 72%;"></div></div><span>48 U/L</span></div>
+                    <div class="capability__result" style="background:#ECFDF5; color: var(--success);"><i class="fas fa-check-circle"></i> Low Risk — all panels within normal limits</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 04 PNEUMONIA -->
+    <section class="capability capability--reverse accent-teal">
+        <div class="container">
+            <div class="capability__grid">
+                <div class="animate-on-scroll">
+                    <p class="capability__index">04 &middot; Medical Image Analysis</p>
+                    <h2 class="capability__title">Pneumonia Image Analysis</h2>
+                    <p class="capability__desc">Upload a chest X-ray and SwasthAI's image model analyzes lung fields for patterns commonly associated with pneumonia, giving you an AI-assisted second read to discuss with a clinician.</p>
+                    <p class="capability__block-title">How it works</p>
+                    <ol class="capability__steps">
+                        <li>Upload a chest X-ray image (JPEG or PNG)</li>
+                        <li>The image is preprocessed and analyzed by a deep learning model</li>
+                        <li>Get a classification result with a confidence score</li>
+                    </ol>
+                    <p class="capability__block-title">Required input</p>
+                    <div class="input-chips">
+                        <span class="input-chip"><i class="fas fa-file-image"></i> Chest X-Ray Image</span>
+                        <span class="input-chip">JPEG / PNG, up to 10MB</span>
+                    </div>
+                    <a href="prediction-pneumonia.html" class="btn btn-primary btn-lg">Analyze a Chest X-Ray <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="capability__visual animate-on-scroll" data-delay="150">
+                    <div class="capability__visual-icon"><i class="fas fa-lungs"></i></div>
+                    <div class="capability__upload">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        Drop a chest X-ray image here or click to upload
+                    </div>
+                    <div class="capability__scan-row"><span><i class="fas fa-microchip"></i> Model</span><strong>Pneumonia CNN Classifier</strong></div>
+                    <div class="capability__scan-row"><span><i class="fas fa-bolt"></i> Status</span><strong>Ready for analysis</strong></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 05 SKIN -->
+    <section class="capability accent-violet">
+        <div class="container">
+            <div class="capability__grid">
+                <div class="animate-on-scroll">
+                    <p class="capability__index">05 &middot; Medical Image Analysis</p>
+                    <h2 class="capability__title">Skin Disease Image Analysis</h2>
+                    <p class="capability__desc">Photograph a skin lesion and SwasthAI's classifier analyzes visual characteristics across multiple dermatological condition categories, helping you decide whether it's worth a dermatologist visit.</p>
+                    <p class="capability__block-title">How it works</p>
+                    <ol class="capability__steps">
+                        <li>Upload a clear, well-lit photo of the affected skin area</li>
+                        <li>The classifier compares visual features across condition categories</li>
+                        <li>Review the most likely categories with confidence levels</li>
+                    </ol>
+                    <p class="capability__block-title">Required input</p>
+                    <div class="input-chips">
+                        <span class="input-chip"><i class="fas fa-camera"></i> Skin Lesion Photo</span>
+                        <span class="input-chip">JPEG / PNG, up to 10MB</span>
+                    </div>
+                    <a href="prediction-skin.html" class="btn btn-primary btn-lg">Analyze a Skin Image <i class="fas fa-arrow-right"></i></a>
+                </div>
+                <div class="capability__visual animate-on-scroll" data-delay="150">
+                    <div class="capability__visual-icon"><i class="fas fa-hand-dots"></i></div>
+                    <div class="capability__upload">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        Drop a skin lesion photo here or click to upload
+                    </div>
+                    <div class="capability__scan-row"><span><i class="fas fa-microchip"></i> Model</span><strong>Dermatology CNN Classifier</strong></div>
+                    <div class="capability__scan-row"><span><i class="fas fa-bolt"></i> Status</span><strong>Ready for analysis</strong></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="ai-health-cta">
+        <div class="container">
+            <h2>Your health data deserves more than a spreadsheet.</h2>
+            <p>Create your free SwasthAI profile to save assessments, track results over time, and get guidance personalized to what the AI finds.</p>
+            <div class="ai-health-cta__actions">
+                <a href="register.html" class="btn btn-white btn-lg">Get Started <i class="fas fa-arrow-right"></i></a>
+                <a href="features.html" class="btn btn-outline-light btn-lg">Explore All Features</a>
+            </div>
+        </div>
+    </section>
+
+    <div id="site-footer"></div>
+
+    <script src="js/site-nav.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+fastapi[standard]
+pydantic
+pydantic-settings
+motor
+python-multipart
+opencv-python-headless
+numpy
+pytest
+pytest-asyncio
+httpx

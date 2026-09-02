@@ -1,0 +1,57 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Python virtual environments
+venv/
+.venv/
+env/
+
+# Python compiled files and caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Pytest and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+nosetests.xml
+coverage.xml
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Type checking and linting caches
+.mypy_cache/
+.ruff_cache/
+.pylint.d/
+
+# ML Pipeline Data and Models
+ml_pipeline/*/data/
+ml_pipeline/*/models/
+*.h5
+*.pt
+*.pth
+*.onnx
+
+# Local Storage (Medical images, reports, prescriptions)
+storage/reports/*
+!storage/reports/.gitkeep
+storage/medical_images/*
+!storage/medical_images/.gitkeep
+storage/prescriptions/*
+!storage/prescriptions/.gitkeep
+
+# Temporary files
+*.tmp
+*.temp
+/tmp/

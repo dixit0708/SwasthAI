@@ -1,0 +1,107 @@
+/* how-it-works.css — Page 4: How It Works */
+
+.journey {
+    padding: var(--sp-8) 0 var(--sp-24);
+}
+
+.journey__list {
+    position: relative;
+    max-width: 780px;
+    margin: 0 auto;
+}
+
+.journey__list::before {
+    content: '';
+    position: absolute;
+    left: 27px;
+    top: 12px;
+    bottom: 12px;
+    width: 2px;
+    background: var(--border);
+}
+
+.journey__step {
+    position: relative;
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: var(--sp-6);
+    margin-bottom: var(--sp-8);
+    align-items: center;
+}
+
+.journey__step:last-child { margin-bottom: 0; }
+
+.journey__step__number {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-full);
+    background: var(--bg-inverse);
+    color: var(--text-inverse);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--text-lg);
+    z-index: 2;
+    flex-shrink: 0;
+}
+
+.journey__step__content {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--sp-6);
+}
+
+.journey__step__content h3 { font-size: var(--text-xl); margin-bottom: var(--sp-2); }
+.journey__step__content p { color: var(--text-secondary); font-size: var(--text-sm); margin: 0; }
+
+/* Flow diagram: User -> AI -> Insights -> Action -> Healthcare */
+.flow-diagram {
+    background: var(--bg-inverse);
+    padding: var(--sp-24) 0;
+}
+
+.flow-diagram h2 { color: var(--text-inverse); text-align: center; margin-bottom: var(--sp-4); }
+.flow-diagram > .container > p { color: rgba(248,250,252,0.7); text-align: center; max-width: 560px; margin: 0 auto var(--sp-16); }
+
+.flow-diagram__row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-4);
+}
+
+@media (min-width: 900px) {
+    .flow-diagram__row { flex-direction: row; justify-content: center; }
+}
+
+.flow-diagram__node {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: var(--radius-lg);
+    padding: var(--sp-6);
+    width: 100%;
+    max-width: 220px;
+    text-align: center;
+}
+
+.flow-diagram__node i {
+    font-size: var(--text-3xl);
+    color: var(--primary-light);
+    margin-bottom: var(--sp-3);
+    display: block;
+}
+
+.flow-diagram__node strong { display: block; color: var(--text-inverse); font-family: var(--font-display); margin-bottom: var(--sp-1); }
+.flow-diagram__node span { color: rgba(248,250,252,0.6); font-size: var(--text-xs); }
+
+.flow-diagram__arrow {
+    color: rgba(255,255,255,0.35);
+    font-size: var(--text-xl);
+    transform: rotate(90deg);
+}
+@media (min-width: 900px) {
+    .flow-diagram__arrow { transform: none; }
+}

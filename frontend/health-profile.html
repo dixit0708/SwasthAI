@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwasthAI - Health Profile</title>
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="app-layout" class="app-layout">
+        <aside id="sidebar-container" class="sidebar"></aside>
+        <div class="main-content">
+            <header id="header-container" class="top-header"></header>
+            <main class="page-content">
+                <!-- PAGE CONTENT: health-profile -->
+                
+    <div class="mb-4">
+        <h1>Health Profile</h1>
+        <p class="text-secondary">Manage your personal and health information.</p>
+    </div>
+    <div class="grid" style="grid-template-columns: 2fr 1fr;">
+        <div class="card">
+            <div class="card-header">Basic Information</div>
+            <div class="card-body">
+                <form onsubmit="event.preventDefault(); alert('Demo: Saved!');">
+                    <div class="grid" style="grid-template-columns: 1fr 1fr;">
+                        <div class="form-group"><label class="form-label">First Name</label><input type="text" class="form-control" value="John"></div>
+                        <div class="form-group"><label class="form-label">Last Name</label><input type="text" class="form-control" value="Doe"></div>
+                        <div class="form-group"><label class="form-label">Date of Birth</label><input type="date" class="form-control" value="1980-01-01"></div>
+                        <div class="form-group"><label class="form-label">Blood Group</label>
+                            <select class="form-control"><option>O+</option><option>A+</option></select>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary mt-4">Save Changes</button>
+                </form>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">Known Conditions & Allergies</div>
+            <div class="card-body">
+                <ul style="list-style: none; padding: 0;">
+                    <li style="padding: 0.5rem; background: var(--bg-surface-alt); margin-bottom: 0.5rem; border-radius: var(--radius-sm);"><i class="fas fa-exclamation-triangle text-warning"></i> Peanut Allergy</li>
+                    <li style="padding: 0.5rem; background: var(--bg-surface-alt); margin-bottom: 0.5rem; border-radius: var(--radius-sm);"><i class="fas fa-heartbeat text-danger"></i> Hypertension (Mild)</li>
+                </ul>
+                <button class="btn btn-outline btn-block mt-4"><i class="fas fa-plus"></i> Add Condition</button>
+            </div>
+        </div>
+    </div>
+    
+            </main>
+        </div>
+    </div>
+    <script src="js/components.js"></script>
+    <script src="js/health-profile.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

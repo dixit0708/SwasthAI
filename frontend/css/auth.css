@@ -1,0 +1,123 @@
+/* auth.css — Login / Register / Forgot Password */
+
+.auth-shell {
+    min-height: 100dvh;
+    display: grid;
+    grid-template-columns: 1fr;
+    padding-top: 72px;
+}
+
+@media (min-width: 1024px) {
+    .auth-shell { grid-template-columns: 1fr 1fr; }
+}
+
+.auth-shell__form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-12) var(--sp-6);
+}
+
+.auth-shell__form-inner {
+    width: 100%;
+    max-width: 420px;
+}
+
+.auth-shell__form-inner h1 {
+    font-size: var(--text-3xl);
+    margin-bottom: var(--sp-2);
+}
+
+.auth-shell__form-inner > p {
+    color: var(--text-secondary);
+    margin-bottom: var(--sp-8);
+}
+
+.auth-shell__visual {
+    display: none;
+    position: relative;
+    background: var(--bg-inverse);
+    padding: var(--sp-16);
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+    .auth-shell__visual { display: flex; }
+}
+
+.auth-shell__visual-content {
+    position: relative;
+    z-index: 2;
+    color: var(--text-inverse);
+    max-width: 380px;
+}
+
+.auth-shell__visual-content h2 {
+    color: var(--text-inverse);
+    font-size: var(--text-3xl);
+    margin-bottom: var(--sp-6);
+}
+
+.auth-shell__visual-content p {
+    color: rgba(248,250,252,0.75);
+    margin-bottom: var(--sp-8);
+}
+
+.auth-shell__visual-stat {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: var(--radius-md);
+    padding: var(--sp-4);
+    margin-bottom: var(--sp-3);
+}
+.auth-shell__visual-stat i { color: var(--primary-light); font-size: var(--text-xl); }
+.auth-shell__visual-stat strong { display: block; color: var(--text-inverse); font-size: var(--text-sm); }
+.auth-shell__visual-stat span { color: rgba(248,250,252,0.6); font-size: var(--text-xs); }
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    color: var(--text-muted);
+    font-size: var(--text-xs);
+    margin: var(--sp-6) 0;
+}
+.auth-divider::before, .auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+.auth-check-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--sp-6);
+    font-size: var(--text-sm);
+}
+
+.auth-footer-note {
+    text-align: center;
+    margin-top: var(--sp-6);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+
+.auth-success {
+    display: none;
+    align-items: flex-start;
+    gap: var(--sp-3);
+    background: #ECFDF5;
+    color: var(--success);
+    border-radius: var(--radius-md);
+    padding: var(--sp-4);
+    font-size: var(--text-sm);
+    margin-top: var(--sp-6);
+}
+.auth-success.is-visible { display: flex; }

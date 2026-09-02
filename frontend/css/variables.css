@@ -1,0 +1,74 @@
+/* variables.css */
+:root {
+  /* Colors - Deep Navy & Sophisticated Teal */
+  --bg-primary: #F8FAFC;
+  --bg-surface: #FFFFFF;
+  --bg-surface-alt: #F1F5F9;
+  --bg-elevated: #FFFFFF;
+  --bg-inverse: #0F172A;
+  
+  --text-primary: #0F172A; 
+  --text-secondary: #334155; 
+  --text-muted: #64748B; 
+  --text-inverse: #F8FAFC;
+  
+  --primary: #0F766E; 
+  --primary-hover: #115E59; 
+  --primary-light: #CCFBF1; 
+  
+  --border: #E2E8F0; 
+  --border-light: #F1F5F9; 
+  
+  --success: #059669;
+  --warning: #D97706;
+  --error: #DC2626;
+  --danger: #DC2626;
+  --info: #0284C7;
+  --violet: #7C3AED;
+
+  /* Typography */
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  
+  --text-xs: 0.75rem; 
+  --text-sm: 0.875rem; 
+  --text-base: 1rem; 
+  --text-lg: 1.125rem; 
+  --text-xl: 1.25rem; 
+  --text-2xl: 1.5rem; 
+  --text-3xl: 1.875rem; 
+  --text-4xl: 2.25rem; 
+  --text-5xl: 3rem; 
+  --text-6xl: 3.75rem; 
+  --text-7xl: 4.5rem; 
+
+  /* Spacing System */
+  --sp-1: 0.25rem; 
+  --sp-2: 0.5rem; 
+  --sp-3: 0.75rem; 
+  --sp-4: 1rem; 
+  --sp-6: 1.5rem; 
+  --sp-8: 2rem; 
+  --sp-12: 3rem; 
+  --sp-16: 4rem; 
+  --sp-20: 5rem; 
+  --sp-24: 6rem; 
+  --sp-32: 8rem; 
+
+  /* Radii */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.05), 0 4px 6px -4px rgba(15, 23, 42, 0.05);
+  
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+}

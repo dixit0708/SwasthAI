@@ -1,0 +1,250 @@
+/* landing.css */
+.hero {
+    min-height: 100dvh; /* Viewport stability */
+    padding-top: var(--sp-24); /* Hero top padding cap */
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero__container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--sp-12);
+    align-items: center;
+}
+
+@media (min-width: 1024px) {
+    .hero__container {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--sp-16);
+    }
+}
+
+.hero__title {
+    font-size: var(--text-5xl);
+    margin-bottom: var(--sp-6);
+    letter-spacing: -0.03em;
+}
+
+@media (min-width: 1024px) {
+    .hero__title {
+        font-size: var(--text-6xl);
+    }
+}
+
+.hero__subtitle {
+    font-size: var(--text-xl);
+    color: var(--text-secondary);
+    margin-bottom: var(--sp-8);
+    max-width: 600px;
+}
+
+.hero__cta {
+    display: flex;
+    gap: var(--sp-4);
+    flex-wrap: wrap;
+    margin-bottom: var(--sp-8);
+}
+
+.hero__trust-indicators {
+    display: flex;
+    gap: var(--sp-6);
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+}
+
+.hero__trust-item {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+}
+
+.hero__visual {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.trust-strip {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-surface);
+    padding: var(--sp-12) 0;
+}
+
+.trust-strip__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--sp-8);
+    margin-top: var(--sp-8);
+}
+
+@media (min-width: 1024px) {
+    .trust-strip__grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.intro-section__grid, .report-section__grid, .family-section__grid, .doctors-section__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--sp-12);
+    align-items: center;
+}
+
+@media (min-width: 1024px) {
+    .intro-section__grid, .report-section__grid, .family-section__grid, .doctors-section__grid {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--sp-16);
+    }
+}
+
+.ai-health-section__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--sp-6);
+    margin-top: var(--sp-12);
+}
+
+@media (min-width: 768px) {
+    .ai-health-section__grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (min-width: 1024px) {
+    .ai-health-section__grid {
+        /* Asymmetric bento grid */
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .ai-card:nth-child(1), .ai-card:nth-child(2) {
+        grid-column: span 1.5; /* Spanning in a pseudo 3-col isn't exact, let's use a 6-col grid */
+    }
+}
+
+/* Let's fix the bento grid properly */
+@media (min-width: 1024px) {
+    .ai-health-section__grid {
+        grid-template-columns: repeat(6, 1fr);
+    }
+    .ai-card:nth-child(1) { grid-column: span 3; }
+    .ai-card:nth-child(2) { grid-column: span 3; }
+    .ai-card:nth-child(3) { grid-column: span 2; }
+    .ai-card:nth-child(4) { grid-column: span 2; }
+    .ai-card:nth-child(5) { grid-column: span 2; }
+}
+
+.ai-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: var(--sp-8);
+    display: flex;
+    flex-direction: column;
+}
+
+.ai-card__icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--sp-6);
+    background: var(--primary-light);
+    color: var(--primary);
+    font-size: var(--text-xl);
+}
+
+.ai-card__title {
+    font-size: var(--text-xl);
+    margin-bottom: var(--sp-2);
+}
+
+.ai-card__desc {
+    color: var(--text-secondary);
+    margin-bottom: var(--sp-6);
+    flex-grow: 1;
+}
+
+.final-cta {
+    background: var(--bg-inverse);
+    color: var(--text-inverse);
+    padding: var(--sp-24) 0;
+}
+
+.final-cta__heading {
+    font-size: var(--text-5xl);
+    margin-bottom: var(--sp-4);
+    color: var(--text-inverse);
+}
+
+.final-cta__subtitle {
+    font-size: var(--text-xl);
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: var(--sp-8);
+}
+
+.footer {
+    background: #020617; /* Slate 950 */
+    color: rgba(255, 255, 255, 0.7);
+    padding: var(--sp-16) 0 var(--sp-8);
+}
+
+.footer__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--sp-12);
+    margin-bottom: var(--sp-12);
+}
+
+@media (min-width: 768px) {
+    .footer__grid {
+        grid-template-columns: 2fr 1fr 1fr 1fr;
+    }
+}
+
+.footer__logo {
+    color: white;
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    margin-bottom: var(--sp-4);
+}
+
+.footer__col h4 {
+    color: white;
+    margin-bottom: var(--sp-6);
+}
+
+.footer__col ul {
+    list-style: none;
+}
+
+.footer__col ul li {
+    margin-bottom: var(--sp-3);
+}
+
+.footer__col ul a {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.footer__col ul a:hover {
+    color: white;
+}
+
+.footer__bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: var(--sp-8);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+    font-size: var(--text-sm);
+}

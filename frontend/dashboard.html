@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwasthAI - Dashboard</title>
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="app-layout" class="app-layout">
+        <aside id="sidebar-container" class="sidebar"></aside>
+        <div class="main-content">
+            <header id="header-container" class="top-header"></header>
+            <main class="page-content">
+                <!-- PAGE CONTENT: dashboard -->
+                
+    <div class="flex-between mb-4">
+        <div>
+            <h1 style="margin:0;">Welcome back, John!</h1>
+            <p class="text-secondary">Here's what's happening with your health today.</p>
+        </div>
+        <button class="btn btn-primary"><i class="fas fa-plus"></i> Add Record</button>
+    </div>
+
+    <div class="grid mb-4" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+        <div class="card"><div class="card-body">
+            <div class="text-secondary mb-2">Overall Health Score</div>
+            <div style="font-size: 2rem; font-weight: 700; color: var(--success);">85/100</div>
+            <div class="text-muted" style="font-size: 0.8rem;"><i class="fas fa-arrow-up text-success"></i> 2% from last week</div>
+        </div></div>
+        <div class="card"><div class="card-body">
+            <div class="text-secondary mb-2">Active Goals</div>
+            <div style="font-size: 2rem; font-weight: 700;">3</div>
+            <div class="text-muted" style="font-size: 0.8rem;">Weight loss, Sleep tracking</div>
+        </div></div>
+        <div class="card"><div class="card-body">
+            <div class="text-secondary mb-2">Medication Adherence</div>
+            <div style="font-size: 2rem; font-weight: 700; color: var(--primary);">100%</div>
+            <div class="text-muted" style="font-size: 0.8rem;">Great job this week!</div>
+        </div></div>
+    </div>
+
+    <div class="grid mb-4" style="grid-template-columns: 2fr 1fr;">
+        <div class="card">
+            <div class="card-header">Health Metrics (Demo Data)</div>
+            <div class="card-body">
+                <canvas id="healthChart" height="100"></canvas>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">Quick Actions</div>
+            <div class="card-body grid">
+                <a href="predictions.html" class="btn btn-outline btn-block" style="justify-content: flex-start;"><i class="fas fa-heartbeat" style="margin-right: 10px; color: var(--danger)"></i> Check Health Risk</a>
+                <a href="report-analyzer.html" class="btn btn-outline btn-block" style="justify-content: flex-start;"><i class="fas fa-file-pdf" style="margin-right: 10px; color: var(--info)"></i> Analyze Report</a>
+                <a href="ai-assistant.html" class="btn btn-outline btn-block" style="justify-content: flex-start;"><i class="fas fa-robot" style="margin-right: 10px; color: var(--primary)"></i> Ask Assistant</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('healthChart');
+            if(ctx) {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [{
+                            label: 'Heart Rate (bpm)',
+                            data: [72, 75, 71, 74, 76, 70, 72],
+                            borderColor: '#ef4444',
+                            tension: 0.4
+                        }]
+                    }
+                });
+            }
+        });
+    </script>
+    
+            </main>
+        </div>
+    </div>
+    <script src="js/components.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

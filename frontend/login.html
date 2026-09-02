@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwasthAI - Log In</title>
+    <meta name="description" content="Log in to your SwasthAI account to access your health profile, AI assessments and health insights.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/landing.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/auth.css">
+</head>
+<body data-page="login">
+
+    <div id="site-header"></div>
+
+    <div class="auth-shell">
+        <div class="auth-shell__form">
+            <div class="auth-shell__form-inner">
+                <h1>Welcome back</h1>
+                <p>Log in to continue your health journey.</p>
+                <form onsubmit="event.preventDefault(); window.location.href='dashboard.html';">
+                    <div class="form-group">
+                        <label class="form-label" for="loginEmail">Email Address</label>
+                        <input type="email" id="loginEmail" class="form-control" required placeholder="name@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" class="form-control" required placeholder="Enter your password">
+                    </div>
+                    <div class="auth-check-row">
+                        <label class="form-check"><input type="checkbox"> Remember me</label>
+                        <a href="forgot-password.html">Forgot password?</a>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg btn-block">Log In</button>
+                </form>
+                <p class="auth-footer-note">Don't have an account? <a href="register.html">Sign up</a></p>
+            </div>
+        </div>
+        <div class="auth-shell__visual">
+            <div class="auth-shell__visual-content">
+                <h2>Your health, all in one place.</h2>
+                <p>Pick up right where you left off — assessments, records, insights and your family's health, all in one account.</p>
+                <div class="auth-shell__visual-stat"><i class="fas fa-brain"></i><div><strong>5 AI Health Models</strong><span>Ready for your next assessment</span></div></div>
+                <div class="auth-shell__visual-stat"><i class="fas fa-chart-line"></i><div><strong>Health Insights</strong><span>Your trends, tracked over time</span></div></div>
+                <div class="auth-shell__visual-stat"><i class="fas fa-users"></i><div><strong>Family Profiles</strong><span>Manage health for everyone you care for</span></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="site-footer"></div>
+
+    <script src="js/site-nav.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

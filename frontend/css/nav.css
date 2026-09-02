@@ -1,0 +1,231 @@
+/* nav.css — shared global header (mobile drawer) + footer polish
+   Loaded on every page; markup is injected by js/site-nav.js */
+
+.navbar {
+    transition: box-shadow var(--transition-base), background var(--transition-base);
+}
+
+.navbar--scrolled {
+    box-shadow: var(--shadow-sm);
+    background: rgba(255, 255, 255, 0.92);
+}
+
+.navbar__logo {
+    display: inline-flex;
+    align-items: center;
+}
+
+.navbar__links a.active {
+    color: var(--primary);
+}
+
+.navbar__actions a.active {
+    outline: 2px solid var(--primary-light);
+    outline-offset: 2px;
+}
+
+/* Hamburger toggle */
+.navbar__mobile-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    z-index: 210;
+}
+
+.navbar__mobile-toggle span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: var(--text-primary);
+    border-radius: var(--radius-full);
+    transition: transform var(--transition-fast), opacity var(--transition-fast);
+}
+
+.navbar__mobile-toggle[aria-expanded="true"] span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+.navbar__mobile-toggle[aria-expanded="true"] span:nth-child(2) {
+    opacity: 0;
+}
+.navbar__mobile-toggle[aria-expanded="true"] span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+@media (max-width: 1024px) {
+    .navbar__mobile-toggle {
+        display: flex;
+    }
+}
+
+/* Overlay */
+.navbar__overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-base);
+    z-index: 190;
+}
+
+.navbar__overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Drawer */
+.navbar__drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100dvh;
+    width: min(320px, 85vw);
+    background: var(--bg-surface);
+    box-shadow: var(--shadow-lg);
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform var(--transition-slow);
+    overflow-y: auto;
+}
+
+.navbar__drawer.is-open {
+    transform: translateX(0);
+}
+
+.navbar__drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--sp-6);
+    border-bottom: 1px solid var(--border);
+}
+
+.navbar__drawer-close {
+    background: transparent;
+    border: none;
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.navbar__drawer-close:hover {
+    background: var(--bg-surface-alt);
+    color: var(--primary);
+}
+
+.navbar__drawer-links {
+    list-style: none;
+    padding: var(--sp-4) var(--sp-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+}
+
+.navbar__drawer-links a {
+    display: block;
+    padding: var(--sp-3) var(--sp-2);
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: var(--text-base);
+    border-radius: var(--radius-md);
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+}
+
+.navbar__drawer-links a:hover,
+.navbar__drawer-links a.active {
+    color: var(--primary);
+    background: var(--primary-light);
+}
+
+.navbar__drawer-actions {
+    margin-top: auto;
+    padding: var(--sp-6);
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+}
+
+body.drawer-open {
+    overflow: hidden;
+}
+
+@media (min-width: 1025px) {
+    .navbar__drawer,
+    .navbar__overlay {
+        display: none;
+    }
+}
+
+/* ==========================================================================
+   Shared inner-page hero (ai-health, features, how-it-works, health-insights,
+   doctors, about). Each page adds its own modifier class for visual variety.
+   ========================================================================== */
+
+.page-hero {
+    padding: calc(72px + var(--sp-16)) 0 var(--sp-16);
+    position: relative;
+    overflow: hidden;
+}
+
+.page-hero__eyebrow { margin-bottom: var(--sp-4); }
+
+.page-hero__title {
+    font-size: var(--text-5xl);
+    margin-bottom: var(--sp-6);
+    letter-spacing: -0.03em;
+}
+
+@media (min-width: 1024px) {
+    .page-hero__title { font-size: var(--text-6xl); }
+}
+
+.page-hero__subtitle {
+    font-size: var(--text-xl);
+    color: var(--text-secondary);
+    max-width: 680px;
+}
+
+.page-hero--center {
+    text-align: center;
+}
+
+.page-hero--center .page-hero__subtitle {
+    margin: 0 auto;
+}
+
+.page-hero--split .page-hero__container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--sp-12);
+    align-items: center;
+}
+
+@media (min-width: 1024px) {
+    .page-hero--split .page-hero__container {
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: var(--sp-16);
+    }
+}
+
+.page-hero--dark {
+    background: var(--bg-inverse);
+    color: var(--text-inverse);
+}
+.page-hero--dark .page-hero__subtitle { color: rgba(248, 250, 252, 0.75); }
+.page-hero--dark .page-hero__title { color: var(--text-inverse); }

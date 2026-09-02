@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SwasthAI - Family</title>
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="app-layout" class="app-layout">
+        <aside id="sidebar-container" class="sidebar"></aside>
+        <div class="main-content">
+            <header id="header-container" class="top-header"></header>
+            <main class="page-content">
+                <!-- PAGE CONTENT: family -->
+                
+    <div class="flex-between mb-4">
+        <div>
+            <h1 style="margin:0;">Family Health</h1>
+            <p class="text-secondary">Manage and monitor health records for your dependents.</p>
+        </div>
+        <button class="btn btn-primary"><i class="fas fa-user-plus"></i> Add Member</button>
+    </div>
+    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+        <div class="card" style="border: 2px solid var(--primary);">
+            <div class="card-body text-center">
+                <img src="https://ui-avatars.com/api/?name=Jane+Doe&background=ff0000&color=fff" class="avatar" style="width:60px;height:60px;margin: 0 auto 1rem;">
+                <h3>Jane Doe</h3>
+                <p class="text-muted">Spouse • 40 yrs</p>
+                <div class="mt-4"><button class="btn btn-primary btn-block">Switch Profile</button></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body text-center">
+                <img src="https://ui-avatars.com/api/?name=Timmy+Doe&background=00ff00&color=fff" class="avatar" style="width:60px;height:60px;margin: 0 auto 1rem;">
+                <h3>Timmy Doe</h3>
+                <p class="text-muted">Child • 12 yrs</p>
+                <div class="mt-4"><button class="btn btn-outline btn-block">Switch Profile</button></div>
+            </div>
+        </div>
+    </div>
+    
+            </main>
+        </div>
+    </div>
+    <script src="js/components.js"></script>
+    <script src="js/family.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

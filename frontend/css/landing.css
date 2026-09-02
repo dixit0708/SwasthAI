@@ -1,11 +1,15 @@
 /* landing.css */
 .hero {
     min-height: 100dvh; /* Viewport stability */
-    padding-top: var(--sp-24); /* Hero top padding cap */
+    padding-top: calc(72px + var(--sp-12));
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     position: relative;
     overflow: hidden;
+}
+
+.hero .container {
+    max-width: 1360px;
 }
 
 .hero__container {
@@ -18,14 +22,35 @@
 }
 
 .hero__title {
-    font-size: var(--text-5xl);
+    font-family: 'Dancing Script', cursive;
+    font-weight: 700;
+    font-size: 3.6rem;
+    line-height: 1.2;
+    letter-spacing: 0;
     margin-bottom: var(--sp-6);
-    letter-spacing: -0.03em;
+    text-shadow: 0 2px 18px rgba(248, 250, 252, 0.6);
+}
+
+.hero__title-line {
+    display: inline-block;
+    color: #B45309;
+}
+
+.hero__title-accent {
+    color: var(--primary);
 }
 
 @media (min-width: 1024px) {
+    .hero__content {
+        max-width: 800px;
+    }
+
     .hero__title {
-        font-size: var(--text-6xl);
+        font-size: 5.25rem;
+    }
+
+    .hero__title-line {
+        white-space: nowrap;
     }
 }
 

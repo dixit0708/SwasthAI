@@ -226,82 +226,6 @@ function initCounters() {
   });
 }
 
-// === Hero Animations ===
-function initHeroAnimations() {
-  if (prefersReducedMotion()) return;
-
-  // 8. Health Score Animation
-  const healthScore = document.querySelector('.hero__health-score');
-  if (healthScore) {
-    const targetScore = parseInt(healthScore.getAttribute('data-score')) || 85;
-    const duration = 2000;
-    let startTime = null;
-
-    const animateScore = (currentTime) => {
-      if (!startTime) startTime = currentTime;
-      const progress = currentTime - startTime;
-      const percent = Math.min(progress / duration, 1);
-      const currentScore = targetScore * easeOutExpo(percent);
-
-      healthScore.style.setProperty('--score-progress', `${currentScore}%`);
-      
-      const scoreValueEl = healthScore.querySelector('.score-value');
-      if (scoreValueEl) {
-        scoreValueEl.innerText = Math.floor(currentScore);
-      }
-
-      if (progress < duration) {
-        requestAnimationFrame(animateScore);
-      } else {
-        healthScore.style.setProperty('--score-progress', `${targetScore}%`);
-        if (scoreValueEl) scoreValueEl.innerText = targetScore;
-      }
-    };
-    
-    // Slight delay to ensure CSS is ready
-    setTimeout(() => {
-      requestAnimationFrame(animateScore);
-    }, 500);
-  }
-
-  // 9. Floating Cards Parallax
-  const heroSection = document.querySelector('.hero');
-  const floatingCards = document.querySelectorAll('.hero__floating-card');
-  
-  if (heroSection && floatingCards.length > 0) {
-    let mouseX = 0;
-    let mouseY = 0;
-    let isMoving = false;
-
-    heroSection.addEventListener('mousemove', (e) => {
-      // Only apply on desktop
-      if (window.innerWidth <= 1024) return;
-      
-      const rect = heroSection.getBoundingClientRect();
-      // Calculate mouse position relative to center of hero section
-      mouseX = ((e.clientX - rect.left) / rect.width) * 2 - 1; // -1 to 1
-      mouseY = ((e.clientY - rect.top) / rect.height) * 2 - 1; // -1 to 1
-
-      if (!isMoving) {
-        isMoving = true;
-        requestAnimationFrame(updateCards);
-      }
-    }, { passive: true });
-
-    function updateCards() {
-      floatingCards.forEach((card, index) => {
-        // Different intensity based on index or data attribute
-        const intensity = parseFloat(card.getAttribute('data-intensity')) || (10 + (index * 5));
-        const moveX = mouseX * intensity;
-        const moveY = mouseY * intensity;
-        
-        card.style.transform = `translate(${moveX}px, ${moveY}px)`;
-      });
-      isMoving = false;
-    }
-  }
-}
-
 // === Initialize ===
 document.addEventListener('DOMContentLoaded', () => {
   initNavbar();
@@ -309,5 +233,4 @@ document.addEventListener('DOMContentLoaded', () => {
   initSmoothScroll();
   initScrollAnimations();
   initCounters();
-  initHeroAnimations();
 });

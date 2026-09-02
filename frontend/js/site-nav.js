@@ -8,17 +8,14 @@
 
 const SWASTHAI_NAV_LINKS = [
   { key: 'home', label: 'Home', href: 'index.html' },
-  { key: 'ai-health', label: 'AI Health', href: 'ai-health.html' },
-  { key: 'features', label: 'Features', href: 'features.html' },
   { key: 'how-it-works', label: 'How It Works', href: 'how-it-works.html' },
-  { key: 'health-insights', label: 'Health Insights', href: 'health-insights.html' },
-  { key: 'doctors', label: 'Doctors', href: 'doctors.html' },
+  { key: 'features', label: 'Services', href: 'features.html' },
   { key: 'about', label: 'About', href: 'about.html' }
 ];
 
 function swasthaiRenderHeader(activePage) {
   const linksHtml = SWASTHAI_NAV_LINKS.map(link =>
-    `<li><a href="${link.href}"${link.key === activePage ? ' class="active"' : ''}>${link.label}</a></li>`
+    `<li><a href="${link.href}"${link.key === activePage ? ' class="active" aria-current="page"' : ''}>${link.label}</a></li>`
   ).join('');
 
   return `
@@ -27,10 +24,10 @@ function swasthaiRenderHeader(activePage) {
             <a href="index.html" class="navbar__logo">Swasth<span class="text-primary">AI</span></a>
             <ul class="navbar__links" id="navLinks">${linksHtml}</ul>
             <div class="navbar__actions">
-                <a href="login.html" class="btn btn-ghost${activePage === 'login' ? ' active' : ''}">Log In</a>
-                <a href="register.html" class="btn btn-primary${activePage === 'register' ? ' active' : ''}">Get Started</a>
+                <a href="login.html" class="btn btn-ghost${activePage === 'login' ? ' active' : ''}"${activePage === 'login' ? ' aria-current="page"' : ''}>Log In</a>
+                <a href="register.html" class="btn btn-primary${activePage === 'register' ? ' active' : ''}"${activePage === 'register' ? ' aria-current="page"' : ''}>Get Started</a>
             </div>
-            <button class="navbar__mobile-toggle" id="mobileToggle" aria-label="Open navigation menu" aria-expanded="false">
+            <button class="navbar__mobile-toggle" id="mobileToggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="navDrawer">
                 <span></span><span></span><span></span>
             </button>
         </div>

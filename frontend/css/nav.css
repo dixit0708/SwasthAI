@@ -2,17 +2,24 @@
    Loaded on every page; markup is injected by js/site-nav.js */
 
 .navbar {
-    transition: box-shadow var(--transition-base), background var(--transition-base);
+    transition: box-shadow var(--transition-base), background var(--transition-base), border-color var(--transition-base);
 }
 
 .navbar--scrolled {
     box-shadow: var(--shadow-sm);
-    background: rgba(255, 255, 255, 0.92);
+    background: rgba(248, 250, 252, 0.97);
+    border-bottom-color: var(--border);
 }
 
 .navbar__logo {
     display: inline-flex;
     align-items: center;
+    transition: transform var(--transition-base);
+}
+
+.navbar--scrolled .navbar__logo {
+    transform: scale(0.96);
+    transform-origin: left center;
 }
 
 .navbar__links a.active {
@@ -22,6 +29,63 @@
 .navbar__actions a.active {
     outline: 2px solid var(--primary-light);
     outline-offset: 2px;
+}
+
+/* Get Started — refined, restrained hover (overrides the broader .btn-primary lift used elsewhere) */
+.navbar__actions .btn-primary,
+.navbar__drawer-actions .btn-primary {
+    transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1), background-color var(--transition-fast);
+}
+
+.navbar__actions .btn-primary:hover {
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 6px 16px -6px rgba(15, 118, 110, 0.4);
+}
+
+/* Header entrance — subtle, staggered on load */
+@keyframes navEnter {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.navbar__logo,
+.navbar__links li,
+.navbar__actions > a,
+.navbar__mobile-toggle {
+    animation: navEnter 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.navbar__logo { animation-delay: 0ms; }
+.navbar__links li:nth-child(1) { animation-delay: 60ms; }
+.navbar__links li:nth-child(2) { animation-delay: 100ms; }
+.navbar__links li:nth-child(3) { animation-delay: 140ms; }
+.navbar__links li:nth-child(4) { animation-delay: 180ms; }
+.navbar__actions > a:nth-child(1) { animation-delay: 200ms; }
+.navbar__actions > a:nth-child(2) { animation-delay: 240ms; }
+.navbar__mobile-toggle { animation-delay: 200ms; }
+
+@media (prefers-reduced-motion: reduce) {
+    .navbar__logo,
+    .navbar__links li,
+    .navbar__actions > a,
+    .navbar__mobile-toggle {
+        animation: none;
+    }
+    .navbar__actions .btn-primary:hover {
+        transform: none;
+    }
+    .navbar--scrolled .navbar__logo {
+        transform: none;
+    }
+    .navbar__drawer-links a,
+    .navbar__drawer-actions {
+        transition: none;
+        opacity: 1;
+        transform: none;
+    }
+    .navbar__links a::after {
+        transition: none;
+    }
 }
 
 /* Hamburger toggle */
@@ -135,15 +199,46 @@
 }
 
 .navbar__drawer-links a {
-    display: block;
+    display: flex;
+    align-items: center;
     padding: var(--sp-3) var(--sp-2);
     color: var(--text-secondary);
     font-weight: 600;
     font-size: var(--text-base);
     border-radius: var(--radius-md);
     min-height: 44px;
-    display: flex;
-    align-items: center;
+    opacity: 0;
+    transform: translateX(16px);
+    transition: opacity 300ms cubic-bezier(0.16, 1, 0.3, 1), transform 300ms cubic-bezier(0.16, 1, 0.3, 1),
+                color var(--transition-fast), background var(--transition-fast);
+}
+
+.navbar__drawer.is-open .navbar__drawer-links a,
+.app-drawer.is-open .navbar__drawer-links a {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.navbar__drawer.is-open .navbar__drawer-links li:nth-child(1) a,
+.app-drawer.is-open .navbar__drawer-links li:nth-child(1) a { transition-delay: 80ms; }
+.navbar__drawer.is-open .navbar__drawer-links li:nth-child(2) a,
+.app-drawer.is-open .navbar__drawer-links li:nth-child(2) a { transition-delay: 120ms; }
+.navbar__drawer.is-open .navbar__drawer-links li:nth-child(3) a,
+.app-drawer.is-open .navbar__drawer-links li:nth-child(3) a { transition-delay: 160ms; }
+.navbar__drawer.is-open .navbar__drawer-links li:nth-child(4) a,
+.app-drawer.is-open .navbar__drawer-links li:nth-child(4) a { transition-delay: 200ms; }
+.app-drawer.is-open .navbar__drawer-links li:nth-child(5) a { transition-delay: 240ms; }
+
+.navbar__drawer.is-open .navbar__drawer-actions,
+.app-drawer.is-open .navbar__drawer-actions {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 300ms cubic-bezier(0.16, 1, 0.3, 1) 220ms, transform 300ms cubic-bezier(0.16, 1, 0.3, 1) 220ms;
+}
+
+.navbar__drawer-actions {
+    opacity: 0;
+    transform: translateY(10px);
 }
 
 .navbar__drawer-links a:hover,

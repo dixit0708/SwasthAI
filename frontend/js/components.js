@@ -55,7 +55,7 @@ function swasthaiRenderAppHeader(activeSection) {
 
   return `
     <div class="app-header__container">
-        <a href="dashboard.html" class="app-header__logo">Swasth<span class="text-primary">AI</span></a>
+        <a href="dashboard.html" class="app-header__logo"><img src="assets/images/logo.png" alt="SwasthAI logo" class="logo-mark">Swasth<span class="text-primary">AI</span></a>
 
         <ul class="app-nav" id="appNav">${navLinks}</ul>
 
@@ -108,7 +108,7 @@ function swasthaiRenderAppDrawer(activeSection) {
 
   return `
     <div class="navbar__drawer-header">
-        <a href="dashboard.html" class="app-header__logo">Swasth<span class="text-primary">AI</span></a>
+        <a href="dashboard.html" class="app-header__logo"><img src="assets/images/logo.png" alt="SwasthAI logo" class="logo-mark">Swasth<span class="text-primary">AI</span></a>
         <button type="button" class="navbar__drawer-close" id="appDrawerClose" aria-label="Close menu"><i class="fas fa-times"></i></button>
     </div>
     <ul class="navbar__drawer-links">${navLinks}</ul>

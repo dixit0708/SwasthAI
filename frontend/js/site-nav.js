@@ -21,7 +21,7 @@ function swasthaiRenderHeader(activePage) {
   return `
     <nav class="navbar" id="navbar">
         <div class="navbar__container container">
-            <a href="index.html" class="navbar__logo">Swasth<span class="text-primary">AI</span></a>
+            <a href="index.html" class="navbar__logo"><img src="assets/images/logo.png" alt="SwasthAI logo" class="logo-mark">Swasth<span class="text-primary">AI</span></a>
             <ul class="navbar__links" id="navLinks">${linksHtml}</ul>
             <div class="navbar__actions">
                 <a href="login.html" class="btn btn-ghost${activePage === 'login' ? ' active' : ''}"${activePage === 'login' ? ' aria-current="page"' : ''}>Log In</a>
@@ -33,7 +33,7 @@ function swasthaiRenderHeader(activePage) {
         </div>
         <div class="navbar__drawer" id="navDrawer">
             <div class="navbar__drawer-header">
-                <a href="index.html" class="navbar__logo">Swasth<span class="text-primary">AI</span></a>
+                <a href="index.html" class="navbar__logo"><img src="assets/images/logo.png" alt="SwasthAI logo" class="logo-mark">Swasth<span class="text-primary">AI</span></a>
                 <button class="navbar__drawer-close" id="drawerClose" aria-label="Close menu"><i class="fas fa-times"></i></button>
             </div>
             <ul class="navbar__drawer-links">${linksHtml}</ul>
@@ -52,7 +52,7 @@ function swasthaiRenderFooter() {
         <div class="container">
             <div class="footer__grid">
                 <div class="footer__brand">
-                    <h3 class="footer__logo">Swasth<span style="color: var(--primary-light);">AI</span></h3>
+                    <h3 class="footer__logo"><img src="assets/images/logo.png" alt="SwasthAI logo" class="logo-mark logo-mark--chip">Swasth<span style="color: var(--primary-light);">AI</span></h3>
                     <p>AI-powered personalized healthcare ecosystem. Understand, track and improve your health with intelligent technology.</p>
                     <div class="footer__social">
                         <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>

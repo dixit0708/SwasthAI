@@ -14,7 +14,23 @@
 .navbar__logo {
     display: inline-flex;
     align-items: center;
+    gap: var(--sp-2);
     transition: transform var(--transition-base);
+}
+
+.logo-mark {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* On dark surfaces (footer) the logo's own white canvas needs a chip
+   behind it rather than sitting directly on the dark background. */
+.logo-mark--chip {
+    background: white;
+    border-radius: var(--radius-md);
+    padding: 3px;
 }
 
 .navbar--scrolled .navbar__logo {

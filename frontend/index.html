@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="assets/images/logo.png">
     <title>SwasthAI - AI-Powered Personalized Healthcare Ecosystem</title>
     <meta name="description" content="SwasthAI brings AI-powered health intelligence, personalized wellness guidance, medical insights and healthcare connectivity into one intelligent ecosystem.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,43 +46,68 @@
                 <h2 class="section-heading">AI that understands your health</h2>
                 <p class="section-subtitle" style="max-width: 560px; margin: 0 auto;">Enter your numbers or upload a photo, and get a clear read on your risk — explained in plain language, not medical jargon.</p>
             </div>
-            <div class="ai-health-section__grid">
-                <div class="ai-card animate-on-scroll" data-delay="0">
-                    <div class="ai-card__icon-wrap ai-card__icon-wrap--blue"><i class="fas fa-tint"></i></div>
-                    <span class="ai-card__badge ai-card__badge--data">Tabular Data</span>
-                    <h3 class="ai-card__title">Diabetes Risk</h3>
-                    <p class="ai-card__desc">Glucose, BMI and blood pressure, assessed.</p>
-                    <a href="prediction-diabetes.html" class="ai-card__link">Learn more <i class="fas fa-arrow-right"></i></a>
-                </div>
-                <div class="ai-card animate-on-scroll" data-delay="100">
-                    <div class="ai-card__icon-wrap ai-card__icon-wrap--red"><i class="fas fa-heart"></i></div>
-                    <span class="ai-card__badge ai-card__badge--data">Tabular Data</span>
-                    <h3 class="ai-card__title">Heart Disease Risk</h3>
-                    <p class="ai-card__desc">Cholesterol, ECG and exercise patterns.</p>
-                    <a href="prediction-heart.html" class="ai-card__link">Learn more <i class="fas fa-arrow-right"></i></a>
-                </div>
-                <div class="ai-card animate-on-scroll" data-delay="200">
-                    <div class="ai-card__icon-wrap ai-card__icon-wrap--amber"><i class="fas fa-flask"></i></div>
-                    <span class="ai-card__badge ai-card__badge--data">Tabular Data</span>
-                    <h3 class="ai-card__title">Liver Disease Risk</h3>
-                    <p class="ai-card__desc">Bilirubin, albumin and enzyme levels.</p>
-                    <a href="prediction-liver.html" class="ai-card__link">Learn more <i class="fas fa-arrow-right"></i></a>
-                </div>
-                <div class="ai-card animate-on-scroll" data-delay="300">
-                    <div class="ai-card__icon-wrap ai-card__icon-wrap--teal"><i class="fas fa-lungs"></i></div>
-                    <span class="ai-card__badge ai-card__badge--image">Image Analysis</span>
-                    <h3 class="ai-card__title">Pneumonia Analysis</h3>
-                    <p class="ai-card__desc">Chest X-rays, read by deep learning.</p>
-                    <a href="prediction-pneumonia.html" class="ai-card__link">Learn more <i class="fas fa-arrow-right"></i></a>
-                </div>
-                <div class="ai-card animate-on-scroll" data-delay="400">
-                    <div class="ai-card__icon-wrap ai-card__icon-wrap--purple"><i class="fas fa-hand-dots"></i></div>
-                    <span class="ai-card__badge ai-card__badge--image">Image Analysis</span>
-                    <h3 class="ai-card__title">Skin Disease Analysis</h3>
-                    <p class="ai-card__desc">Lesion photos, classified instantly.</p>
-                    <a href="prediction-skin.html" class="ai-card__link">Learn more <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
+            <ul class="expanding-cards animate-on-scroll" id="expandingCards">
+                <li class="expanding-card" data-active="true" tabindex="0">
+                    <img src="assets/images/disease-diabetes.jpg" alt="A glucometer reading a high blood sugar result" class="expanding-card__img">
+                    <div class="expanding-card__overlay"></div>
+                    <span class="expanding-card__badge expanding-card__badge--data">Tabular Data</span>
+                    <div class="expanding-card__content">
+                        <span class="expanding-card__label">Diabetes Risk</span>
+                        <div class="expanding-card__icon"><i class="fas fa-tint"></i></div>
+                        <h3 class="expanding-card__title">Diabetes Risk</h3>
+                        <p class="expanding-card__desc">Glucose, BMI and blood pressure, assessed.</p>
+                        <a href="prediction-diabetes.html" class="expanding-card__link">Learn more <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </li>
+                <li class="expanding-card" tabindex="0">
+                    <img src="assets/images/disease-heart.jpg" alt="A 3D heart model held in a doctor's hands" class="expanding-card__img">
+                    <div class="expanding-card__overlay"></div>
+                    <span class="expanding-card__badge expanding-card__badge--data">Tabular Data</span>
+                    <div class="expanding-card__content">
+                        <span class="expanding-card__label">Heart Disease Risk</span>
+                        <div class="expanding-card__icon"><i class="fas fa-heart"></i></div>
+                        <h3 class="expanding-card__title">Heart Disease Risk</h3>
+                        <p class="expanding-card__desc">Cholesterol, ECG and exercise patterns.</p>
+                        <a href="prediction-heart.html" class="expanding-card__link">Learn more <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </li>
+                <li class="expanding-card" tabindex="0">
+                    <img src="assets/images/disease-liver.jpg" alt="A doctor examining a 3D liver hologram" class="expanding-card__img">
+                    <div class="expanding-card__overlay"></div>
+                    <span class="expanding-card__badge expanding-card__badge--data">Tabular Data</span>
+                    <div class="expanding-card__content">
+                        <span class="expanding-card__label">Liver Disease Risk</span>
+                        <div class="expanding-card__icon"><i class="fas fa-flask"></i></div>
+                        <h3 class="expanding-card__title">Liver Disease Risk</h3>
+                        <p class="expanding-card__desc">Bilirubin, albumin and enzyme levels.</p>
+                        <a href="prediction-liver.html" class="expanding-card__link">Learn more <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </li>
+                <li class="expanding-card" tabindex="0">
+                    <img src="assets/images/disease-pneumonia.jpg" alt="A patient breathing into a spirometer with a nurse assisting" class="expanding-card__img">
+                    <div class="expanding-card__overlay"></div>
+                    <span class="expanding-card__badge expanding-card__badge--image">Image Analysis</span>
+                    <div class="expanding-card__content">
+                        <span class="expanding-card__label">Pneumonia Analysis</span>
+                        <div class="expanding-card__icon"><i class="fas fa-lungs"></i></div>
+                        <h3 class="expanding-card__title">Pneumonia Analysis</h3>
+                        <p class="expanding-card__desc">Chest X-rays, read by deep learning.</p>
+                        <a href="prediction-pneumonia.html" class="expanding-card__link">Learn more <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </li>
+                <li class="expanding-card" tabindex="0">
+                    <img src="assets/images/disease-skin.jpg" alt="A dermatologist examining a patient's skin" class="expanding-card__img">
+                    <div class="expanding-card__overlay"></div>
+                    <span class="expanding-card__badge expanding-card__badge--image">Image Analysis</span>
+                    <div class="expanding-card__content">
+                        <span class="expanding-card__label">Skin Disease Analysis</span>
+                        <div class="expanding-card__icon"><i class="fas fa-hand-dots"></i></div>
+                        <h3 class="expanding-card__title">Skin Disease Analysis</h3>
+                        <p class="expanding-card__desc">Lesion photos, classified instantly.</p>
+                        <a href="prediction-skin.html" class="expanding-card__link">Learn more <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </li>
+            </ul>
             <div class="text-center animate-on-scroll" style="margin-top: var(--sp-12);"><a href="ai-health.html" class="btn btn-primary btn-lg">See All Capabilities <i class="fas fa-arrow-right"></i></a></div>
         </div>
     </section>
@@ -91,15 +117,9 @@
         <div class="container">
             <div class="report-section__grid">
                 <div class="report-section__visual animate-on-scroll">
-                    <div class="report-mock">
-                        <div class="report-mock__header"><i class="fas fa-file-medical"></i><span>Blood Work Analysis</span><span class="report-mock__status">Analyzed</span></div>
-                        <div class="report-mock__body">
-                            <div class="report-mock__row"><span>Hemoglobin</span><div class="report-mock__bar"><div class="report-mock__fill report-mock__fill--normal" style="width: 78%;"></div></div><span class="report-mock__val report-mock__val--normal">14.2 g/dL</span></div>
-                            <div class="report-mock__row"><span>Blood Glucose</span><div class="report-mock__bar"><div class="report-mock__fill report-mock__fill--warning" style="width: 88%;"></div></div><span class="report-mock__val report-mock__val--warning">118 mg/dL</span></div>
-                            <div class="report-mock__row"><span>Cholesterol</span><div class="report-mock__bar"><div class="report-mock__fill report-mock__fill--normal" style="width: 62%;"></div></div><span class="report-mock__val report-mock__val--normal">185 mg/dL</span></div>
-                            <div class="report-mock__row"><span>WBC Count</span><div class="report-mock__bar"><div class="report-mock__fill report-mock__fill--normal" style="width: 55%;"></div></div><span class="report-mock__val report-mock__val--normal">7,200 /uL</span></div>
-                        </div>
-                        <div class="report-mock__footer"><span><i class="fas fa-info-circle"></i> 1 parameter needs attention</span></div>
+                    <div class="photo-card">
+                        <img src="assets/images/blood-work-analysis.jpg" alt="A blood sample held up against a lab report for review" class="photo-card__img">
+                        <div class="photo-card__badge"><i class="fas fa-check-circle"></i> Plain-language summary — not raw numbers</div>
                     </div>
                 </div>
                 <div class="report-section__content animate-on-scroll" data-delay="150">
@@ -299,6 +319,7 @@
     <div id="site-footer"></div>
 
     <script src="js/site-nav.js"></script>
+    <script src="js/expanding-cards.js"></script>
     <script src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>
     <script src="js/main.js"></script>
 </body>

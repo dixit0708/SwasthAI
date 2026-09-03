@@ -55,3 +55,10 @@ storage/prescriptions/*
 *.tmp
 *.temp
 /tmp/
+
+# Claude Code tooling (local agent/skill config, not part of the app)
+.claude/
+.agents/
+.impeccable/
+skills-lock.json
+refine.py

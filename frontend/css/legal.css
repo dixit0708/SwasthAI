@@ -1,0 +1,43 @@
+/* legal.css — Privacy Policy / Terms of Service */
+
+.legal-hero {
+    padding: calc(72px + var(--sp-16)) 0 var(--sp-10);
+    text-align: center;
+}
+.legal-hero__updated {
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    margin-top: var(--sp-2);
+}
+
+.legal-content {
+    max-width: 760px;
+    margin: 0 auto;
+    padding-bottom: var(--sp-16);
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+.legal-content h2 {
+    font-size: var(--text-xl);
+    color: var(--text-primary);
+    margin-top: var(--sp-10);
+    margin-bottom: var(--sp-3);
+}
+.legal-content h2:first-child { margin-top: 0; }
+.legal-content p { margin-bottom: var(--sp-4); }
+.legal-content ul {
+    margin: 0 0 var(--sp-4);
+    padding-left: var(--sp-6);
+}
+.legal-content li { margin-bottom: var(--sp-2); }
+.legal-content a { color: var(--primary); }
+
+.legal-callout {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--primary);
+    border-radius: var(--radius-md);
+    padding: var(--sp-5) var(--sp-6);
+    margin-bottom: var(--sp-8);
+    font-size: var(--text-sm);
+}

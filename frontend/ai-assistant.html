@@ -17,6 +17,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <script src="js/auth-guard.js"></script>
     <div id="app-layout" class="app-layout">
         <aside id="sidebar-container" class="sidebar"></aside>
         <div class="main-content">
@@ -44,6 +45,7 @@
                     <span class="badge badge-primary" style="cursor: pointer; background: var(--bg-surface-alt); color: var(--text-secondary); border: 1px solid var(--border);">Explain my recent report</span>
                     <span class="badge badge-primary" style="cursor: pointer; background: var(--bg-surface-alt); color: var(--text-secondary); border: 1px solid var(--border);">How to improve sleep?</span>
                 </div>
+                <p class="text-muted mt-2" style="font-size: 0.75rem;"><i class="fas fa-info-circle"></i> AI responses are for general guidance only, not medical advice. For symptoms or diagnosis, consult a licensed healthcare provider.</p>
             </div>
         </div>
         
@@ -62,6 +64,7 @@
             </main>
         </div>
     </div>
+    <script src="js/auth.js"></script>
     <script src="js/components.js"></script>
     <script src="js/ai-assistant.js"></script>
     <script src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>

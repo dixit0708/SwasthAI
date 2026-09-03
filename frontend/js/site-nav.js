@@ -79,6 +79,8 @@ function swasthaiRenderFooter() {
                     <li><a href="register.html">Get Started</a></li>
                     <li><a href="login.html">Log In</a></li>
                     <li><a href="mailto:hello@swasthai.app">Contact</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="terms.html">Terms of Service</a></li>
                 </ul></div>
             </div>
             <div class="footer__bottom">

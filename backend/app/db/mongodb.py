@@ -14,6 +14,7 @@ async def connect_to_mongo():
     logger.info("Connecting to MongoDB...")
     db_manager.client = AsyncIOMotorClient(settings.MONGODB_URL)
     db_manager.db = db_manager.client[settings.DATABASE_NAME]
+    await db_manager.db["users"].create_index("email", unique=True)
     logger.info("Connected to MongoDB.")
 
 async def close_mongo_connection():

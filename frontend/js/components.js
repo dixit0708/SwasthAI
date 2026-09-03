@@ -50,7 +50,8 @@ function swasthaiRenderAppNavLinks(activeSection) {
 
 function swasthaiRenderAppHeader(activeSection) {
   const navLinks = swasthaiRenderAppNavLinks(activeSection);
-  const avatarUrl = 'https://ui-avatars.com/api/?name=John+Doe&background=0F766E&color=fff';
+  const user = (typeof swasthaiCurrentUser === 'function' && swasthaiCurrentUser()) || { name: 'there', email: '' };
+  const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0F766E&color=fff`;
 
   return `
     <div class="app-header__container">
@@ -75,13 +76,13 @@ function swasthaiRenderAppHeader(activeSection) {
             <div class="app-header__item">
                 <button type="button" class="app-profile-btn" id="profileToggle" aria-haspopup="true" aria-expanded="false" aria-controls="profileMenu" aria-label="Open profile menu">
                     <img src="${avatarUrl}" alt="" class="avatar">
-                    <span class="app-profile-btn__name">John Doe</span>
+                    <span class="app-profile-btn__name">${user.name}</span>
                     <i class="fas fa-chevron-down"></i>
                 </button>
                 <div class="app-popover" id="profileMenu" role="menu" aria-label="Profile menu">
                     <div class="app-profile-menu__header">
                         <img src="${avatarUrl}" alt="" class="avatar">
-                        <div><strong>John Doe</strong><span>john.doe@example.com</span></div>
+                        <div><strong>${user.name}</strong><span>${user.email}</span></div>
                     </div>
                     <ul class="app-profile-menu__list">
                         <li role="none"><a role="menuitem" href="health-profile.html"><i class="fas fa-user-md"></i> Health Profile</a></li>
@@ -90,7 +91,7 @@ function swasthaiRenderAppHeader(activeSection) {
                     </ul>
                     <div class="app-profile-menu__divider"></div>
                     <ul class="app-profile-menu__list">
-                        <li role="none"><a role="menuitem" class="is-danger" href="login.html"><i class="fas fa-sign-out-alt"></i> Log Out</a></li>
+                        <li role="none"><a role="menuitem" class="is-danger" href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Log Out</a></li>
                     </ul>
                 </div>
             </div>
@@ -113,7 +114,7 @@ function swasthaiRenderAppDrawer(activeSection) {
     <ul class="navbar__drawer-links">${navLinks}</ul>
     <div class="navbar__drawer-actions">
         <a href="health-profile.html" class="btn btn-outline btn-block"><i class="fas fa-user-md"></i> Health Profile</a>
-        <a href="login.html" class="btn btn-primary btn-block"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+        <a href="#" class="btn btn-primary btn-block" id="drawerLogoutLink"><i class="fas fa-sign-out-alt"></i> Log Out</a>
     </div>`;
 }
 
@@ -182,6 +183,15 @@ document.addEventListener('DOMContentLoaded', () => {
   if (drawerContainer) {
     drawerContainer.querySelectorAll('a').forEach(link => link.addEventListener('click', closeDrawer));
   }
+
+  document.getElementById('logoutLink')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (typeof swasthaiLogout === 'function') swasthaiLogout();
+  });
+  document.getElementById('drawerLogoutLink')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (typeof swasthaiLogout === 'function') swasthaiLogout();
+  });
 
   // Notifications + profile popovers — only one open at a time, close on
   // outside click or Escape.

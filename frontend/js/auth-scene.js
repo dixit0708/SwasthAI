@@ -276,5 +276,5 @@
     });
   }
 
-  window.SwasthAuth = { initAuthScene, initPasswordToggle };
+  window.SwasthAuth = Object.assign(window.SwasthAuth || {}, { initAuthScene, initPasswordToggle });
 })();

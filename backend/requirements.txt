@@ -3,6 +3,8 @@ pydantic
 pydantic-settings
 motor
 python-multipart
+bcrypt
+pyjwt
 opencv-python-headless
 numpy
 pytest

@@ -26,7 +26,8 @@
             <div class="auth-shell__form-inner">
                 <h1>Welcome back</h1>
                 <p>Log in to continue your health journey.</p>
-                <form onsubmit="event.preventDefault(); window.location.href='dashboard.html';">
+                <div id="loginAlert" class="auth-alert" style="display: none;"><i class="fas fa-circle-exclamation"></i> <span id="loginAlertText"></span></div>
+                <form id="loginForm">
                     <div class="form-group">
                         <label class="form-label" for="loginEmail">Email Address</label>
                         <input type="email" id="loginEmail" class="form-control" required placeholder="name@example.com">
@@ -42,7 +43,7 @@
                         <label class="form-check"><input type="checkbox"> Remember me</label>
                         <a href="forgot-password.html">Forgot password?</a>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-lg btn-block">Log In</button>
+                    <button type="submit" class="btn btn-primary btn-lg btn-block" id="loginSubmit">Log In</button>
                 </form>
                 <p class="auth-footer-note">Don't have an account? <a href="register.html">Sign up</a></p>
             </div>
@@ -61,10 +62,37 @@
     <script src="js/site-nav.js"></script>
     <script src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
     <script src="js/auth-scene.js"></script>
     <script>
         SwasthAuth.initPasswordToggle('#loginPasswordToggle', '#loginPassword');
         SwasthAuth.initAuthScene({ scene: '#authScene', email: '#loginEmail', password: '#loginPassword' });
+
+        const loginForm = document.getElementById('loginForm');
+        const loginAlert = document.getElementById('loginAlert');
+        const loginAlertText = document.getElementById('loginAlertText');
+        const loginSubmit = document.getElementById('loginSubmit');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            loginAlert.style.display = 'none';
+            loginSubmit.disabled = true;
+            loginSubmit.textContent = 'Logging in...';
+            try {
+                const data = await SwasthAPI.login(
+                    document.getElementById('loginEmail').value.trim(),
+                    document.getElementById('loginPassword').value
+                );
+                swasthaiStoreSession(data);
+                const params = new URLSearchParams(window.location.search);
+                window.location.href = params.get('next') || 'dashboard.html';
+            } catch (err) {
+                loginAlertText.textContent = err.message;
+                loginAlert.style.display = 'flex';
+                loginSubmit.disabled = false;
+                loginSubmit.textContent = 'Log In';
+            }
+        });
     </script>
 </body>
 </html>

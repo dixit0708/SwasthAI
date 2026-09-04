@@ -36,8 +36,8 @@ Thumbs.db
 .pylint.d/
 
 # ML Pipeline Data and Models
-ml_pipeline/*/data/
-ml_pipeline/*/models/
+ml-services/*/data/
+ml-services/*/models/
 *.h5
 *.pt
 *.pth

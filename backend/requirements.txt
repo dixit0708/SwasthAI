@@ -25,8 +25,9 @@ bcrypt
 pyjwt
 opencv-python-headless
 numpy
-torch --index-url https://download.pytorch.org/whl/cpu
-torchvision --index-url https://download.pytorch.org/whl/cpu
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+torchvision
 scikit-learn
 xgboost
 joblib

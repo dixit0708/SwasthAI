@@ -23,9 +23,13 @@ async def lifespan(app: FastAPI):
     # never serves a pneumonia request. See the lazy-load-and-cache helper
     # in app/api/v1/endpoints/predict.py, which populates
     # app.state.pneumonia_model on first use and reuses it after that.
+    #
+    # Checkpoint path: backend/app/ai/models/pneumonia_cnn.pt, the canonical
+    # production location a teammate's concurrent commit moved it to (it
+    # previously lived under ml-services/cnn-detector/checkpoints/).
     base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     app.state.pneumonia_ckpt_path = os.path.join(
-        base_dir, "ml-services", "cnn-detector", "checkpoints", "resnet18_finetuned.pt"
+        os.path.dirname(os.path.abspath(__file__)), "ai", "models", "pneumonia_cnn.pt"
     )
     app.state.pneumonia_model = None
     app.state.pneumonia_model_lock = asyncio.Lock()
@@ -42,6 +46,20 @@ async def lifespan(app: FastAPI):
         logger.error(f"Failed to load diabetes risk model: {e}")
         app.state.diabetes_model = None
 
+    # Load Skin Disease PyTorch model
+    try:
+        from app.ai.models.skin_cnn import load_skin_model
+        skin_ckpt = os.path.join(base_dir, "ml-services", "skin-disease-detector", "checkpoints", "skin_disease_resnet50.pt")
+        
+        if os.path.exists(skin_ckpt):
+            app.state.skin_model = load_skin_model(skin_ckpt, num_classes=7)
+            logger.info(f"Loaded Skin Disease CNN model from {skin_ckpt}")
+        else:
+            logger.warning(f"Skin Disease CNN model not found at {skin_ckpt}. Please train the model first.")
+            app.state.skin_model = None
+    except Exception as e:
+        logger.error(f"Failed to load Skin Disease CNN model: {e}")
+        app.state.skin_model = None
     yield
     # Shutdown
     await close_mongo_connection()

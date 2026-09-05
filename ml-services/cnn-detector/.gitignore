@@ -4,7 +4,3 @@ data/*
 
 # Ignore the virtual environment
 .venv/
-
-# Allow the checkpoints folder and its PyTorch models to be tracked
-!checkpoints/
-!checkpoints/*.pt

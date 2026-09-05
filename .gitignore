@@ -39,13 +39,9 @@ Thumbs.db
 ml-services/*/data/*
 !ml-services/*/data/README.md
 ml-services/*/models/
-*.h5
-*.pt
-*.pth
-*.onnx
-*.joblib
-*.pkl
-*.pickle
+ml-services/*/checkpoints/
+ml_pipeline/*/data/
+ml_pipeline/*/models/
 
 # Local Storage (Medical images, reports, prescriptions)
 storage/reports/*

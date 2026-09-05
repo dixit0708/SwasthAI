@@ -1,0 +1,8 @@
+# Offline training dependencies, on top of the production runtime.
+# numpy, scikit-learn, xgboost, and joblib are already required by
+# backend/requirements.txt (production inference needs them too); pandas is
+# the one package training needs that production inference does not.
+#
+# Install with:
+#   pip install -r backend/requirements.txt -r ml_pipeline/requirements.txt
+pandas

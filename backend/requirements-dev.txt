@@ -1,0 +1,7 @@
+# Dev/test dependencies. Install with:
+#   pip install -r requirements.txt -r requirements-dev.txt
+# Never installed on Render; production only installs requirements.txt.
+-r requirements.txt
+pytest
+pytest-asyncio
+httpx

@@ -1,4 +1,26 @@
 /* variables.css */
+
+/* Zodiak (Light Italic, weight 300) — self-hosted from the Fontshare kit at
+   frontend/assets/fonts/zodiak/. Only this one weight/style was provided,
+   so it's used as the display face (headings) via --font-display below,
+   not for body copy, buttons, or form fields, which stay in --font-body
+   for readability. See frontend/assets/fonts/zodiak/LICENSE.txt (ITF Free
+   Font License) for terms. */
+@font-face {
+  font-family: 'Zodiak-LightItalic';
+  src: url('../assets/fonts/zodiak/Zodiak-LightItalic.woff2') format('woff2'),
+       url('../assets/fonts/zodiak/Zodiak-LightItalic.woff') format('woff');
+  /* A range, not a single value: several existing rules that used to pair
+     --font-display with a bold/semibold weight (nav logo, card labels,
+     eyebrows) still request those weights. Declaring the whole range here
+     means the browser treats this one Light-Italic face as the correct
+     match for all of them, instead of synthesizing a fake bold (thicker,
+     blurrier stems) on top of it. */
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
 :root {
   /* Colors - Deep Navy & Sophisticated Teal */
   --bg-primary: #F8FAFC;
@@ -6,7 +28,8 @@
   --bg-surface-alt: #F1F5F9;
   --bg-elevated: #FFFFFF;
   --bg-inverse: #0F172A;
-  
+  --bg-inverse-deep: #020617;
+
   --text-primary: #0F172A; 
   --text-secondary: #334155; 
   --text-muted: #64748B; 
@@ -27,7 +50,7 @@
   --violet: #7C3AED;
 
   /* Typography */
-  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --font-display: 'Zodiak-LightItalic', Georgia, serif;
   --font-body: 'Inter', sans-serif;
   
   --text-xs: 0.75rem; 

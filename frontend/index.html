@@ -8,7 +8,7 @@
     <meta name="description" content="SwasthAI brings AI-powered health intelligence, personalized wellness guidance, medical insights and healthcare connectivity into one intelligent ecosystem.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/main.css">
@@ -29,7 +29,7 @@
                     <span class="hero__title-line">Understand Your Health</span><br><span class="hero__title-accent">Shape Your Future</span>
                 </h1>
                 <p class="hero__subtitle animate-on-scroll" data-delay="100">
-                    AI-powered health intelligence, personalized guidance, and connected care — designed around you and your family.
+                    AI-powered health intelligence, personalized guidance, and connected care, designed around you and your family.
                 </p>
                 <div class="hero__cta animate-on-scroll" data-delay="200">
                     <a href="ai-health.html" class="btn btn-primary btn-lg">Explore AI Health <i class="fas fa-arrow-right"></i></a>
@@ -44,7 +44,7 @@
         <div class="container">
             <div class="text-center animate-on-scroll">
                 <h2 class="section-heading">AI that understands your health</h2>
-                <p class="section-subtitle" style="max-width: 560px; margin: 0 auto;">Enter your numbers or upload a photo, and get a clear read on your risk — explained in plain language, not medical jargon.</p>
+                <p class="section-subtitle" style="max-width: 560px; margin: 0 auto;">Enter your numbers or upload a photo, and get a clear read on your risk, explained in plain language, not medical jargon.</p>
             </div>
             <ul class="expanding-cards animate-on-scroll" id="expandingCards">
                 <li>
@@ -122,32 +122,23 @@
                         </div>
                     </a>
                 </li>
+                <li>
+                    <a href="report-analyzer.html" class="expanding-card">
+                        <img src="assets/images/blood-work-analysis.jpg" alt="A blood sample held up against a lab report for review" class="expanding-card__img">
+                        <div class="expanding-card__overlay"></div>
+                        <div class="expanding-card__content">
+                            <h3 class="expanding-card__title">Report Analyzer</h3>
+                            <div class="expanding-card__reveal">
+                                <div class="expanding-card__reveal-inner">
+                                    <p class="expanding-card__desc">Lab reports, flagged and explained simply.</p>
+                                    <span class="expanding-card__cta">Learn more <i class="fas fa-arrow-right"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </li>
             </ul>
             <div class="text-center animate-on-scroll" style="margin-top: var(--sp-12);"><a href="ai-health.html" class="btn btn-primary btn-lg">See All Capabilities <i class="fas fa-arrow-right"></i></a></div>
-        </div>
-    </section>
-
-    <!-- REPORT ANALYZER -->
-    <section class="report-section section">
-        <div class="container">
-            <div class="report-section__grid">
-                <div class="report-section__visual animate-on-scroll">
-                    <div class="photo-card">
-                        <img src="assets/images/blood-work-analysis.jpg" alt="A blood sample held up against a lab report for review" class="photo-card__img">
-                        <div class="photo-card__badge"><i class="fas fa-check-circle"></i> Plain-language summary — not raw numbers</div>
-                    </div>
-                </div>
-                <div class="report-section__content animate-on-scroll" data-delay="150">
-                    <h2 class="section-heading">Medical reports, explained simply.</h2>
-                    <p class="section-subtitle">Upload a lab report. We flag what's abnormal and explain it in plain language.</p>
-                    <ul class="feature-list">
-                        <li><i class="fas fa-check-circle"></i> Upload PDF or image reports</li>
-                        <li><i class="fas fa-check-circle"></i> Abnormal values, flagged and explained</li>
-                        <li><i class="fas fa-check-circle"></i> Questions worth asking your doctor</li>
-                    </ul>
-                    <a href="report-analyzer.html" class="btn btn-primary btn-lg" style="margin-top: var(--sp-6);">Analyze a Report <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
         </div>
     </section>
 
@@ -158,27 +149,21 @@
                 <h2 class="section-heading">Healthcare that adapts to you.</h2>
                 <p class="section-subtitle" style="max-width: 560px; margin: 0 auto;">Recommendations built around your profile, conditions and goals.</p>
             </div>
-            <div class="personalized-section__hub animate-on-scroll" data-delay="100">
-                <div class="personalized-hub">
-                    <div class="personalized-hub__center">
-                        <img src="https://ui-avatars.com/api/?name=You&background=0F766E&color=fff&size=80&font-size=0.4" alt="Your Profile" class="personalized-hub__avatar">
-                        <span>Your Health Profile</span>
+            <div class="adapts-gallery animate-on-scroll" data-delay="100">
+                <div class="adapts-gallery__viewport" id="adaptsGalleryViewport">
+                    <div class="adapts-gallery__stage" id="adaptsGalleryStage">
+                        <figure class="adapts-card"><img src="assets/images/adapts-gallery/nutrition.jpg" alt="Nutrition" loading="lazy" draggable="false"><figcaption><i class="fas fa-apple-alt"></i> Nutrition</figcaption></figure>
+                        <figure class="adapts-card"><img src="assets/images/adapts-gallery/exercise.jpg" alt="Exercise" loading="lazy" draggable="false"><figcaption><i class="fas fa-running"></i> Exercise</figcaption></figure>
+                        <figure class="adapts-card"><img src="assets/images/adapts-gallery/sleep.jpg" alt="Sleep" loading="lazy" draggable="false"><figcaption><i class="fas fa-moon"></i> Sleep</figcaption></figure>
+                        <figure class="adapts-card"><img src="assets/images/adapts-gallery/medication.jpg" alt="Medication" loading="lazy" draggable="false"><figcaption><i class="fas fa-pills"></i> Medication</figcaption></figure>
+                        <figure class="adapts-card"><img src="assets/images/adapts-gallery/goals.jpg" alt="Goals" loading="lazy" draggable="false"><figcaption><i class="fas fa-bullseye"></i> Goals</figcaption></figure>
+                        <figure class="adapts-card"><img src="assets/images/adapts-gallery/student.jpg" alt="Student" loading="lazy" draggable="false"><figcaption><i class="fas fa-graduation-cap"></i> Student</figcaption></figure>
+                        <figure class="adapts-card"><img src="assets/images/adapts-gallery/professional.jpg" alt="Professional" loading="lazy" draggable="false"><figcaption><i class="fas fa-briefcase"></i> Professional</figcaption></figure>
+                        <figure class="adapts-card"><img src="assets/images/adapts-gallery/shift-worker.jpg" alt="Shift Worker" loading="lazy" draggable="false"><figcaption><i class="fas fa-clock"></i> Shift Worker</figcaption></figure>
+                        <figure class="adapts-card"><img src="assets/images/adapts-gallery/senior-citizen.jpg" alt="Senior Citizen" loading="lazy" draggable="false"><figcaption><i class="fas fa-hand-holding-heart"></i> Senior Citizen</figcaption></figure>
                     </div>
-                    <div class="personalized-hub__card personalized-hub__card--1"><i class="fas fa-apple-alt"></i> Nutrition</div>
-                    <div class="personalized-hub__card personalized-hub__card--2"><i class="fas fa-running"></i> Exercise</div>
-                    <div class="personalized-hub__card personalized-hub__card--3"><i class="fas fa-moon"></i> Sleep</div>
-                    <div class="personalized-hub__card personalized-hub__card--4"><i class="fas fa-pills"></i> Medication</div>
-                    <div class="personalized-hub__card personalized-hub__card--5"><i class="fas fa-spa"></i> Lifestyle</div>
-                    <div class="personalized-hub__card personalized-hub__card--6"><i class="fas fa-bullseye"></i> Goals</div>
                 </div>
-            </div>
-            <div class="personalized-section__lifestyles animate-on-scroll" data-delay="200">
-                <div class="lifestyle-grid">
-                    <div class="lifestyle-card"><div class="lifestyle-card__icon"><i class="fas fa-graduation-cap"></i></div><h4>Student</h4><p>Budget-friendly, exam-week ready</p></div>
-                    <div class="lifestyle-card"><div class="lifestyle-card__icon"><i class="fas fa-briefcase"></i></div><h4>Professional</h4><p>Desk ergonomics, work-life balance</p></div>
-                    <div class="lifestyle-card"><div class="lifestyle-card__icon"><i class="fas fa-clock"></i></div><h4>Shift Worker</h4><p>Sleep and meal timing that fits</p></div>
-                    <div class="lifestyle-card"><div class="lifestyle-card__icon"><i class="fas fa-hand-holding-heart"></i></div><h4>Senior Citizen</h4><p>Mobility and fall prevention</p></div>
-                </div>
+                <p class="adapts-gallery__hint"><i class="fas fa-arrows-alt-h"></i> Drag to explore</p>
             </div>
         </div>
     </section>
@@ -189,7 +174,7 @@
             <div class="report-section__grid">
                 <div class="report-section__content animate-on-scroll">
                     <h2 class="section-heading">Your vitals, tracked and understood.</h2>
-                    <p class="section-subtitle">Heart rate, glucose, sleep and more — turned into trends you can act on.</p>
+                    <p class="section-subtitle">Heart rate, glucose, sleep and more, turned into trends you can act on.</p>
                     <ul class="feature-list">
                         <li><i class="fas fa-check-circle"></i> Visual trend charts over time</li>
                         <li><i class="fas fa-check-circle"></i> Flags when values leave your normal range</li>
@@ -218,7 +203,7 @@
             <div class="family-section__grid">
                 <div class="family-section__content animate-on-scroll">
                     <h2 class="section-heading">One place for your family's health.</h2>
-                    <p class="section-subtitle">Profiles, records and medications for everyone — one connected dashboard.</p>
+                    <p class="section-subtitle">Profiles, records and medications for everyone, one connected dashboard.</p>
                     <ul class="feature-list">
                         <li><i class="fas fa-check-circle"></i> A profile for every family member</li>
                         <li><i class="fas fa-check-circle"></i> Shared records and medication tracking</li>
@@ -228,7 +213,7 @@
                 <div class="family-section__visual animate-on-scroll" data-delay="150">
                     <div class="family-visual">
                         <div class="family-visual__member family-visual__member--main">
-                            <img src="https://ui-avatars.com/api/?name=JD&background=0066FF&color=fff&size=56" alt="John Doe"><span>John D.</span><small>Primary</small>
+                            <img src="https://ui-avatars.com/api/?name=JD&background=0066FF&color=fff&size=56" alt="John"><span>John D.</span><small>Primary</small>
                         </div>
                         <div class="family-visual__connector"></div>
                         <div class="family-visual__members">
@@ -323,7 +308,7 @@
         <div class="final-cta__decoration final-cta__decoration--2"></div>
         <div class="container text-center">
             <h2 class="final-cta__heading animate-on-scroll">Take a smarter approach to your health.</h2>
-            <p class="final-cta__subtitle animate-on-scroll" data-delay="100">Your health information, insights and care — together, finally.</p>
+            <p class="final-cta__subtitle animate-on-scroll" data-delay="100">Your health information, insights and care, together, finally.</p>
             <div class="final-cta__actions animate-on-scroll" data-delay="200">
                 <a href="register.html" class="btn btn-white btn-lg">Create Account <i class="fas fa-arrow-right"></i></a>
                 <a href="features.html" class="btn btn-outline-light btn-lg">See Capabilities</a>
@@ -336,5 +321,6 @@
     <script src="js/site-nav.js"></script>
     <script src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/adapts-gallery.js"></script>
 </body>
 </html>

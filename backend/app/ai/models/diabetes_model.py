@@ -1,7 +1,6 @@
 import os
 
 import joblib
-import pandas as pd
 
 FEATURE_ORDER = [
     "Pregnancies", "Glucose", "BloodPressure", "SkinThickness", "Insulin",
@@ -17,7 +16,13 @@ def load_diabetes_model(model_path: str):
 
 
 def predict_diabetes(model, features: dict) -> float:
-    """Returns the model's predicted probability of elevated diabetes risk (0.0-1.0)."""
+    """Returns the model's predicted probability of elevated diabetes risk (0.0-1.0).
+
+    Takes a plain list (not a pandas DataFrame) so production inference never
+    needs to import pandas: the fitted Pipeline is
+    SimpleImputer -> StandardScaler -> classifier, none of which require
+    named columns, only positional ones in FEATURE_ORDER. pandas stays a
+    training-only dependency (see ml_pipeline/diabetes/train.py).
+    """
     row = [[features[col] for col in FEATURE_ORDER]]
-    df = pd.DataFrame(row, columns=FEATURE_ORDER)
-    return float(model.predict_proba(df)[0][1])
+    return float(model.predict_proba(row)[0][1])

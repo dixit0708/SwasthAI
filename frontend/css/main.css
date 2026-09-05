@@ -16,10 +16,35 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
-    font-weight: 700;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
+    /* Zodiak was only supplied as a single Light Italic (300) file, so
+       headings render at that exact weight/style rather than a bold weight
+       the font doesn't have (which the browser would otherwise fake). */
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.25; /* not 1.1: italic descenders need the extra room */
+    letter-spacing: normal;
     color: var(--text-primary);
+}
+
+/* Base type scale. Every page loads main.css, so headings get a consistent,
+   properly-scaled size here regardless of which page-family stylesheets
+   (responsive.css, layout.css, etc.) are also present. */
+h1 { font-size: var(--text-4xl); }
+h2 { font-size: var(--text-3xl); }
+h3 { font-size: var(--text-2xl); }
+h4 { font-size: var(--text-xl); }
+h5 { font-size: var(--text-lg); }
+h6 { font-size: var(--text-base); }
+
+@media (min-width: 768px) {
+    h1 { font-size: var(--text-5xl); }
+    h2 { font-size: var(--text-4xl); }
+    h3 { font-size: var(--text-3xl); }
+    h4 { font-size: var(--text-2xl); }
+}
+
+p {
+    color: var(--text-secondary);
 }
 
 .container {
@@ -29,15 +54,8 @@ h1, h2, h3, h4, h5, h6 {
     padding: 0 var(--sp-4);
 }
 
-.section {
-    padding: var(--sp-24) 0;
-}
-
-@media (max-width: 768px) {
-    .section {
-        padding: var(--sp-12) 0;
-    }
-}
+/* .section spacing (all breakpoints) is defined once in responsive.css,
+   which every page that uses the .section class also loads. */
 
 .text-center { text-align: center; }
 .text-primary { color: var(--primary); }

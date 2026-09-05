@@ -1,18 +1,18 @@
-import torch
-import torch.nn as nn
-from torchvision.models import resnet18
 import numpy as np
 import os
 from pathlib import Path
 
-def build_pneumonia_model() -> nn.Module:
+def build_pneumonia_model():
     """Builds the ResNet18 model with custom classification head (2 classes)."""
+    import torch.nn as nn
+    from torchvision.models import resnet18
     model = resnet18(weights=None)
     model.fc = nn.Linear(model.fc.in_features, 2)
     return model
 
-def load_pneumonia_model(ckpt_path: str, device: str = "cpu") -> nn.Module:
+def load_pneumonia_model(ckpt_path: str, device: str = "cpu"):
     """Loads the pre-trained model weights from the given checkpoint."""
+    import torch
     if not os.path.exists(ckpt_path):
         raise FileNotFoundError(f"Model checkpoint not found at {ckpt_path}")
         
@@ -29,11 +29,12 @@ def load_pneumonia_model(ckpt_path: str, device: str = "cpu") -> nn.Module:
     model.eval()
     return model
 
-def predict_pneumonia(model: nn.Module, preprocessed_image: np.ndarray, device: str = "cpu") -> dict:
+def predict_pneumonia(model, preprocessed_image: np.ndarray, device: str = "cpu") -> dict:
     """
     Runs inference on a preprocessed numpy image array.
     Expects input shape: (1, H, W, C).
     """
+    import torch
     # Convert (B, H, W, C) -> (B, C, H, W) for PyTorch
     image_transposed = np.transpose(preprocessed_image, (0, 3, 1, 2))
     

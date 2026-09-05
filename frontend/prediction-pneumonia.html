@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SwasthAI Pneumonia Detection — Upload a chest X-ray image for an AI-powered risk assessment.">
     <link rel="icon" type="image/png" href="assets/images/logo.png">
-    <title>SwasthAI - Prediction Pneumonia</title>
+    <title>SwasthAI - Pneumonia Detection</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -14,8 +15,54 @@
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/nav.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js for visualizations -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--sp-8);
+            text-align: center;
+            cursor: pointer;
+            background: var(--bg-surface-alt);
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .upload-area.drag-over {
+            border-color: var(--primary);
+            background: color-mix(in srgb, var(--primary) 8%, var(--bg-surface-alt));
+        }
+        .preview-img {
+            max-height: 260px;
+            max-width: 100%;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+            object-fit: contain;
+            background: #000;
+        }
+        .result-confidence-bar {
+            height: 10px;
+            border-radius: 9999px;
+            background: var(--border);
+            overflow: hidden;
+            margin: 0.5rem 0 1.5rem;
+        }
+        .result-confidence-bar-fill {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 0.8s ease;
+        }
+        .result-normal    .result-confidence-bar-fill { background: #22c55e; }
+        .result-pneumonia .result-confidence-bar-fill { background: #ef4444; }
+        .result-normal    #resultLabel { color: #22c55e; }
+        .result-pneumonia #resultLabel { color: #ef4444; }
+        #errorMsg {
+            display: none;
+            color: #ef4444;
+            background: rgba(239,68,68,0.08);
+            border: 1px solid rgba(239,68,68,0.3);
+            border-radius: var(--radius-md);
+            padding: 0.75rem 1rem;
+            margin-top: 1rem;
+        }
+    </style>
 </head>
 <body>
     <script src="js/auth-guard.js"></script>
@@ -24,50 +71,63 @@
         <div class="main-content">
             <header id="header-container" class="top-header"></header>
             <main class="page-content">
-                <!-- PAGE CONTENT: prediction-pneumonia -->
-                
+
     <div class="mb-4">
-        <a href="predictions.html" class="text-secondary"><i class="fas fa-arrow-left"></i> Back to Predictions</a>
+        <a href="predictions.html" class="text-secondary"><i class="fas fa-arrow-left"></i> Back to AI Insights</a>
         <h1 class="mt-2">Pneumonia Detection (X-Ray)</h1>
+        <p class="text-muted">Upload a chest X-ray image to receive an AI-powered risk assessment. This is not a medical diagnosis.</p>
     </div>
 
     <div class="card">
         <div class="card-body">
-            <div id="uploadArea" style="border: 2px dashed var(--border); border-radius: var(--radius-lg); padding: var(--sp-8); text-align: center; cursor: pointer; background: var(--bg-surface-alt);">
-                <i class="fas fa-cloud-upload-alt text-primary mb-4" style="font-size: 3rem;"></i>
-                <h3>Drag & Drop X-Ray Image</h3>
-                <p class="text-muted mb-4">Supported formats: JPEG, PNG (Max 10MB)</p>
-                <button class="btn btn-outline" onclick="simulateUpload()">Browse Files</button>
+
+            <!-- Upload area -->
+            <div id="uploadArea" class="upload-area" role="button" tabindex="0"
+                 aria-label="Click or drag and drop a chest X-ray image here">
+                <i class="fas fa-lungs text-primary mb-4" style="font-size: 3rem;"></i>
+                <h3>Drag &amp; Drop Chest X-Ray</h3>
+                <p class="text-muted mb-4">Supported formats: JPEG, PNG &mdash; Max 10MB</p>
+                <button id="browseBtn" class="btn btn-outline" type="button">Browse Files</button>
+                <input id="fileInput" type="file" accept="image/jpeg,image/png,image/jpg"
+                       style="display:none" aria-label="Select X-ray image file">
             </div>
-            
-            <div id="processingArea" style="display: none; text-align: center; padding: var(--sp-8);">
+
+            <!-- Loading -->
+            <div id="processingArea" style="display:none; text-align:center; padding: var(--sp-8);">
                 <i class="fas fa-circle-notch fa-spin text-primary" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                <h3>AI is analyzing the image in-memory...</h3>
+                <h3>Analysing your X-ray&hellip;</h3>
+                <p class="text-muted">The AI model is processing the image in-memory. This may take a few seconds.</p>
             </div>
-            
-            <div id="resultArea" style="display: none; text-align: center; padding: var(--sp-8);">
-                <div class="badge badge-warning mb-2">Demo Interface</div>
-                <h2 class="text-success">Normal (95% Confidence)</h2>
-                <p class="text-muted">AI model integration pending. No pneumonia detected in sample.</p>
-                <button class="btn btn-outline mt-4" onclick="resetUpload()">Upload Another</button>
+
+            <!-- Result -->
+            <div id="resultArea" style="display:none; padding: var(--sp-4) 0;">
+                <div style="display:flex; gap:2rem; align-items:flex-start; flex-wrap:wrap;">
+                    <img id="previewImg" class="preview-img" alt="Uploaded X-ray preview">
+                    <div style="flex:1; min-width:220px;">
+                        <p class="text-muted mb-1" style="font-size:0.85rem; text-transform:uppercase; letter-spacing:.05em;">Assessment Result</p>
+                        <h2 id="resultLabel" style="margin:0 0 0.25rem; font-size: 1.8rem;"></h2>
+                        <p id="resultConfidenceText" class="text-muted" style="font-size:0.9rem; margin-bottom: 0.25rem;"></p>
+                        <div class="result-confidence-bar">
+                            <div id="resultBar" class="result-confidence-bar-fill" style="width:0%"></div>
+                        </div>
+                        <p class="text-muted" style="font-size:0.82rem; line-height:1.5;">
+                            <i class="fas fa-info-circle"></i>
+                            This is an AI-generated insight, not a medical diagnosis.
+                            Please consult a qualified healthcare professional.
+                        </p>
+                        <button class="btn btn-outline mt-2" id="resetBtn" type="button">
+                            <i class="fas fa-redo"></i> Upload Another
+                        </button>
+                    </div>
+                </div>
             </div>
+
+            <!-- Error -->
+            <div id="errorMsg" role="alert"></div>
+
         </div>
     </div>
-    <script>
-        function simulateUpload() {
-            document.getElementById('uploadArea').style.display = 'none';
-            document.getElementById('processingArea').style.display = 'block';
-            setTimeout(() => {
-                document.getElementById('processingArea').style.display = 'none';
-                document.getElementById('resultArea').style.display = 'block';
-            }, 2000);
-        }
-        function resetUpload() {
-            document.getElementById('resultArea').style.display = 'none';
-            document.getElementById('uploadArea').style.display = 'block';
-        }
-    </script>
-    
+
             </main>
         </div>
     </div>

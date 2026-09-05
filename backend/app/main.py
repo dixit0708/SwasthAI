@@ -1,12 +1,14 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
-from app.core.config import settings
-from app.db.mongodb import connect_to_mongo, close_mongo_connection
-from app.ai.models.pneumonia_cnn import load_pneumonia_model
-from app.ai.models.diabetes_model import load_diabetes_model
+import asyncio
 import logging
 import os
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.core.config import settings
+from app.db.mongodb import connect_to_mongo, close_mongo_connection
+from app.ai.models.diabetes_model import load_diabetes_model
 
 logger = logging.getLogger(__name__)
 
@@ -14,22 +16,24 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     # Startup
     await connect_to_mongo()
-    
-    # Load PyTorch model
-    try:
-        # Assuming app/main.py is 3 levels deep from SwasthAI root
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        ckpt_path = os.path.join(base_dir, "ml-services", "cnn-detector", "checkpoints", "resnet18_finetuned.pt")
-        
-        app.state.pneumonia_model = load_pneumonia_model(ckpt_path)
-        logger.info(f"Loaded Pneumonia CNN model from {ckpt_path}")
-    except Exception as e:
-        logger.error(f"Failed to load Pneumonia CNN model: {e}")
-        app.state.pneumonia_model = None
 
-    # Load diabetes risk model
+    # Pneumonia CNN: lazy-loaded on first request rather than here.
+    # Importing torch + torchvision alone costs ~230MB RSS (measured), which
+    # every worker process would otherwise pay unconditionally even if it
+    # never serves a pneumonia request. See the lazy-load-and-cache helper
+    # in app/api/v1/endpoints/predict.py, which populates
+    # app.state.pneumonia_model on first use and reuses it after that.
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    app.state.pneumonia_ckpt_path = os.path.join(
+        base_dir, "ml-services", "cnn-detector", "checkpoints", "resnet18_finetuned.pt"
+    )
+    app.state.pneumonia_model = None
+    app.state.pneumonia_model_lock = asyncio.Lock()
+
+    # Diabetes risk model: a small sklearn Pipeline, loaded eagerly since
+    # it's cheap (no heavy import chain) and keeps request latency
+    # predictable and uniform for every caller, not just the first one.
     try:
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         diabetes_model_path = os.path.join(base_dir, "ml_pipeline", "diabetes", "models", "diabetes_model.joblib")
 
         app.state.diabetes_model = load_diabetes_model(diabetes_model_path)

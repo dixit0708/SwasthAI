@@ -1,0 +1,42 @@
+# Render Blueprint for the SwasthAI backend.
+#
+# This is a recommended, version-controlled starting point for the Render
+# web service config. If the service was previously configured entirely
+# through the Render dashboard, connecting this Blueprint will let Render
+# manage it from here instead - review the existing dashboard settings
+# (especially the start command and any env vars) before applying it, since
+# this file is authoritative once synced.
+#
+# The single most important line for the out-of-memory issue is the start
+# command: no `--workers` flag. Each additional Uvicorn worker is a
+# separate process that reimports torch/torchvision/opencv/sklearn/xgboost
+# and (once used) loads its own copy of the pneumonia CNN - none of that is
+# shared across worker processes. Measured locally, importing those
+# libraries alone costs ~290MB RSS per process before any model is loaded,
+# so N workers multiplies that by N. Stay at one worker unless the
+# instance's memory plan is verified to comfortably fit N x that per-worker
+# footprint.
+services:
+  - type: web
+    name: swasthai-backend
+    runtime: python
+    plan: starter
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.5
+      - key: MONGODB_URL
+        sync: false
+      - key: DATABASE_NAME
+        value: swasthai_db
+      - key: CORS_ORIGINS
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "10080"

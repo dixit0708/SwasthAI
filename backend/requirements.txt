@@ -1,3 +1,21 @@
+# Production dependencies only. Installed on Render.
+#
+# Deliberately NOT here:
+#   pandas               - only used by ml_pipeline/ training scripts, never
+#                           by production inference (see requirements-dev.txt
+#                           and ml_pipeline/requirements.txt). Removed after
+#                           app/ai/models/diabetes_model.py was changed to
+#                           predict from a plain list instead of a DataFrame.
+#   pytest/pytest-asyncio/httpx - dev/test only, see requirements-dev.txt.
+#
+# scikit-learn and xgboost are both kept: the diabetes risk model is an
+# sklearn Pipeline (SimpleImputer + StandardScaler + a classifier chosen by
+# ml_pipeline/diabetes/train.py's cross-validation, which may be
+# LogisticRegression, RandomForestClassifier, or XGBClassifier). No trained
+# artifact is committed yet, so which one it will be isn't known - keeping
+# both is the safe choice until a real ml_pipeline/diabetes/models/diabetes_model.joblib
+# is trained and committed, at which point whichever wasn't selected can be
+# dropped (xgboost costs ~10.5MB RSS to import, so this is cheap insurance).
 fastapi[standard]
 pydantic
 pydantic-settings
@@ -7,12 +25,8 @@ bcrypt
 pyjwt
 opencv-python-headless
 numpy
-pytest
-pytest-asyncio
-httpx
 torch --index-url https://download.pytorch.org/whl/cpu
 torchvision --index-url https://download.pytorch.org/whl/cpu
 scikit-learn
 xgboost
-pandas
 joblib

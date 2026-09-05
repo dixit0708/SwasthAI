@@ -6,7 +6,6 @@ from app.api.v1.deps import get_current_user
 from app.models.prediction import DiabetesPredictionInput, RiskPredictionOut
 from app.models.user import UserOut
 from app.services import prediction_service
-from app.ai.models.skin_cnn import predict_skin_disease
 
 router = APIRouter()
 
@@ -38,6 +37,7 @@ async def predict_pneumonia_endpoint(request: Request, file: UploadFile = File(.
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
 
+
 @router.post("/diabetes", summary="Predict Diabetes Risk from Health Parameters", response_model=RiskPredictionOut)
 async def predict_diabetes_endpoint(
     payload: DiabetesPredictionInput,
@@ -52,30 +52,3 @@ async def predict_diabetes_endpoint(
         return await prediction_service.predict_diabetes_risk(current_user.id, payload, model)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
-
-@router.post("/skin", summary="Skin Disease Risk Assessment from Image")
-async def predict_skin_endpoint(request: Request, file: UploadFile = File(...)):
-    try:
-        # Read file contents
-        contents = await file.read()
-        
-        # 1. Validate and decode into OpenCV numpy array
-        image_np = validate_and_decode_image(contents, file.content_type)
-        
-        # 2. Preprocess specifically for the CNN architecture
-        preprocessed_img = preprocess_for_cnn(image_np)
-        
-        # 3. Fetch pre-loaded model from application state
-        model = getattr(request.app.state, "skin_model", None)
-        if model is None:
-            raise HTTPException(status_code=503, detail="Skin Disease model is not loaded or currently unavailable (needs to be trained first)")
-            
-        # 4. Run inference
-        result = predict_skin_disease(model, preprocessed_img)
-        
-        return JSONResponse(status_code=200, content=result)
-        
-    except ValueError as ve:
-        raise HTTPException(status_code=400, detail=str(ve))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Skin prediction failed: {str(e)}")

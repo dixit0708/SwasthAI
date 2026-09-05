@@ -4,7 +4,15 @@
  * session (token + user) in localStorage for every page to read.
  */
 
-const SWASTHAI_API_BASE = 'http://127.0.0.1:8000/api/v1';
+// Auto-detects local dev vs. the deployed site so the same file works in
+// both places without a build step or manual toggling (PRD Section 7.7 /
+// 28: centralized API config, never a hardcoded URL per environment).
+const SWASTHAI_API_BASE = (() => {
+  const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+  return isLocal
+    ? 'http://127.0.0.1:8000/api/v1'
+    : 'https://swasthai-slac.onrender.com/api/v1';
+})();
 const SWASTHAI_TOKEN_KEY = 'swasthai_token';
 const SWASTHAI_USER_KEY = 'swasthai_user';
 

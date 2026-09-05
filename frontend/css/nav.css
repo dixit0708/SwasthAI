@@ -5,6 +5,15 @@
     transition: box-shadow var(--transition-base), background var(--transition-base), border-color var(--transition-base);
 }
 
+/* Widen the header/nav row (public navbar + authenticated app header)
+   beyond the page's normal content max-width, so the logo sits closer
+   to the true left edge of the screen on wide viewports instead of
+   floating in the centered content column's gutter. */
+.navbar__container,
+.app-header__container {
+    max-width: 1600px;
+}
+
 .navbar--scrolled {
     box-shadow: var(--shadow-sm);
     background: rgba(248, 250, 252, 0.97);

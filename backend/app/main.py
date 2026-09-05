@@ -19,10 +19,11 @@ async def lifespan(app: FastAPI):
     try:
         # Assuming app/main.py is 3 levels deep from SwasthAI root
         base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        ckpt_path = os.path.join(base_dir, "ml-services", "cnn-detector", "checkpoints", "resnet18_finetuned.pt")
         
-        app.state.pneumonia_model = load_pneumonia_model(ckpt_path)
-        logger.info(f"Loaded Pneumonia CNN model from {ckpt_path}")
+        # Pneumonia model
+        pneumonia_ckpt = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ai", "models", "pneumonia_cnn.pt")
+        app.state.pneumonia_model = load_pneumonia_model(pneumonia_ckpt)
+        logger.info(f"Loaded Pneumonia CNN model from {pneumonia_ckpt}")
     except Exception as e:
         logger.error(f"Failed to load Pneumonia CNN model: {e}")
         app.state.pneumonia_model = None
@@ -38,6 +39,20 @@ async def lifespan(app: FastAPI):
         logger.error(f"Failed to load diabetes risk model: {e}")
         app.state.diabetes_model = None
 
+    # Load Skin Disease PyTorch model
+    try:
+        from app.ai.models.skin_cnn import load_skin_model
+        skin_ckpt = os.path.join(base_dir, "ml-services", "skin-disease-detector", "checkpoints", "skin_disease_resnet50.pt")
+        
+        if os.path.exists(skin_ckpt):
+            app.state.skin_model = load_skin_model(skin_ckpt, num_classes=7)
+            logger.info(f"Loaded Skin Disease CNN model from {skin_ckpt}")
+        else:
+            logger.warning(f"Skin Disease CNN model not found at {skin_ckpt}. Please train the model first.")
+            app.state.skin_model = None
+    except Exception as e:
+        logger.error(f"Failed to load Skin Disease CNN model: {e}")
+        app.state.skin_model = None
     yield
     # Shutdown
     await close_mongo_connection()

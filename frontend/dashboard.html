@@ -28,11 +28,20 @@
                 
     <div class="flex-between mb-4">
         <div>
-            <h1 style="margin:0;">Welcome back, John!</h1>
+            <h1 style="margin:0;" id="dashboardGreeting">Welcome back!</h1>
             <p class="text-secondary">Here's what's happening with your health today.</p>
         </div>
         <button class="btn btn-primary"><i class="fas fa-plus"></i> Add Record</button>
     </div>
+    <script>
+        (function () {
+            const user = typeof swasthaiCurrentUser === 'function' && swasthaiCurrentUser();
+            const firstName = user && user.name ? user.name.trim().split(/\s+/)[0] : '';
+            if (firstName) {
+                document.getElementById('dashboardGreeting').textContent = `Welcome back, ${firstName}!`;
+            }
+        })();
+    </script>
 
     <div class="grid mb-4" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
         <div class="card"><div class="card-body">

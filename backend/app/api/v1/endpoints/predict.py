@@ -1,7 +1,11 @@
-from fastapi import APIRouter, File, UploadFile, HTTPException, Request
+from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, Request
 from fastapi.responses import JSONResponse
 from app.ai.inference.image_processing import validate_and_decode_image, preprocess_for_cnn
 from app.ai.models.pneumonia_cnn import predict_pneumonia
+from app.api.v1.deps import get_current_user
+from app.models.prediction import DiabetesPredictionInput, RiskPredictionOut
+from app.models.user import UserOut
+from app.services import prediction_service
 
 router = APIRouter()
 
@@ -30,5 +34,21 @@ async def predict_pneumonia_endpoint(request: Request, file: UploadFile = File(.
     except ValueError as ve:
         # Handled validation errors (e.g., unsupported format, too large)
         raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+
+
+@router.post("/diabetes", summary="Predict Diabetes Risk from Health Parameters", response_model=RiskPredictionOut)
+async def predict_diabetes_endpoint(
+    payload: DiabetesPredictionInput,
+    request: Request,
+    current_user: UserOut = Depends(get_current_user),
+):
+    model = getattr(request.app.state, "diabetes_model", None)
+    if model is None:
+        raise HTTPException(status_code=503, detail="Diabetes risk model is not loaded or currently unavailable")
+
+    try:
+        return await prediction_service.predict_diabetes_risk(current_user.id, payload, model)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")

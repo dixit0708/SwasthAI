@@ -12,15 +12,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/landing.css">
     <link rel="stylesheet" href="css/nav.css">
     <link rel="stylesheet" href="css/responsive.css">
     <link rel="stylesheet" href="css/doctors.css">
 </head>
-<body data-page="doctors">
-
-    <div id="site-header"></div>
+<body>
+    <script src="js/auth-guard.js"></script>
+    <div id="app-layout" class="app-layout">
+        <aside id="sidebar-container" class="sidebar"></aside>
+        <div class="main-content">
+            <header id="header-container" class="top-header"></header>
+            <main class="page-content">
+                <!-- PAGE CONTENT: doctors -->
 
     <!-- HERO with integrated search -->
     <section class="page-hero page-hero--center">
@@ -94,16 +100,18 @@
     <section class="section text-center" style="background: var(--bg-surface);">
         <div class="container animate-on-scroll">
             <h2 class="section-heading">Not sure who to book?</h2>
-            <p class="section-subtitle" style="max-width: 560px; margin: 0 auto var(--sp-8);">Create your profile and share your health data so we can suggest the right specialist for you.</p>
-            <a href="register.html" class="btn btn-primary btn-lg">Get Started <i class="fas fa-arrow-right"></i></a>
+            <p class="section-subtitle" style="max-width: 560px; margin: 0 auto var(--sp-8);">Complete your Health Profile and share your health data so we can suggest the right specialist for you.</p>
+            <a href="health-profile.html" class="btn btn-primary btn-lg">Complete Health Profile <i class="fas fa-arrow-right"></i></a>
         </div>
     </section>
 
-    <div id="site-footer"></div>
-
-    <script src="js/site-nav.js"></script>
+            </main>
+        </div>
+    </div>
+    <script src="js/auth.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/doctors.js"></script>
     <script src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>
     <script src="js/main.js"></script>
-    <script src="js/doctors.js"></script>
 </body>
 </html>

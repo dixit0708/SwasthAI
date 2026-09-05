@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.db.mongodb import connect_to_mongo, close_mongo_connection
 from app.ai.models.pneumonia_cnn import load_pneumonia_model
+from app.ai.models.diabetes_model import load_diabetes_model
 import logging
 import os
 
@@ -25,7 +26,18 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"Failed to load Pneumonia CNN model: {e}")
         app.state.pneumonia_model = None
-        
+
+    # Load diabetes risk model
+    try:
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        diabetes_model_path = os.path.join(base_dir, "ml_pipeline", "diabetes", "models", "diabetes_model.joblib")
+
+        app.state.diabetes_model = load_diabetes_model(diabetes_model_path)
+        logger.info(f"Loaded diabetes risk model from {diabetes_model_path}")
+    except Exception as e:
+        logger.error(f"Failed to load diabetes risk model: {e}")
+        app.state.diabetes_model = None
+
     yield
     # Shutdown
     await close_mongo_connection()

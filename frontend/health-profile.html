@@ -34,31 +34,36 @@
         <div class="card">
             <div class="card-header">Basic Information</div>
             <div class="card-body">
-                <form onsubmit="event.preventDefault(); alert('Demo: Saved!');">
+                <form id="hpForm">
+                    <div id="hpFormAlert" class="auth-alert" style="display: none;"><i class="fas fa-circle-exclamation"></i> <span id="hpFormAlertText"></span></div>
                     <div class="grid" style="grid-template-columns: 1fr 1fr;">
-                        <div class="form-group"><label class="form-label">First Name</label><input type="text" class="form-control" value="John"></div>
-                        <div class="form-group"><label class="form-label">Last Name</label><input type="text" class="form-control" value="Doe"></div>
-                        <div class="form-group"><label class="form-label">Date of Birth</label><input type="date" class="form-control" value="1980-01-01"></div>
+                        <div class="form-group"><label class="form-label">First Name</label><input type="text" class="form-control" id="hpFirstName" placeholder="First name"></div>
+                        <div class="form-group"><label class="form-label">Last Name</label><input type="text" class="form-control" id="hpLastName" placeholder="Last name"></div>
+                        <div class="form-group"><label class="form-label">Date of Birth</label><input type="date" class="form-control" id="hpDob"></div>
                         <div class="form-group"><label class="form-label">Blood Group</label>
-                            <select class="form-control"><option>O+</option><option>A+</option></select>
+                            <select class="form-control" id="hpBloodGroup">
+                                <option value="">Not set</option>
+                                <option>O+</option><option>O-</option>
+                                <option>A+</option><option>A-</option>
+                                <option>B+</option><option>B-</option>
+                                <option>AB+</option><option>AB-</option>
+                            </select>
                         </div>
                     </div>
-                    <button class="btn btn-primary mt-4">Save Changes</button>
+                    <button type="submit" class="btn btn-primary mt-4" id="hpSaveBtn">Save Changes</button>
                 </form>
             </div>
         </div>
         <div class="card">
             <div class="card-header">Known Conditions & Allergies</div>
             <div class="card-body">
-                <ul style="list-style: none; padding: 0;">
-                    <li style="padding: 0.5rem; background: var(--bg-surface-alt); margin-bottom: 0.5rem; border-radius: var(--radius-sm);"><i class="fas fa-exclamation-triangle text-warning"></i> Peanut Allergy</li>
-                    <li style="padding: 0.5rem; background: var(--bg-surface-alt); margin-bottom: 0.5rem; border-radius: var(--radius-sm);"><i class="fas fa-heartbeat text-danger"></i> Hypertension (Mild)</li>
-                </ul>
-                <button class="btn btn-outline btn-block mt-4"><i class="fas fa-plus"></i> Add Condition</button>
+                <p class="text-muted" style="font-size: 0.9rem; display: none;" id="hpConditionsEmpty"><i class="fas fa-circle-info"></i> No conditions or allergies added yet.</p>
+                <ul id="hpConditionsList" style="list-style: none; padding: 0;"></ul>
+                <button type="button" class="btn btn-outline btn-block mt-4" id="hpAddConditionBtn"><i class="fas fa-plus"></i> Add Condition</button>
             </div>
         </div>
     </div>
-    
+
             </main>
         </div>
     </div>

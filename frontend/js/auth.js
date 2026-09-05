@@ -17,9 +17,33 @@ async function swasthaiApiRequest(path, options) {
   }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(data.detail || 'Something went wrong. Please try again.');
+    const error = new Error(data.detail || 'Something went wrong. Please try again.');
+    error.status = res.status;
+    throw error;
   }
   return data;
+}
+
+/**
+ * For calls that require the logged-in user's session. Attaches the
+ * bearer token automatically and, per the error-handling standard (only
+ * a genuine 401 means "you are not authenticated"), logs the user out
+ * on 401 only — 403/404/422/500/etc. are left for the caller to handle
+ * as their own error state, never as a forced logout.
+ */
+async function swasthaiAuthedRequest(path, options = {}) {
+  const token = swasthaiGetToken();
+  try {
+    return await swasthaiApiRequest(path, {
+      ...options,
+      headers: { ...(options.headers || {}), Authorization: `Bearer ${token}` }
+    });
+  } catch (err) {
+    if (err.status === 401 && typeof swasthaiLogout === 'function') {
+      swasthaiLogout();
+    }
+    throw err;
+  }
 }
 
 const SwasthAPI = {
@@ -41,6 +65,39 @@ const SwasthAPI = {
     return swasthaiApiRequest('/auth/me', {
       headers: { Authorization: `Bearer ${token}` }
     });
+  },
+  healthProfile: {
+    get() {
+      return swasthaiAuthedRequest('/health-profile/me');
+    },
+    update({ date_of_birth, blood_group }) {
+      return swasthaiAuthedRequest('/health-profile/me', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date_of_birth: date_of_birth || null, blood_group: blood_group || null })
+      });
+    },
+    addCondition(label) {
+      return swasthaiAuthedRequest('/health-profile/me/conditions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ label })
+      });
+    },
+    deleteCondition(conditionId) {
+      return swasthaiAuthedRequest(`/health-profile/me/conditions/${encodeURIComponent(conditionId)}`, {
+        method: 'DELETE'
+      });
+    }
+  },
+  predictions: {
+    diabetes(payload) {
+      return swasthaiAuthedRequest('/predict/diabetes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    }
   }
 };
 

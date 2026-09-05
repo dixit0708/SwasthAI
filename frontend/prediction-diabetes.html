@@ -35,43 +35,74 @@
         <div class="card">
             <div class="card-header">Patient Health Data</div>
             <div class="card-body">
+                <div id="diabetesFormAlert" class="auth-alert" style="display: none;"><i class="fas fa-circle-exclamation"></i> <span id="diabetesFormAlertText"></span></div>
                 <form id="diabetesForm">
                     <div class="grid" style="grid-template-columns: 1fr 1fr;">
-                        <div class="form-group"><label class="form-label">Age</label><input type="number" class="form-control" required></div>
-                        <div class="form-group"><label class="form-label">BMI</label><input type="number" step="0.1" class="form-control" required></div>
-                        <div class="form-group"><label class="form-label">Glucose Level</label><input type="number" class="form-control" required></div>
-                        <div class="form-group"><label class="form-label">Blood Pressure</label><input type="number" class="form-control" required></div>
+                        <div class="form-group"><label class="form-label" for="dbAge">Age</label><input type="number" id="dbAge" class="form-control" min="1" max="120" required></div>
+                        <div class="form-group"><label class="form-label" for="dbPregnancies">Number of pregnancies</label><input type="number" id="dbPregnancies" class="form-control" min="0" max="20" value="0" required></div>
+                        <div class="form-group"><label class="form-label" for="dbHeight">Height (cm)</label><input type="number" id="dbHeight" class="form-control" min="50" max="250" placeholder="e.g. 165" required></div>
+                        <div class="form-group"><label class="form-label" for="dbWeight">Weight (kg)</label><input type="number" step="0.1" id="dbWeight" class="form-control" min="10" max="300" placeholder="e.g. 68" required></div>
+                        <div class="form-group">
+                            <label class="form-label" for="dbGlucose">Blood sugar (glucose) level</label>
+                            <input type="number" id="dbGlucose" class="form-control" min="1" max="300" placeholder="mg/dL" required>
+                            <span class="form-text">From a recent blood test report — ask your lab report or last checkup.</span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="dbBloodPressure">Blood pressure (lower number)</label>
+                            <input type="number" id="dbBloodPressure" class="form-control" min="1" max="200" placeholder="e.g. 80" required>
+                            <span class="form-text">The second/smaller number on a BP reading, e.g. the "80" in "120/80".</span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="dbFamilyHistory">Family history of diabetes</label>
+                            <select id="dbFamilyHistory" class="form-control">
+                                <option value="none">No close relatives with diabetes</option>
+                                <option value="one" selected>One parent or sibling has diabetes</option>
+                                <option value="multiple">Multiple close relatives have diabetes</option>
+                                <option value="unsure">Not sure</option>
+                            </select>
+                        </div>
                     </div>
-                    <button type="button" class="btn btn-primary mt-4" onclick="showDemoResult()">Run AI Model (Demo)</button>
+
+                    <details class="mt-4">
+                        <summary style="cursor: pointer; color: var(--text-secondary); font-size: 0.9rem;">Have detailed lab results? Add them for a more precise result (optional)</summary>
+                        <div class="grid mt-2" style="grid-template-columns: 1fr 1fr;">
+                            <div class="form-group">
+                                <label class="form-label" for="dbSkinThickness">Triceps skinfold thickness (mm)</label>
+                                <input type="number" id="dbSkinThickness" class="form-control" min="0" max="100" value="20">
+                                <span class="form-text">A caliper measurement from a lab/clinic. Leave the default if you don't have this.</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="dbInsulin">2-hour serum insulin (mu U/ml)</label>
+                                <input type="number" id="dbInsulin" class="form-control" min="0" max="900" value="80">
+                                <span class="form-text">From a glucose tolerance test report. Leave the default if you don't have this.</span>
+                            </div>
+                        </div>
+                    </details>
+
+                    <button type="submit" class="btn btn-primary mt-4" id="diabetesSubmitBtn">Run AI Model</button>
                 </form>
             </div>
         </div>
-        
+
         <div>
             <div class="card mb-4" id="resultCard" style="display: none; border: 2px solid var(--primary);">
                 <div class="card-header bg-primary text-white">Analysis Complete</div>
                 <div class="card-body text-center">
-                    <div class="badge badge-warning mb-2">Demo Interface</div>
-                    <h2 class="text-danger">High Risk (82%)</h2>
-                    <p class="text-muted">AI model integration pending.</p>
-                    <p style="font-size: 0.9rem;">Please consult a physician for a formal diagnosis.</p>
+                    <h2 id="resultRiskLevel"></h2>
+                    <p class="text-muted" id="resultMessage"></p>
+                    <p style="font-size: 0.9rem;" id="resultDisclaimer"></p>
                 </div>
             </div>
-            
+
             <div class="card">
                 <div class="card-body bg-surface-alt">
                     <h4 class="text-warning"><i class="fas fa-info-circle"></i> Important Safety Notice</h4>
-                    <p style="font-size: 0.9rem;" class="mt-2 text-secondary">This tool is a prototype demonstrating machine learning integration. Do not use this for actual medical decision making.</p>
+                    <p style="font-size: 0.9rem;" class="mt-2 text-secondary">This tool provides an AI-generated risk indicator, not a medical diagnosis. It is not a substitute for professional medical advice.</p>
                 </div>
             </div>
         </div>
     </div>
-    <script>
-        function showDemoResult() {
-            document.getElementById('resultCard').style.display = 'block';
-        }
-    </script>
-    
+
             </main>
         </div>
     </div>

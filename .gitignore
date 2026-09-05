@@ -42,6 +42,9 @@ ml-services/*/models/
 *.pt
 *.pth
 *.onnx
+*.joblib
+*.pkl
+*.pickle
 
 # Local Storage (Medical images, reports, prescriptions)
 storage/reports/*

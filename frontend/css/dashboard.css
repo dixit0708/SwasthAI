@@ -1,0 +1,112 @@
+/* Dashboard hero — shuffling image grid fills the entire section,
+   headline/CTA overlaid on top with a gradient scrim for legibility.
+   Vanilla CSS/JS recreation (no React/framer-motion) to match the rest
+   of the site's zero-build-step architecture. */
+
+.dashboard-hero {
+    position: relative;
+    width: 100%;
+    /* Fills the entire viewport below the fixed 72px app header. Sits as
+       a direct sibling of .page-content (not nested inside it) so it is
+       never constrained by that container's max-width/centering. */
+    height: calc(100vh - 72px);
+    min-height: 420px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+}
+
+.dashboard-hero__grid {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 2px;
+}
+
+.dashboard-hero__tile {
+    width: 100%;
+    height: 100%;
+    background-color: #FFFFFF;
+    background-size: cover;
+    background-position: center;
+    will-change: transform;
+}
+
+.dashboard-hero__overlay {
+    position: absolute;
+    inset: 0;
+    /* Dark only in the strip directly behind the text; fully transparent
+       past ~45% so the rest of the white grid reads as true white. */
+    background: linear-gradient(90deg, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0.65) 25%, rgba(15, 23, 42, 0.2) 40%, rgba(15, 23, 42, 0) 48%);
+}
+
+.dashboard-hero__content {
+    /* Mirrors .page-content's own max-width/centering/padding exactly,
+       so the headline's left edge always lines up with the page content
+       below it, at every viewport width. */
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 var(--sp-6);
+}
+
+.dashboard-hero__content > * {
+    max-width: 640px;
+}
+
+.dashboard-hero__eyebrow {
+    display: block;
+    margin-bottom: var(--sp-4);
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: var(--primary-light);
+}
+
+.dashboard-hero__title {
+    font-family: var(--font-display);
+    font-size: var(--text-5xl);
+    font-weight: 800;
+    line-height: 1.15;
+    color: white;
+    margin-bottom: var(--sp-4);
+}
+
+.dashboard-hero__subtitle {
+    font-size: var(--text-xl);
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: var(--sp-8);
+}
+
+.dashboard-hero__content .btn {
+    font-size: var(--text-lg);
+}
+
+@media (min-width: 1200px) {
+    .dashboard-hero__title {
+        font-size: var(--text-6xl);
+    }
+}
+
+@media (max-width: 900px) {
+    .dashboard-hero__overlay {
+        background: linear-gradient(to top, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.6) 50%, rgba(15, 23, 42, 0.25));
+    }
+    .dashboard-hero__content > * {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-hero__grid {
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(5, 1fr);
+    }
+}
+
+/* prefers-reduced-motion is handled in js/dashboard.js — tiles still
+   reshuffle position but skip the animated slide, jumping straight there. */

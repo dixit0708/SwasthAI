@@ -44,13 +44,31 @@ def load_pneumonia_model(ckpt_path: str, device: str = "cpu"):
     return model
 
 
-def predict_pneumonia(model, preprocessed_image: np.ndarray, device: str = "cpu") -> dict:
+def load_ood_stats(stats_path: str, device: str = "cpu"):
+    """Loads Mahalanobis OOD statistics from an npz file."""
+    if not os.path.exists(stats_path):
+        return None
+        
+    import torch
+    stats = np.load(stats_path)
+    return {
+        "mu_normal": torch.tensor(stats['mu_normal'], dtype=torch.float32).to(device).unsqueeze(0),
+        "mu_pneumonia": torch.tensor(stats['mu_pneumonia'], dtype=torch.float32).to(device).unsqueeze(0),
+        "inv_cov_matrix": torch.tensor(stats['inv_cov_matrix'], dtype=torch.float32).to(device),
+        "threshold": float(stats['threshold'])
+    }
+
+
+def predict_pneumonia(model, preprocessed_image: np.ndarray, original_image: np.ndarray = None, ood_stats: dict = None, device: str = "cpu") -> dict:
     """
     Runs inference on a preprocessed numpy image array.
     Expects input shape: (1, H, W, C).
+    If ood_stats and original_image are provided, performs Ensemble OOD detection first
+    using Mahalanobis distance and HSV saturation.
     """
     import torch
     import torch.nn.functional as F
+    import cv2
 
     # Convert (B, H, W, C) -> (B, C, H, W) for PyTorch
     image_transposed = np.transpose(preprocessed_image, (0, 3, 1, 2))
@@ -60,7 +78,54 @@ def predict_pneumonia(model, preprocessed_image: np.ndarray, device: str = "cpu"
 
     # Run Inference
     with torch.no_grad():
-        outputs = model(tensor_img)
+        # Extract penultimate features manually
+        x = model.conv1(tensor_img)
+        x = model.bn1(x)
+        x = model.relu(x)
+        x = model.maxpool(x)
+
+        x = model.layer1(x)
+        x = model.layer2(x)
+        x = model.layer3(x)
+        x = model.layer4(x)
+
+        x = model.avgpool(x)
+        feat = torch.flatten(x, 1)
+
+        # Ensemble OOD Check
+        if ood_stats is not None and original_image is not None:
+            # Signal 1: Mahalanobis Distance
+            mu_n = ood_stats["mu_normal"]
+            mu_p = ood_stats["mu_pneumonia"]
+            inv_cov = ood_stats["inv_cov_matrix"]
+            
+            diff_n = feat - mu_n
+            dist_n = torch.matmul(torch.matmul(diff_n, inv_cov), diff_n.t()).item()
+            
+            diff_p = feat - mu_p
+            dist_p = torch.matmul(torch.matmul(diff_p, inv_cov), diff_p.t()).item()
+            
+            min_dist = min(dist_n, dist_p)
+            
+            # Signal 2: Mean Saturation
+            hsv = cv2.cvtColor(original_image, cv2.COLOR_BGR2HSV)
+            mean_saturation = hsv[:, :, 1].mean()
+            
+            # Thresholds
+            MAHALANOBIS_THRESHOLD = 2000.0
+            SATURATION_THRESHOLD = 100.0
+            
+            if min_dist > MAHALANOBIS_THRESHOLD or mean_saturation > SATURATION_THRESHOLD:
+                return {
+                    "prediction": "OOD",
+                    "confidence": 0.0,
+                    "message": "This image doesn't appear to be a valid chest X-ray",
+                    "distance": min_dist,
+                    "saturation": mean_saturation
+                }
+
+        # Final Classification
+        outputs = model.fc(feat)
         probabilities = F.softmax(outputs, dim=1)[0]
 
     class_names = {0: "NORMAL", 1: "PNEUMONIA"}

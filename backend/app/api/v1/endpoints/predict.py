@@ -24,15 +24,28 @@ async def _get_pneumonia_model(app):
     first-requests from both loading a duplicate copy of the model.
     """
     if app.state.pneumonia_model is not None:
-        return app.state.pneumonia_model
+        return app.state.pneumonia_model, getattr(app.state, "pneumonia_ood_stats", None)
 
     async with app.state.pneumonia_model_lock:
         if app.state.pneumonia_model is None:  # re-check: lost the race to another request
             app.state.pneumonia_model = await run_in_threadpool(
                 load_pneumonia_model, app.state.pneumonia_ckpt_path
             )
+            
+            # Load OOD Stats lazily alongside the model
+            import os
+            from app.ai.models.pneumonia_cnn import load_ood_stats
+            ood_stats_path = app.state.pneumonia_ckpt_path.replace('pneumonia_cnn.pt', 'ood_stats.npz')
+            if os.path.exists(ood_stats_path):
+                app.state.pneumonia_ood_stats = await run_in_threadpool(
+                    load_ood_stats, ood_stats_path
+                )
+            else:
+                app.state.pneumonia_ood_stats = None
+                
             logger.info(f"Lazily loaded Pneumonia CNN model from {app.state.pneumonia_ckpt_path}")
-    return app.state.pneumonia_model
+            
+    return app.state.pneumonia_model, getattr(app.state, "pneumonia_ood_stats", None)
 
 
 @router.post("/pneumonia", summary="Predict Pneumonia from X-Ray Image")
@@ -49,13 +62,17 @@ async def predict_pneumonia_endpoint(request: Request, file: UploadFile = File(.
 
         # 3. Fetch the model, loading it lazily on first use
         try:
-            model = await _get_pneumonia_model(request.app)
+            model, ood_stats = await _get_pneumonia_model(request.app)
         except Exception as e:
             logger.error(f"Pneumonia model unavailable: {e}")
             raise HTTPException(status_code=503, detail="Pneumonia model is not loaded or currently unavailable")
 
         # 4. Run inference
-        result = predict_pneumonia(model, preprocessed_img)
+        result = predict_pneumonia(model, preprocessed_img, original_image=image_np, ood_stats=ood_stats)
+        
+        # 5. Handle OOD gracefully
+        if result.get("prediction") == "OOD":
+            raise ValueError(result.get("message"))
 
         return JSONResponse(status_code=200, content=result)
 

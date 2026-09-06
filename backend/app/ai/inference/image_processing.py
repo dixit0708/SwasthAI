@@ -54,8 +54,10 @@ def preprocess_for_cnn(image: np.ndarray, target_size: Tuple[int, int] = (224, 2
     # Resize
     resized_img = cv2.resize(image, target_size)
     
-    # Convert BGR to RGB (OpenCV uses BGR by default, most ML models expect RGB)
-    rgb_img = cv2.cvtColor(resized_img, cv2.COLOR_BGR2RGB)
+    # Convert to grayscale first (to remove color tints), then to 3-channel RGB
+    # This matches the training pipeline's transforms.Grayscale(num_output_channels=3)
+    gray_img = cv2.cvtColor(resized_img, cv2.COLOR_BGR2GRAY)
+    rgb_img = cv2.cvtColor(gray_img, cv2.COLOR_GRAY2RGB)
     
     # Normalize pixel values (0-1)
     normalized_img = rgb_img.astype(np.float32) / 255.0

@@ -22,7 +22,7 @@
 }
 
 .hero__title {
-    font-family: 'Dancing Script', cursive;
+    font-family: var(--font-display);
     font-weight: 700;
     font-size: 3.6rem;
     line-height: 1.2;
@@ -132,26 +132,6 @@
     .expanding-cards {
         flex-direction: row;
         height: 480px;
-    }
-
-    /* Collapsed rail: title runs vertical, bottom-to-top. Hovering/expanding
-       the card rotates it back to a normal horizontal read. */
-    .expanding-card__title {
-        width: fit-content;
-        white-space: nowrap;
-        transform-origin: left bottom;
-        transform: rotate(-90deg);
-        transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-    }
-    .expanding-card:hover .expanding-card__title,
-    .expanding-card:focus-within .expanding-card__title {
-        transform: rotate(0deg);
-    }
-}
-
-@media (min-width: 768px) and (prefers-reduced-motion: reduce) {
-    .expanding-card__title {
-        transition: none;
     }
 }
 

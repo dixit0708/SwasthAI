@@ -59,6 +59,9 @@ p {
 
 .text-center { text-align: center; }
 .text-primary { color: var(--primary); }
+.text-success { color: var(--success); }
+.text-warning { color: var(--warning); }
+.text-danger { color: var(--danger); }
 
 .section-heading {
     font-size: var(--text-4xl);

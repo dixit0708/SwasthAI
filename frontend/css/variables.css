@@ -1,23 +1,32 @@
 /* variables.css */
 
-/* Zodiak (Light Italic, weight 300) — self-hosted from the Fontshare kit at
-   frontend/assets/fonts/zodiak/. Only this one weight/style was provided,
-   so it's used as the display face (headings) via --font-display below,
-   not for body copy, buttons, or form fields, which stay in --font-body
-   for readability. See frontend/assets/fonts/zodiak/LICENSE.txt (ITF Free
-   Font License) for terms. */
+/* Zodiak (Light Italic) — no longer referenced by --font-display/--font-body
+   (superseded by Uncut Sans below), kept self-hosted at
+   frontend/assets/fonts/zodiak/ and declared here in case a future rule
+   wants it back; unused @font-face costs nothing until something actually
+   sets font-family to this name. See frontend/assets/fonts/zodiak/LICENSE.txt
+   (ITF Free Font License) for terms. */
 @font-face {
   font-family: 'Zodiak-LightItalic';
   src: url('../assets/fonts/zodiak/Zodiak-LightItalic.woff2') format('woff2'),
        url('../assets/fonts/zodiak/Zodiak-LightItalic.woff') format('woff');
-  /* A range, not a single value: several existing rules that used to pair
-     --font-display with a bold/semibold weight (nav logo, card labels,
-     eyebrows) still request those weights. Declaring the whole range here
-     means the browser treats this one Light-Italic face as the correct
-     match for all of them, instead of synthesizing a fake bold (thicker,
-     blurrier stems) on top of it. */
   font-weight: 100 900;
   font-style: italic;
+  font-display: swap;
+}
+
+/* Uncut Sans — self-hosted variable font at
+   frontend/assets/fonts/uncut-sans/, used sitewide as both the display
+   and body face via --font-display/--font-body below. It's a single
+   variable-weight file, so one @font-face with a weight range covers
+   every font-weight already used across the site (400 body copy, 700-800
+   headings/buttons, etc.) without the browser synthesizing a fake bold. */
+@font-face {
+  font-family: 'Uncut Sans';
+  src: url('../assets/fonts/uncut-sans/UncutSans-Variable.woff2') format('woff2-variations'),
+       url('../assets/fonts/uncut-sans/UncutSans-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
   font-display: swap;
 }
 
@@ -50,8 +59,8 @@
   --violet: #7C3AED;
 
   /* Typography */
-  --font-display: 'Zodiak-LightItalic', Georgia, serif;
-  --font-body: 'Inter', sans-serif;
+  --font-display: 'Uncut Sans', sans-serif;
+  --font-body: 'Uncut Sans', sans-serif;
   
   --text-xs: 0.75rem; 
   --text-sm: 0.875rem; 

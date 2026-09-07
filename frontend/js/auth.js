@@ -105,6 +105,19 @@ const SwasthAPI = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+    },
+    // No Content-Type header here on purpose: the browser sets
+    // multipart/form-data with the correct boundary itself when the body
+    // is a FormData instance. The pneumonia endpoint doesn't require auth
+    // (it isn't tied to a user record the way diabetes predictions are),
+    // so this uses the unauthenticated request helper.
+    pneumonia(file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      return swasthaiApiRequest('/predict/pneumonia', {
+        method: 'POST',
+        body: formData
+      });
     }
   }
 };

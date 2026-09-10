@@ -1,0 +1,16 @@
+{
+  "matched_rows": 45895,
+  "total_test_rows": 45895,
+  "no_diabetes": {
+    "mean_predicted_risk": 0.12319301928840852,
+    "n": 38100
+  },
+  "prediabetes": {
+    "mean_predicted_risk": 0.2428807384992912,
+    "n": 841
+  },
+  "diabetes": {
+    "mean_predicted_risk": 0.3155282184771319,
+    "n": 6954
+  }
+}

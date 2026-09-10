@@ -1,0 +1,125 @@
+{
+  "note": "Audit-time addendum to threshold_analysis.json, extended down to 0.05 with accuracy/FPR/FNR columns added. Computed on training-split out-of-fold predictions only (StratifiedKFold(5), same random_state=42, same locked hyperparameters as the deployed model) \u2014 the final test set was not used. Production decision threshold remains 0.10, unchanged by this audit.",
+  "rows": [
+    {
+      "threshold": 0.05,
+      "accuracy": 0.5257,
+      "recall_sensitivity": 0.9405,
+      "specificity": 0.4509,
+      "precision": 0.2362,
+      "f1": 0.3776,
+      "false_positive_rate": 0.5491,
+      "false_negative_rate": 0.0595,
+      "false_positives": 85392,
+      "false_negatives": 1672
+    },
+    {
+      "threshold": 0.1,
+      "accuracy": 0.6458,
+      "recall_sensitivity": 0.8576,
+      "specificity": 0.6076,
+      "precision": 0.2829,
+      "f1": 0.4255,
+      "false_positive_rate": 0.3924,
+      "false_negative_rate": 0.1424,
+      "false_positives": 61025,
+      "false_negatives": 3998
+    },
+    {
+      "threshold": 0.15,
+      "accuracy": 0.7111,
+      "recall_sensitivity": 0.7776,
+      "specificity": 0.6991,
+      "precision": 0.3182,
+      "f1": 0.4516,
+      "false_positive_rate": 0.3009,
+      "false_negative_rate": 0.2224,
+      "false_positives": 46790,
+      "false_negatives": 6244
+    },
+    {
+      "threshold": 0.2,
+      "accuracy": 0.7564,
+      "recall_sensitivity": 0.699,
+      "specificity": 0.7668,
+      "precision": 0.3512,
+      "f1": 0.4675,
+      "false_positive_rate": 0.2332,
+      "false_negative_rate": 0.301,
+      "false_positives": 36266,
+      "false_negatives": 8451
+    },
+    {
+      "threshold": 0.25,
+      "accuracy": 0.7898,
+      "recall_sensitivity": 0.6157,
+      "specificity": 0.8212,
+      "precision": 0.3834,
+      "f1": 0.4726,
+      "false_positive_rate": 0.1788,
+      "false_negative_rate": 0.3843,
+      "false_positives": 27801,
+      "false_negatives": 10790
+    },
+    {
+      "threshold": 0.3,
+      "accuracy": 0.8151,
+      "recall_sensitivity": 0.5272,
+      "specificity": 0.8671,
+      "precision": 0.4174,
+      "f1": 0.4659,
+      "false_positive_rate": 0.1329,
+      "false_negative_rate": 0.4728,
+      "false_positives": 20666,
+      "false_negatives": 13275
+    },
+    {
+      "threshold": 0.35,
+      "accuracy": 0.8325,
+      "recall_sensitivity": 0.4342,
+      "specificity": 0.9045,
+      "precision": 0.4508,
+      "f1": 0.4423,
+      "false_positive_rate": 0.0955,
+      "false_negative_rate": 0.5658,
+      "false_positives": 14856,
+      "false_negatives": 15886
+    },
+    {
+      "threshold": 0.4,
+      "accuracy": 0.8448,
+      "recall_sensitivity": 0.3416,
+      "specificity": 0.9357,
+      "precision": 0.4895,
+      "f1": 0.4024,
+      "false_positive_rate": 0.0643,
+      "false_negative_rate": 0.6584,
+      "false_positives": 10005,
+      "false_negatives": 18486
+    },
+    {
+      "threshold": 0.45,
+      "accuracy": 0.8513,
+      "recall_sensitivity": 0.2403,
+      "specificity": 0.9616,
+      "precision": 0.5304,
+      "f1": 0.3307,
+      "false_positive_rate": 0.0384,
+      "false_negative_rate": 0.7597,
+      "false_positives": 5972,
+      "false_negatives": 21332
+    },
+    {
+      "threshold": 0.5,
+      "accuracy": 0.8539,
+      "recall_sensitivity": 0.1474,
+      "specificity": 0.9814,
+      "precision": 0.5892,
+      "f1": 0.2358,
+      "false_positive_rate": 0.0186,
+      "false_negative_rate": 0.8526,
+      "false_positives": 2886,
+      "false_negatives": 23939
+    }
+  ]
+}

@@ -92,10 +92,12 @@ async def predict_diabetes_endpoint(
     current_user: UserOut = Depends(get_current_user),
 ):
     model = getattr(request.app.state, "diabetes_model", None)
-    if model is None:
+    metadata = getattr(request.app.state, "diabetes_model_metadata", None)
+    if model is None or metadata is None:
         raise HTTPException(status_code=503, detail="Diabetes risk model is not loaded or currently unavailable")
 
     try:
-        return await prediction_service.predict_diabetes_risk(current_user.id, payload, model)
+        return await prediction_service.predict_diabetes_risk(current_user.id, payload, model, metadata)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+        logger.error(f"Diabetes prediction failed: {e}")
+        raise HTTPException(status_code=500, detail="Prediction failed. Please try again later.")

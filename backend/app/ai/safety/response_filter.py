@@ -40,3 +40,39 @@ def build_risk_response(condition_label: str, risk_probability: float, model_ver
         "model_version": model_version,
         "disclaimer": RISK_ASSESSMENT_DISCLAIMER,
     }
+
+
+def build_screening_response(
+    condition_label: str, risk_probability: float, threshold: float, model_version: str,
+) -> dict:
+    """For models with a single validated calibrated-probability operating
+    threshold (e.g. the BRFSS diabetes model) rather than three clinically-
+    flavored bands — reusing build_risk_response's 0.33/0.66 cut points here
+    would be meaningless, since they were tuned for a different model's
+    probability distribution. This reports the model's own screening
+    decision instead of inventing unvalidated risk tiers."""
+    is_elevated = risk_probability >= threshold
+    if is_elevated:
+        risk_level = "screening_elevated"
+        message = (
+            f"Your inputs show elevated risk indicators for {condition_label} based on this "
+            f"screening model. This is not a diagnosis — please discuss these results with a "
+            f"qualified healthcare professional."
+        )
+    else:
+        risk_level = "screening_negative"
+        message = (
+            f"Your inputs do not show elevated risk indicators for {condition_label} based on "
+            f"this screening model. This is not a diagnosis and does not rule out {condition_label} "
+            f"— continue routine checkups and consult a healthcare professional with any concerns."
+        )
+
+    return {
+        "risk_level": risk_level,
+        "risk_probability": round(float(risk_probability), 4),
+        "threshold": round(float(threshold), 4),
+        "is_elevated": is_elevated,
+        "message": message,
+        "model_version": model_version,
+        "disclaimer": RISK_ASSESSMENT_DISCLAIMER,
+    }

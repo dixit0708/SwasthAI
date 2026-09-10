@@ -1,0 +1,48 @@
+{
+  "mean_predicted_probability": 0.1545066016330286,
+  "observed_prevalence": 0.15293604967861424,
+  "reliability_by_decile": [
+    {
+      "bin": "[0.0-0.1)",
+      "n": 24457,
+      "mean_predicted": 0.0388,
+      "observed": 0.0394
+    },
+    {
+      "bin": "[0.1-0.2)",
+      "n": 7182,
+      "mean_predicted": 0.1466,
+      "observed": 0.1488
+    },
+    {
+      "bin": "[0.2-0.3)",
+      "n": 5222,
+      "mean_predicted": 0.2469,
+      "observed": 0.2319
+    },
+    {
+      "bin": "[0.3-0.4)",
+      "n": 4024,
+      "mean_predicted": 0.348,
+      "observed": 0.3178
+    },
+    {
+      "bin": "[0.4-0.5)",
+      "n": 3321,
+      "mean_predicted": 0.4462,
+      "observed": 0.4408
+    },
+    {
+      "bin": "[0.5-0.6)",
+      "n": 1641,
+      "mean_predicted": 0.5411,
+      "observed": 0.6076
+    },
+    {
+      "bin": "[0.6-0.7)",
+      "n": 48,
+      "mean_predicted": 0.6069,
+      "observed": 0.75
+    }
+  ]
+}

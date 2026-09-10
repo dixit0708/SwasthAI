@@ -10,9 +10,8 @@
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/prediction-diabetes.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js for visualizations -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <script src="js/auth-guard.js"></script>
@@ -22,82 +21,255 @@
             <header id="header-container" class="top-header"></header>
             <main class="page-content">
                 <!-- PAGE CONTENT: prediction-diabetes -->
-                
-    <div class="mb-4">
-        <a href="predictions.html" class="text-secondary"><i class="fas fa-arrow-left"></i> Back to Predictions</a>
-        <h1 class="mt-2">Diabetes Risk Assessment</h1>
-    </div>
 
-    <div class="grid" style="grid-template-columns: 2fr 1fr;">
-        <div class="card">
-            <div class="card-header">Patient Health Data</div>
-            <div class="card-body">
-                <div id="diabetesFormAlert" class="auth-alert" style="display: none;"><i class="fas fa-circle-exclamation"></i> <span id="diabetesFormAlertText"></span></div>
-                <form id="diabetesForm">
-                    <div class="grid" style="grid-template-columns: 1fr 1fr;">
-                        <div class="form-group"><label class="form-label" for="dbAge">Age</label><input type="number" id="dbAge" class="form-control" min="1" max="120" required></div>
-                        <div class="form-group"><label class="form-label" for="dbPregnancies">Number of pregnancies</label><input type="number" id="dbPregnancies" class="form-control" min="0" max="20" value="0" required></div>
-                        <div class="form-group"><label class="form-label" for="dbHeight">Height (cm)</label><input type="number" id="dbHeight" class="form-control" min="50" max="250" placeholder="e.g. 165" required></div>
-                        <div class="form-group"><label class="form-label" for="dbWeight">Weight (kg)</label><input type="number" step="0.1" id="dbWeight" class="form-control" min="10" max="300" placeholder="e.g. 68" required></div>
-                        <div class="form-group">
-                            <label class="form-label" for="dbGlucose">Blood sugar (glucose) level</label>
-                            <input type="number" id="dbGlucose" class="form-control" min="1" max="300" placeholder="mg/dL" required>
-                            <span class="form-text">From a recent blood test report, ask your lab report or last checkup.</span>
+    <div class="db-page" id="dbPage">
+
+        <!-- ============ WELCOME ============ -->
+        <section class="db-panel db-welcome" id="dbWelcome" data-phase="welcome">
+            <div class="db-welcome__mark" aria-hidden="true">
+                <svg viewBox="0 0 96 96" width="72" height="72" fill="none">
+                    <circle cx="48" cy="48" r="40" stroke="var(--border)" stroke-width="2"/>
+                    <path id="dbWelcomeArc" d="M48 8 A40 40 0 0 1 83.6 65.5" stroke="var(--primary)" stroke-width="3" stroke-linecap="round" fill="none"/>
+                    <circle cx="48" cy="48" r="5" fill="var(--primary)"/>
+                </svg>
+            </div>
+            <h1 class="db-welcome__title">Diabetes Risk Screening</h1>
+            <p class="db-welcome__lede">A short set of questions about your health, lifestyle, and history — answered in about three minutes — to produce an AI-generated diabetes risk screening estimate.</p>
+            <ul class="db-welcome__facts">
+                <li><i class="fas fa-list-check" aria-hidden="true"></i> 3 short sections, 14 questions</li>
+                <li><i class="fas fa-lock" aria-hidden="true"></i> Your answers are private to your account</li>
+                <li><i class="fas fa-circle-info" aria-hidden="true"></i> A screening estimate — never a diagnosis</li>
+            </ul>
+            <button type="button" class="btn btn-primary btn-lg" id="dbBeginBtn">Begin Assessment</button>
+            <a href="predictions.html" class="db-welcome__back">Back to Predictions</a>
+        </section>
+
+        <!-- ============ ASSESSMENT ============ -->
+        <section class="db-panel db-assessment" id="dbAssessment" data-phase="assessment" hidden>
+            <div class="db-assessment__header">
+                <a href="predictions.html" class="db-assessment__back"><i class="fas fa-arrow-left" aria-hidden="true"></i> Predictions</a>
+                <div class="db-progress" id="dbProgress" role="group" aria-label="Assessment progress">
+                    <p class="db-progress__label" id="dbProgressLabel" aria-live="polite">Section 1 of 4 &middot; About You</p>
+                    <div class="db-progress__bar"><div class="db-progress__fill" id="dbProgressFill"></div></div>
+                </div>
+            </div>
+
+            <div id="diabetesFormAlert" class="db-alert" role="alert" hidden>
+                <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+                <span id="diabetesFormAlertText"></span>
+                <button type="button" class="db-alert__retry" id="dbRetryBtn" hidden>Try again</button>
+            </div>
+
+            <form id="diabetesForm" novalidate>
+
+                <!-- ---- Section 0: About You ---- -->
+                <fieldset class="db-step" data-step="0">
+                    <legend class="db-step__legend">About You</legend>
+                    <p class="db-step__sub">A few basics to establish your baseline.</p>
+
+                    <div class="db-field">
+                        <p class="db-question" id="q-sex">How do you identify your sex for this health assessment?</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-sex">
+                            <label class="db-toggle__option"><input type="radio" name="sex" id="dbSex_0" value="0" class="db-toggle__input">Female</label>
+                            <label class="db-toggle__option"><input type="radio" name="sex" id="dbSex_1" value="1" class="db-toggle__input">Male</label>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label" for="dbBloodPressure">Blood pressure (lower number)</label>
-                            <input type="number" id="dbBloodPressure" class="form-control" min="1" max="200" placeholder="e.g. 80" required>
-                            <span class="form-text">The second/smaller number on a BP reading, e.g. the "80" in "120/80".</span>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="dbFamilyHistory">Family history of diabetes</label>
-                            <select id="dbFamilyHistory" class="form-control">
-                                <option value="none">No close relatives with diabetes</option>
-                                <option value="one" selected>One parent or sibling has diabetes</option>
-                                <option value="multiple">Multiple close relatives have diabetes</option>
-                                <option value="unsure">Not sure</option>
-                            </select>
-                        </div>
+                        <p class="db-hint">This assessment's underlying health survey recorded sex only as female or male.</p>
+                        <p class="db-field-error" id="sexError" role="alert" hidden></p>
                     </div>
 
-                    <details class="mt-4">
-                        <summary style="cursor: pointer; color: var(--text-secondary); font-size: 0.9rem;">Have detailed lab results? Add them for a more precise result (optional)</summary>
-                        <div class="grid mt-2" style="grid-template-columns: 1fr 1fr;">
-                            <div class="form-group">
-                                <label class="form-label" for="dbSkinThickness">Triceps skinfold thickness (mm)</label>
-                                <input type="number" id="dbSkinThickness" class="form-control" min="0" max="100" value="20">
-                                <span class="form-text">A caliper measurement from a lab/clinic. Leave the default if you don't have this.</span>
+                    <div class="db-field">
+                        <label class="db-question" for="dbAgeGroup">Which age range do you belong to?</label>
+                        <div class="db-select-wrap">
+                            <select id="dbAgeGroup" class="db-select" required>
+                                <option value="" selected disabled>Select your age range</option>
+                                <option value="1">18-24</option>
+                                <option value="2">25-29</option>
+                                <option value="3">30-34</option>
+                                <option value="4">35-39</option>
+                                <option value="5">40-44</option>
+                                <option value="6">45-49</option>
+                                <option value="7">50-54</option>
+                                <option value="8">55-59</option>
+                                <option value="9">60-64</option>
+                                <option value="10">65-69</option>
+                                <option value="11">70-74</option>
+                                <option value="12">75-79</option>
+                                <option value="13">80 or older</option>
+                            </select>
+                        </div>
+                        <p class="db-field-error" id="ageError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <p class="db-question">Height and weight</p>
+                        <div class="db-bmi-row">
+                            <div class="db-input-unit">
+                                <label class="db-input-unit__label" for="dbHeight">Height</label>
+                                <input type="number" id="dbHeight" inputmode="numeric" min="50" max="250" placeholder="170" required>
+                                <span class="db-input-unit__suffix">cm</span>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label" for="dbInsulin">2-hour serum insulin (mu U/ml)</label>
-                                <input type="number" id="dbInsulin" class="form-control" min="0" max="900" value="80">
-                                <span class="form-text">From a glucose tolerance test report. Leave the default if you don't have this.</span>
+                            <div class="db-input-unit">
+                                <label class="db-input-unit__label" for="dbWeight">Weight</label>
+                                <input type="number" id="dbWeight" inputmode="decimal" step="0.1" min="10" max="300" placeholder="64" required>
+                                <span class="db-input-unit__suffix">kg</span>
+                            </div>
+                            <div class="db-bmi-result">
+                                <span class="db-input-unit__label">BMI</span>
+                                <span class="db-bmi-value" id="dbBmiValue" aria-live="polite">&mdash;</span>
                             </div>
                         </div>
-                    </details>
+                        <p class="db-field-error" id="heightError" role="alert" hidden></p>
+                        <p class="db-field-error" id="weightError" role="alert" hidden></p>
+                        <p class="db-field-error" id="bmiError" role="alert" hidden></p>
+                    </div>
 
-                    <button type="submit" class="btn btn-primary mt-4" id="diabetesSubmitBtn">Run AI Model</button>
-                </form>
-            </div>
-        </div>
+                    <div class="db-field">
+                        <label class="db-question" for="dbGenHlth">In general, would you say your health is...</label>
+                        <div class="db-select-wrap">
+                            <select id="dbGenHlth" class="db-select" required>
+                                <option value="" selected disabled>Select an option</option>
+                                <option value="1">Excellent</option>
+                                <option value="2">Very good</option>
+                                <option value="3">Good</option>
+                                <option value="4">Fair</option>
+                                <option value="5">Poor</option>
+                            </select>
+                        </div>
+                        <p class="db-field-error" id="gen_hlthError" role="alert" hidden></p>
+                    </div>
+                </fieldset>
 
-        <div>
-            <div class="card mb-4" id="resultCard" style="display: none; border: 2px solid var(--primary);">
-                <div class="card-header bg-primary text-white">Analysis Complete</div>
-                <div class="card-body text-center">
-                    <h2 id="resultRiskLevel"></h2>
-                    <p class="text-muted" id="resultMessage"></p>
-                    <p style="font-size: 0.9rem;" id="resultDisclaimer"></p>
+                <!-- ---- Section 1: Health History ---- -->
+                <fieldset class="db-step" data-step="1" hidden>
+                    <legend class="db-step__legend">Health History</legend>
+                    <p class="db-step__sub">Conditions a healthcare professional has told you about.</p>
+
+                    <div class="db-field">
+                        <p class="db-question" id="q-high-bp">Have you ever been told by a doctor, nurse, or other health professional that you have high blood pressure?</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-high-bp">
+                            <label class="db-toggle__option"><input type="radio" name="high_bp" id="dbHighBp_1" value="1" class="db-toggle__input">Yes</label>
+                            <label class="db-toggle__option"><input type="radio" name="high_bp" id="dbHighBp_0" value="0" class="db-toggle__input">No</label>
+                        </div>
+                        <p class="db-field-error" id="high_bpError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <p class="db-question" id="q-high-chol">Have you ever been told that you have high cholesterol?</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-high-chol">
+                            <label class="db-toggle__option"><input type="radio" name="high_chol" id="dbHighChol_1" value="1" class="db-toggle__input">Yes</label>
+                            <label class="db-toggle__option"><input type="radio" name="high_chol" id="dbHighChol_0" value="0" class="db-toggle__input">No</label>
+                        </div>
+                        <p class="db-field-error" id="high_cholError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <p class="db-question" id="q-chol-check">Have you had your cholesterol checked within the past 5 years?</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-chol-check">
+                            <label class="db-toggle__option"><input type="radio" name="chol_check" id="dbCholCheck_1" value="1" class="db-toggle__input">Yes</label>
+                            <label class="db-toggle__option"><input type="radio" name="chol_check" id="dbCholCheck_0" value="0" class="db-toggle__input">No</label>
+                        </div>
+                        <p class="db-field-error" id="chol_checkError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <p class="db-question" id="q-stroke">Have you ever been told you had a stroke?</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-stroke">
+                            <label class="db-toggle__option"><input type="radio" name="stroke" id="dbStroke_1" value="1" class="db-toggle__input">Yes</label>
+                            <label class="db-toggle__option"><input type="radio" name="stroke" id="dbStroke_0" value="0" class="db-toggle__input">No</label>
+                        </div>
+                        <p class="db-field-error" id="strokeError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <p class="db-question" id="q-heart">Have you ever been told you had coronary heart disease or a heart attack?</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-heart">
+                            <label class="db-toggle__option"><input type="radio" name="heart_disease_or_attack" id="dbHeart_1" value="1" class="db-toggle__input">Yes</label>
+                            <label class="db-toggle__option"><input type="radio" name="heart_disease_or_attack" id="dbHeart_0" value="0" class="db-toggle__input">No</label>
+                        </div>
+                        <p class="db-field-error" id="heart_disease_or_attackError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <p class="db-question" id="q-diff-walk">Do you have serious difficulty walking or climbing stairs?</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-diff-walk">
+                            <label class="db-toggle__option"><input type="radio" name="diff_walk" id="dbDiffWalk_1" value="1" class="db-toggle__input">Yes</label>
+                            <label class="db-toggle__option"><input type="radio" name="diff_walk" id="dbDiffWalk_0" value="0" class="db-toggle__input">No</label>
+                        </div>
+                        <p class="db-field-error" id="diff_walkError" role="alert" hidden></p>
+                    </div>
+                </fieldset>
+
+                <!-- ---- Section 2: Lifestyle ---- -->
+                <fieldset class="db-step" data-step="2" hidden>
+                    <legend class="db-step__legend">Lifestyle</legend>
+                    <p class="db-step__sub">Everyday habits that factor into diabetes risk.</p>
+
+                    <div class="db-field">
+                        <p class="db-question" id="q-smoker">Have you smoked at least 100 cigarettes in your entire life (about 5 packs)?</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-smoker">
+                            <label class="db-toggle__option"><input type="radio" name="smoker" id="dbSmoker_1" value="1" class="db-toggle__input">Yes</label>
+                            <label class="db-toggle__option"><input type="radio" name="smoker" id="dbSmoker_0" value="0" class="db-toggle__input">No</label>
+                        </div>
+                        <p class="db-field-error" id="smokerError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <p class="db-question" id="q-phys-activity">Have you done any physical activity or exercise in the past 30 days, other than your regular job?</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-phys-activity">
+                            <label class="db-toggle__option"><input type="radio" name="phys_activity" id="dbPhysActivity_1" value="1" class="db-toggle__input">Yes</label>
+                            <label class="db-toggle__option"><input type="radio" name="phys_activity" id="dbPhysActivity_0" value="0" class="db-toggle__input">No</label>
+                        </div>
+                        <p class="db-field-error" id="phys_activityError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <p class="db-question" id="q-fruits">Do you eat fruit one or more times per day?</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-fruits">
+                            <label class="db-toggle__option"><input type="radio" name="fruits" id="dbFruits_1" value="1" class="db-toggle__input">Yes</label>
+                            <label class="db-toggle__option"><input type="radio" name="fruits" id="dbFruits_0" value="0" class="db-toggle__input">No</label>
+                        </div>
+                        <p class="db-field-error" id="fruitsError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <p class="db-question" id="q-alcohol">Are you a heavy drinker (adult men having more than 14 drinks per week, adult women having more than 7 drinks per week)?</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-alcohol">
+                            <label class="db-toggle__option"><input type="radio" name="hvy_alcohol_consump" id="dbAlcohol_1" value="1" class="db-toggle__input">Yes</label>
+                            <label class="db-toggle__option"><input type="radio" name="hvy_alcohol_consump" id="dbAlcohol_0" value="0" class="db-toggle__input">No</label>
+                        </div>
+                        <p class="db-field-error" id="hvy_alcohol_consumpError" role="alert" hidden></p>
+                    </div>
+                </fieldset>
+
+                <!-- ---- Section 3: Review ---- -->
+                <div class="db-step db-step--review" data-step="3" hidden>
+                    <h2 class="db-step__legend">Review your answers</h2>
+                    <p class="db-step__sub">You've completed your assessment. Review your answers before we calculate your estimated diabetes risk.</p>
+                    <div id="dbReviewList" class="db-review"></div>
                 </div>
-            </div>
 
-            <div class="card">
-                <div class="card-body bg-surface-alt">
-                    <h4 class="text-warning"><i class="fas fa-info-circle"></i> Important Safety Notice</h4>
-                    <p style="font-size: 0.9rem;" class="mt-2 text-secondary">This tool provides an AI-generated risk indicator, not a medical diagnosis. It is not a substitute for professional medical advice.</p>
+                <div class="db-nav">
+                    <button type="button" class="btn btn-outline" id="dbBackBtn" hidden>Back</button>
+                    <button type="button" class="btn btn-primary" id="dbNextBtn">Next</button>
+                    <button type="submit" class="btn btn-primary" id="dbSubmitBtn" hidden>Assess My Risk</button>
                 </div>
+            </form>
+        </section>
+
+        <!-- ============ RESULT ============ -->
+        <section class="db-panel db-result" id="dbResultPanel" data-phase="result" hidden>
+            <div class="db-result__mark" id="dbResultMark" aria-hidden="true"></div>
+            <h1 class="db-result__title" id="resultRiskLevel"></h1>
+            <p class="db-result__probability" id="resultProbability"></p>
+            <p class="db-result__message" id="resultMessage"></p>
+            <p class="db-result__disclaimer" id="resultDisclaimer"></p>
+            <div class="db-result__actions">
+                <button type="button" class="btn btn-outline" id="dbReviewAgainBtn">Review My Answers</button>
+                <a href="dashboard.html" class="btn btn-primary">Return to Dashboard</a>
             </div>
-        </div>
+        </section>
+
+        <p class="db-safety-note"><i class="fas fa-shield-heart" aria-hidden="true"></i> This tool provides an AI-generated risk indicator, not a medical diagnosis. It is not a substitute for professional medical advice.</p>
     </div>
 
             </main>

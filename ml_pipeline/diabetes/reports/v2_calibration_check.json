@@ -1,0 +1,6 @@
+{
+  "raw_brier_score": 0.18278,
+  "sigmoid_calibrated_brier_score": 0.10626,
+  "improvement": 0.07652,
+  "use_calibration": true
+}

@@ -56,6 +56,14 @@ storage/prescriptions/*
 *.temp
 /tmp/
 
+# Playwright E2E test tooling (tests/e2e/diabetes.spec.js) — package.json/
+# playwright.config.js are test-only infra kept in the repo, but their
+# runtime output/deps are not.
+node_modules/
+test-results/
+playwright-report/
+blob-report/
+
 # Claude Code tooling (local agent/skill config, not part of the app)
 .claude/
 .agents/

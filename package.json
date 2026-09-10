@@ -1,0 +1,15 @@
+{
+  "name": "swasthai-e2e-tests",
+  "private": true,
+  "description": "Test-only package for Playwright E2E tests. Not part of the application build — the frontend has no build step and the backend has its own requirements.txt.",
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "css-select": "^7.0.0",
+    "css-tree": "^3.2.1",
+    "domutils": "^4.0.2",
+    "htmlparser2": "^12.0.0"
+  },
+  "scripts": {
+    "test:e2e": "playwright test"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "accuracy": 0.6438609870356248,
+  "precision": 0.28248903815654447,
+  "recall_sensitivity": 0.8628009687989742,
+  "specificity": 0.6043317213705114,
+  "f1": 0.4256246266296518,
+  "roc_auc": 0.8179799161539707,
+  "pr_auc": 0.44459696075989164,
+  "brier": 0.10530429309535114,
+  "confusion_matrix": {
+    "tp": 6056,
+    "tn": 23494,
+    "fp": 15382,
+    "fn": 963
+  },
+  "threshold_used": 0.1,
+  "calibration_used": true,
+  "n_test_rows": 45895
+}

@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -34,17 +35,34 @@ async def lifespan(app: FastAPI):
     app.state.pneumonia_model = None
     app.state.pneumonia_model_lock = asyncio.Lock()
 
-    # Diabetes risk model: a small sklearn Pipeline, loaded eagerly since
-    # it's cheap (no heavy import chain) and keeps request latency
-    # predictable and uniform for every caller, not just the first one.
+    # Diabetes risk model: a small sklearn Pipeline (StandardScaler +
+    # calibrated XGBoost) trained on the CDC BRFSS 2015 Diabetes Health
+    # Indicators dataset. Now serving diabetes-brfss-v2 (14 features) —
+    # see ml_pipeline/diabetes/reports/v2_final_recommendation.md for why.
+    # The original 21-feature diabetes-brfss-v1 artifact
+    # (diabetes_pipeline.pkl + metadata.json) is deliberately left on disk
+    # untouched as the immutable comparison baseline; production now loads
+    # the v2 files instead. Loaded eagerly since it's cheap and keeps
+    # request latency predictable and uniform for every caller, not just
+    # the first one. The decision threshold and feature order live only in
+    # the metadata file (not inside the pickle), so both files are loaded
+    # and cross-validated together; a missing/malformed metadata file
+    # fails loudly here rather than the service silently guessing a
+    # threshold.
     try:
-        diabetes_model_path = os.path.join(base_dir, "ml_pipeline", "diabetes", "models", "diabetes_model.joblib")
-
-        app.state.diabetes_model = load_diabetes_model(diabetes_model_path)
-        logger.info(f"Loaded diabetes risk model from {diabetes_model_path}")
+        diabetes_artifacts_dir = Path(base_dir) / "ml_pipeline" / "diabetes" / "artifacts"
+        app.state.diabetes_model, app.state.diabetes_model_metadata = load_diabetes_model(
+            diabetes_artifacts_dir / "diabetes_pipeline_v2.pkl",
+            diabetes_artifacts_dir / "diabetes_metadata_v2.json",
+        )
+        logger.info(
+            f"Loaded diabetes risk model {app.state.diabetes_model_metadata.get('model_version')} "
+            f"from {diabetes_artifacts_dir}"
+        )
     except Exception as e:
         logger.error(f"Failed to load diabetes risk model: {e}")
         app.state.diabetes_model = None
+        app.state.diabetes_model_metadata = None
 
     # Load Skin Disease PyTorch model
     try:

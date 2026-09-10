@@ -115,11 +115,19 @@ def predict_pneumonia(model, preprocessed_image: np.ndarray, original_image: np.
             MAHALANOBIS_THRESHOLD = 2000.0
             SATURATION_THRESHOLD = 100.0
             
-            if min_dist > MAHALANOBIS_THRESHOLD or mean_saturation > SATURATION_THRESHOLD:
+            # Signal 3: Face Detection (Using YuNet for OpenCV 5 compatibility)
+            import os
+            onnx_path = os.path.join(os.path.dirname(__file__), 'face_detection_yunet_2023mar.onnx')
+            h, w, _ = original_image.shape
+            face_detector = cv2.FaceDetectorYN.create(onnx_path, "", (w, h))
+            _, faces = face_detector.detect(original_image)
+            face_detected = faces is not None and len(faces) > 0
+            
+            if min_dist > MAHALANOBIS_THRESHOLD or mean_saturation > SATURATION_THRESHOLD or face_detected:
                 return {
                     "prediction": "OOD",
                     "confidence": 0.0,
-                    "message": "This image doesn't appear to be a valid chest X-ray",
+                    "message": "This image doesn't appear to be a valid chest X-ray" + (" (Face Detected)" if face_detected else ""),
                     "distance": min_dist,
                     "saturation": mean_saturation
                 }

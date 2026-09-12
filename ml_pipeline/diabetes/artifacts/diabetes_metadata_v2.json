@@ -1,0 +1,122 @@
+{
+  "model_name": "diabetes_risk_model_brfss",
+  "model_version": "diabetes-brfss-v2",
+  "supersedes": "diabetes-brfss-v1",
+  "algorithm": "xgboost_sigmoid_calibrated",
+  "model_family_comparison": {
+    "logistic_regression": {
+      "mean": 0.8056054367638111,
+      "std": 0.0008496926616903546
+    },
+    "random_forest": {
+      "mean": 0.7962203961457149,
+      "std": 0.0011679860652332181
+    },
+    "xgboost_default": {
+      "mean": 0.8130096213329997,
+      "std": 0.0007762981487630628
+    },
+    "hist_gradient_boosting": {
+      "mean": 0.8130555868006135,
+      "std": 0.0009749854127781383
+    }
+  },
+  "dataset_name": "CDC BRFSS 2015 Diabetes Health Indicators",
+  "dataset_path": "data/raw/brfss2015-diabetes-binary.csv",
+  "training_date": "2026-09-09T17:17:58.524993+00:00",
+  "feature_names": [
+    "HighBP",
+    "HighChol",
+    "CholCheck",
+    "BMI",
+    "Smoker",
+    "Stroke",
+    "HeartDiseaseorAttack",
+    "PhysActivity",
+    "Fruits",
+    "HvyAlcoholConsump",
+    "GenHlth",
+    "DiffWalk",
+    "Sex",
+    "Age"
+  ],
+  "feature_order": [
+    "HighBP",
+    "HighChol",
+    "CholCheck",
+    "BMI",
+    "Smoker",
+    "Stroke",
+    "HeartDiseaseorAttack",
+    "PhysActivity",
+    "Fruits",
+    "HvyAlcoholConsump",
+    "GenHlth",
+    "DiffWalk",
+    "Sex",
+    "Age"
+  ],
+  "target_column": "Diabetes_binary",
+  "target_classes": {
+    "0": "no diabetes (or prediabetes only)",
+    "1": "diagnosed diabetes"
+  },
+  "preprocessing": "StandardScaler only (no imputation: dataset has zero missing values)",
+  "imputation_strategy": "none (not required)",
+  "scaling_strategy": "StandardScaler, fit on training split only",
+  "class_imbalance_strategy": "scale_pos_weight=5.5382 passed to XGBoost (natural class prevalence preserved, no resampling)",
+  "hyperparameters": {
+    "subsample": 0.8,
+    "reg_lambda": 5.0,
+    "reg_alpha": 0,
+    "n_estimators": 400,
+    "min_child_weight": 5,
+    "max_depth": 3,
+    "learning_rate": 0.05,
+    "gamma": 1.0,
+    "colsample_bytree": 0.8
+  },
+  "decision_threshold": 0.1,
+  "calibration_method": "sigmoid (Platt scaling)",
+  "random_seed": 42,
+  "train_test_split": "80/20 stratified, random_state=42, exact duplicates dropped pre-split (shared with v1 \u2014 same split files)",
+  "cross_validation": "StratifiedKFold(n_splits=5, shuffle=True, random_state=42)",
+  "cv_roc_auc_mean": 0.8136765150641345,
+  "cv_roc_auc_std": 0.0007854176893511186,
+  "test_metrics": {
+    "accuracy": 0.6438609870356248,
+    "precision": 0.28248903815654447,
+    "recall_sensitivity": 0.8628009687989742,
+    "specificity": 0.6043317213705114,
+    "f1": 0.4256246266296518,
+    "roc_auc": 0.8179799161539707,
+    "pr_auc": 0.44459696075989164,
+    "brier": 0.10530429309535114,
+    "confusion_matrix": {
+      "tp": 6056,
+      "tn": 23494,
+      "fp": 15382,
+      "fn": 963
+    },
+    "threshold_used": 0.1,
+    "calibration_used": true,
+    "n_test_rows": 45895
+  },
+  "library_versions": {
+    "scikit-learn": "1.9.0",
+    "xgboost": "3.4.1",
+    "pandas": "3.0.5",
+    "numpy": "2.5.2"
+  },
+  "feature_reduction_rationale": "See ml_pipeline/diabetes/reports/feature_selection_analysis.md and candidate_assessments.md \u2014 14 of 21 v1 features retained, selected on combined ML-importance + patient-facing-answerability evidence. Removed: Income, Education, AnyHealthcare, NoDocbcCost (sensitive/access proxies), MentHlth, PhysHlth (recall-burden, low marginal value), Veggies (redundant with retained Fruits, near-zero value).",
+  "limitations": [
+    "All features are self-reported survey answers (BRFSS 2015), not clinical lab measurements.",
+    "The binary target excludes prediabetes from the positive class.",
+    "Training data is a single U.S. CDC survey year (2015) and U.S. population.",
+    "No external, independent validation dataset was available for this training run.",
+    "Family history of diabetes is NOT included \u2014 no verified dataset combining it with comparable BRFSS-style features was found (see reports/family_history_investigation.md). Do not present this model as accounting for family history.",
+    "Hyperparameters were independently re-tuned for this 14-feature set (not reused from v1), but the same model family (XGBoost) and calibration/threshold-selection methodology as v1 were used."
+  ],
+  "intended_use": "AI-generated diabetes risk indicator for informational/screening purposes.",
+  "medical_safety_notice": "This model output is a risk assessment, NOT a medical diagnosis. It must never be presented as a definitive diagnosis and should always encourage consultation with a qualified healthcare professional."
+}

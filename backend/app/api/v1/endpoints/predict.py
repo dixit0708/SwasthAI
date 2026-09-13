@@ -7,9 +7,10 @@ from starlette.concurrency import run_in_threadpool
 from app.ai.inference.image_processing import validate_and_decode_image, preprocess_for_cnn
 from app.ai.models.pneumonia_cnn import load_pneumonia_model, predict_pneumonia
 from app.api.v1.deps import get_current_user
-from app.models.prediction import DiabetesPredictionInput, RiskPredictionOut
+from app.models.prediction import DiabetesPredictionInput, LiverPredictionInput, RiskPredictionOut
 from app.models.user import UserOut
 from app.services import prediction_service
+
 
 logger = logging.getLogger(__name__)
 
@@ -101,3 +102,22 @@ async def predict_diabetes_endpoint(
     except Exception as e:
         logger.error(f"Diabetes prediction failed: {e}")
         raise HTTPException(status_code=500, detail="Prediction failed. Please try again later.")
+
+
+@router.post("/liver", summary="Predict Liver Disease Risk", response_model=RiskPredictionOut)
+async def predict_liver_endpoint(
+    payload: LiverPredictionInput,
+    request: Request,
+    current_user: UserOut = Depends(get_current_user),
+):
+    model = getattr(request.app.state, "liver_model", None)
+    metadata = getattr(request.app.state, "liver_model_metadata", None)
+    if model is None or metadata is None:
+        raise HTTPException(status_code=503, detail="Liver risk model is not loaded or currently unavailable")
+
+    try:
+        return await prediction_service.predict_liver_risk(current_user.id, payload, model, metadata)
+    except Exception as e:
+        logger.error(f"Liver disease prediction failed: {e}")
+        raise HTTPException(status_code=500, detail="Prediction failed. Please try again later.")
+

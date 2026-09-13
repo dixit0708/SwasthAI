@@ -4,15 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="assets/images/logo.png">
-    <title>SwasthAI - Prediction Liver</title>
+    <title>SwasthAI - Liver Disease Prediction</title>
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/prediction-diabetes.css"> <!-- Reusing styles -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js for visualizations -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <script src="js/auth-guard.js"></script>
@@ -21,11 +20,168 @@
         <div class="main-content">
             <header id="header-container" class="top-header"></header>
             <main class="page-content">
-                <!-- PAGE CONTENT: prediction-liver -->
-                <div class="container">
-                    <h1>Prediction Liver</h1>
-                    <p>This is the Prediction Liver page prototype.</p>
+
+    <div class="db-page" id="dbPage">
+
+        <!-- ============ WELCOME ============ -->
+        <section class="db-panel db-welcome" id="dbWelcome" data-phase="welcome">
+            <div class="db-welcome__mark" aria-hidden="true">
+                <svg viewBox="0 0 96 96" width="72" height="72" fill="none">
+                    <circle cx="48" cy="48" r="40" stroke="var(--border)" stroke-width="2"/>
+                    <path id="dbWelcomeArc" d="M48 8 A40 40 0 0 1 83.6 65.5" stroke="var(--primary)" stroke-width="3" stroke-linecap="round" fill="none"/>
+                    <circle cx="48" cy="48" r="5" fill="var(--primary)"/>
+                </svg>
+            </div>
+            <h1 class="db-welcome__title">Liver Disease Risk Screening</h1>
+            <p class="db-welcome__lede">Enter values from a recent liver function test to produce an AI-generated liver disease risk screening estimate.</p>
+            <ul class="db-welcome__facts">
+                <li><i class="fas fa-list-check" aria-hidden="true"></i> 3 short sections, 10 questions</li>
+                <li><i class="fas fa-lock" aria-hidden="true"></i> Your answers are private to your account</li>
+                <li><i class="fas fa-circle-info" aria-hidden="true"></i> A screening estimate — never a diagnosis</li>
+            </ul>
+            <button type="button" class="btn btn-primary btn-lg" id="dbBeginBtn">Begin Assessment</button>
+            <a href="predictions.html" class="db-welcome__back">Back to Predictions</a>
+        </section>
+
+        <!-- ============ ASSESSMENT ============ -->
+        <section class="db-panel db-assessment" id="dbAssessment" data-phase="assessment" hidden>
+            <div class="db-assessment__header">
+                <a href="predictions.html" class="db-assessment__back"><i class="fas fa-arrow-left" aria-hidden="true"></i> Predictions</a>
+                <div class="db-progress" id="dbProgress" role="group" aria-label="Assessment progress">
+                    <p class="db-progress__label" id="dbProgressLabel" aria-live="polite">Section 1 of 4 &middot; About You</p>
+                    <div class="db-progress__bar"><div class="db-progress__fill" id="dbProgressFill"></div></div>
                 </div>
+            </div>
+
+            <div id="diabetesFormAlert" class="db-alert" role="alert" hidden>
+                <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+                <span id="diabetesFormAlertText"></span>
+                <button type="button" class="db-alert__retry" id="dbRetryBtn" hidden>Try again</button>
+            </div>
+
+            <form id="diabetesForm" novalidate> <!-- Reusing form ID for script compatibility -->
+
+                <!-- ---- Section 0: About You ---- -->
+                <fieldset class="db-step" data-step="0">
+                    <legend class="db-step__legend">About You</legend>
+                    <p class="db-step__sub">A few basics to establish your baseline.</p>
+
+                    <div class="db-field">
+                        <p class="db-question" id="q-gender">How do you identify your sex for this health assessment?</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-gender">
+                            <label class="db-toggle__option"><input type="radio" name="gender" id="dbGender_F" value="Female" class="db-toggle__input">Female</label>
+                            <label class="db-toggle__option"><input type="radio" name="gender" id="dbGender_M" value="Male" class="db-toggle__input">Male</label>
+                        </div>
+                        <p class="db-hint">This assessment's underlying health dataset recorded sex only as female or male.</p>
+                        <p class="db-field-error" id="genderError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="dbAge">What is your age in years?</label>
+                        <input type="number" id="dbAge" class="db-input" min="1" max="120" placeholder="e.g. 45" required>
+                        <p class="db-field-error" id="age_yearsError" role="alert" hidden></p>
+                    </div>
+                </fieldset>
+
+                <!-- ---- Section 1: Bilirubin & Proteins ---- -->
+                <fieldset class="db-step" data-step="1" hidden>
+                    <legend class="db-step__legend">Bilirubin & Proteins</legend>
+                    <p class="db-step__sub">Results from your liver function test (LFT).</p>
+
+                    <div class="db-field">
+                        <label class="db-question" for="dbTotalBilirubin">Total Bilirubin (mg/dL)</label>
+                        <input type="number" id="dbTotalBilirubin" class="db-input" step="0.1" min="0.1" max="100.0" placeholder="e.g. 0.8" required>
+                        <p class="db-hint">Normal range: 0.2–1.2 mg/dL</p>
+                        <p class="db-field-error" id="total_bilirubin_mg_dlError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="dbDirectBilirubin">Direct Bilirubin (mg/dL)</label>
+                        <input type="number" id="dbDirectBilirubin" class="db-input" step="0.1" min="0.0" max="50.0" placeholder="e.g. 0.2" required>
+                        <p class="db-hint">Normal range: 0.0–0.3 mg/dL</p>
+                        <p class="db-field-error" id="direct_bilirubin_mg_dlError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="dbTotalProteins">Total Proteins (g/dL)</label>
+                        <input type="number" id="dbTotalProteins" class="db-input" step="0.1" min="1.0" max="12.0" placeholder="e.g. 7.0" required>
+                        <p class="db-hint">Normal range: 6.0–8.3 g/dL</p>
+                        <p class="db-field-error" id="total_proteins_g_dlError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="dbAlbumin">Albumin (g/dL)</label>
+                        <input type="number" id="dbAlbumin" class="db-input" step="0.1" min="0.5" max="6.0" placeholder="e.g. 4.0" required>
+                        <p class="db-hint">Normal range: 3.5–5.0 g/dL</p>
+                        <p class="db-field-error" id="albumin_g_dlError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="dbAlbuminGlobulinRatio">Albumin/Globulin Ratio</label>
+                        <input type="number" id="dbAlbuminGlobulinRatio" class="db-input" step="0.1" min="0.1" max="10.0" placeholder="e.g. 1.2" required>
+                        <p class="db-hint">Normal range: 1.0–2.5</p>
+                        <p class="db-field-error" id="albumin_globulin_ratioError" role="alert" hidden></p>
+                    </div>
+                </fieldset>
+
+                <!-- ---- Section 2: Enzymes ---- -->
+                <fieldset class="db-step" data-step="2" hidden>
+                    <legend class="db-step__legend">Enzymes</legend>
+                    <p class="db-step__sub">Additional results from your liver function test.</p>
+
+                    <div class="db-field">
+                        <label class="db-question" for="dbAlkalinePhosphatase">Alkaline Phosphatase (U/L)</label>
+                        <input type="number" id="dbAlkalinePhosphatase" class="db-input" min="10" max="5000" placeholder="e.g. 150" required>
+                        <p class="db-hint">Normal range: 44–147 U/L</p>
+                        <p class="db-field-error" id="alkaline_phosphatase_u_lError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="dbSGPT">Alanine Aminotransferase (ALT/SGPT) (U/L)</label>
+                        <input type="number" id="dbSGPT" class="db-input" min="1" max="10000" placeholder="e.g. 25" required>
+                        <p class="db-hint">Normal range: 7–56 U/L</p>
+                        <p class="db-field-error" id="alanine_aminotransferase_u_lError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="dbSGOT">Aspartate Aminotransferase (AST/SGOT) (U/L)</label>
+                        <input type="number" id="dbSGOT" class="db-input" min="1" max="10000" placeholder="e.g. 20" required>
+                        <p class="db-hint">Normal range: 10–40 U/L</p>
+                        <p class="db-field-error" id="aspartate_aminotransferase_u_lError" role="alert" hidden></p>
+                    </div>
+                </fieldset>
+
+                <!-- ---- Section 3: Review ---- -->
+                <div class="db-step db-step--review" data-step="3" hidden>
+                    <h2 class="db-step__legend">Review your answers</h2>
+                    <p class="db-step__sub">You've completed your assessment. Review your answers before we calculate your estimated liver disease risk.</p>
+                    <div id="dbReviewList" class="db-review"></div>
+                </div>
+
+                <div class="db-nav">
+                    <button type="button" class="btn btn-outline" id="dbBackBtn" hidden>Back</button>
+                    <button type="button" class="btn btn-primary" id="dbNextBtn">Next</button>
+                    <button type="submit" class="btn btn-primary" id="dbSubmitBtn" hidden>Assess My Risk</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- ============ RESULT ============ -->
+        <section class="db-panel db-result" id="dbResultPanel" data-phase="result" hidden>
+            <div class="db-result__mark" id="dbResultMark" aria-hidden="true"></div>
+            <h1 class="db-result__title" id="resultRiskLevel"></h1>
+            <p class="db-result__probability" id="resultProbability"></p>
+            <p class="db-result__message" id="resultMessage"></p>
+            <p class="db-result__disclaimer" id="resultDisclaimer"></p>
+            <div class="db-result__actions">
+                <button type="button" class="btn btn-outline" id="dbReviewAgainBtn">Review My Answers</button>
+                <a href="dashboard.html" class="btn btn-primary">Return to Dashboard</a>
+            </div>
+        </section>
+
+        <p class="db-safety-note"><i class="fas fa-shield-heart" aria-hidden="true"></i> This tool provides an AI-generated risk indicator, not a medical diagnosis. It is not a substitute for professional medical advice.</p>
+    </div>
+
             </main>
         </div>
     </div>

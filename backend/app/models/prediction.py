@@ -55,3 +55,51 @@ class RiskPredictionOut(BaseModel):
     message: str
     model_version: str
     disclaimer: str
+
+
+class LiverPredictionInput(BaseModel):
+    """10-feature Indian Liver Patient Dataset (ILPD) contract for liver-ilpd-v1.
+
+    Features are the actual column names from Indian_Liver_Patient_549_Clean_Dataset.xlsx
+    (cleaned ILPD). All values are in the units shown in the column names.
+
+    extra="forbid" rejects any field not listed here at the HTTP layer, preventing
+    accidental submission of the target column or other unexpected fields.
+    """
+    model_config = ConfigDict(extra="forbid")
+
+    age_years: int = Field(ge=1, le=120, description="Patient age in years")
+    gender: Literal["Male", "Female"] = Field(description="Patient gender")
+    total_bilirubin_mg_dl: float = Field(
+        ge=0.1, le=100.0,
+        description="Total bilirubin in mg/dL (normal range: 0.2–1.2 mg/dL)"
+    )
+    direct_bilirubin_mg_dl: float = Field(
+        ge=0.0, le=50.0,
+        description="Direct (conjugated) bilirubin in mg/dL (normal: 0.0–0.3 mg/dL)"
+    )
+    alkaline_phosphatase_u_l: int = Field(
+        ge=10, le=5000,
+        description="Alkaline Phosphatase enzyme level in U/L (normal: 44–147 U/L)"
+    )
+    alanine_aminotransferase_u_l: int = Field(
+        ge=1, le=10000,
+        description="Alanine Aminotransferase (ALT/SGPT) in U/L (normal: 7–56 U/L)"
+    )
+    aspartate_aminotransferase_u_l: int = Field(
+        ge=1, le=10000,
+        description="Aspartate Aminotransferase (AST/SGOT) in U/L (normal: 10–40 U/L)"
+    )
+    total_proteins_g_dl: float = Field(
+        ge=1.0, le=12.0,
+        description="Total protein concentration in g/dL (normal: 6.0–8.3 g/dL)"
+    )
+    albumin_g_dl: float = Field(
+        ge=0.5, le=6.0,
+        description="Albumin in g/dL (normal: 3.5–5.0 g/dL)"
+    )
+    albumin_globulin_ratio: float = Field(
+        ge=0.1, le=10.0,
+        description="Albumin/Globulin ratio (normal: 1.0–2.5)"
+    )
+

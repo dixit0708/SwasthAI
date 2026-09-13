@@ -1,14 +1,16 @@
 from datetime import datetime, timezone
 
 from app.ai.models.diabetes_model import predict_diabetes
+from app.ai.models.liver_model import predict_liver
 from app.ai.safety.response_filter import build_screening_response
 from app.db.collections import prediction_repo
-from app.models.prediction import DiabetesPredictionInput
+from app.models.prediction import DiabetesPredictionInput, LiverPredictionInput
 
 # Used only if metadata.json is somehow missing a model_version (load_diabetes_model
 # already rejects that at startup) — kept as a last-resort label, never the
 # primary source of truth.
 FALLBACK_MODEL_VERSION = "diabetes-brfss-v2"
+FALLBACK_LIVER_MODEL_VERSION = "liver-ilpd-v1"
 
 
 async def predict_diabetes_risk(user_id: str, payload: DiabetesPredictionInput, model, metadata: dict) -> dict:
@@ -49,3 +51,42 @@ async def predict_diabetes_risk(user_id: str, payload: DiabetesPredictionInput, 
     })
 
     return response
+
+
+async def predict_liver_risk(user_id: str, payload: LiverPredictionInput, model, metadata: dict) -> dict:
+    """Runs inference using the saved liver risk pipeline and stores the result.
+
+    Field mapping mirrors the training-time feature names from
+    Indian_Liver_Patient_549_Clean_Dataset.xlsx. The feature dict key order
+    does not matter — predict_liver() rebuilds the row from metadata['feature_order'].
+    """
+    features = {
+        "age_years": payload.age_years,
+        "gender": payload.gender,
+        "total_bilirubin_mg_dl": payload.total_bilirubin_mg_dl,
+        "direct_bilirubin_mg_dl": payload.direct_bilirubin_mg_dl,
+        "alkaline_phosphatase_u_l": payload.alkaline_phosphatase_u_l,
+        "alanine_aminotransferase_u_l": payload.alanine_aminotransferase_u_l,
+        "aspartate_aminotransferase_u_l": payload.aspartate_aminotransferase_u_l,
+        "total_proteins_g_dl": payload.total_proteins_g_dl,
+        "albumin_g_dl": payload.albumin_g_dl,
+        "albumin_globulin_ratio": payload.albumin_globulin_ratio,
+    }
+
+    result = predict_liver(model, metadata, features)
+    model_version = metadata.get("model_version", FALLBACK_LIVER_MODEL_VERSION)
+    response = build_screening_response(
+        "liver disease", result["risk_probability"], result["threshold"], model_version,
+    )
+
+    await prediction_repo.create({
+        "user_id": user_id,
+        "condition": "liver_disease",
+        "model_version": model_version,
+        "input_snapshot": features,
+        "result": response,
+        "created_at": datetime.now(timezone.utc),
+    })
+
+    return response
+

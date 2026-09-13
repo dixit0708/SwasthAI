@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.db.mongodb import connect_to_mongo, close_mongo_connection
 from app.ai.models.diabetes_model import load_diabetes_model
+from app.ai.models.liver_model import load_liver_model
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +64,22 @@ async def lifespan(app: FastAPI):
         logger.error(f"Failed to load diabetes risk model: {e}")
         app.state.diabetes_model = None
         app.state.diabetes_model_metadata = None
+
+    # Liver risk model: loads sklearn pipeline trained on ILPD dataset.
+    try:
+        liver_artifacts_dir = Path(base_dir) / "ml_pipeline" / "liver" / "artifacts"
+        app.state.liver_model, app.state.liver_model_metadata = load_liver_model(
+            liver_artifacts_dir / "liver_pipeline.pkl",
+            liver_artifacts_dir / "liver_metadata.json",
+        )
+        logger.info(
+            f"Loaded liver risk model {app.state.liver_model_metadata.get('model_version')} "
+            f"from {liver_artifacts_dir}"
+        )
+    except Exception as e:
+        logger.error(f"Failed to load liver risk model: {e}")
+        app.state.liver_model = None
+        app.state.liver_model_metadata = None
 
     # Load Skin Disease PyTorch model
     try:

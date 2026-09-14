@@ -33,9 +33,10 @@
                 </svg>
             </div>
             <h1 class="db-welcome__title">Liver Disease Risk Screening</h1>
-            <p class="db-welcome__lede">Enter values from a recent liver function test to produce an AI-generated liver disease risk screening estimate.</p>
+            <p class="db-welcome__lede">A short set of questions about your health, lifestyle, and history — no lab results needed — to produce an AI-generated liver disease risk screening estimate.</p>
             <ul class="db-welcome__facts">
                 <li><i class="fas fa-list-check" aria-hidden="true"></i> 3 short sections, 10 questions</li>
+                <li><i class="fas fa-vial-circle-check" aria-hidden="true"></i> No blood test or lab report required</li>
                 <li><i class="fas fa-lock" aria-hidden="true"></i> Your answers are private to your account</li>
                 <li><i class="fas fa-circle-info" aria-hidden="true"></i> A screening estimate — never a diagnosis</li>
             </ul>
@@ -67,87 +68,141 @@
                     <p class="db-step__sub">A few basics to establish your baseline.</p>
 
                     <div class="db-field">
-                        <p class="db-question" id="q-gender">How do you identify your sex for this health assessment?</p>
-                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-gender">
-                            <label class="db-toggle__option"><input type="radio" name="gender" id="dbGender_F" value="Female" class="db-toggle__input">Female</label>
-                            <label class="db-toggle__option"><input type="radio" name="gender" id="dbGender_M" value="Male" class="db-toggle__input">Male</label>
+                        <p class="db-question" id="q-sex">How do you identify your sex for this health assessment?</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-sex">
+                            <label class="db-toggle__option"><input type="radio" name="sex" id="dbSex_F" value="Female" class="db-toggle__input">Female</label>
+                            <label class="db-toggle__option"><input type="radio" name="sex" id="dbSex_M" value="Male" class="db-toggle__input">Male</label>
                         </div>
-                        <p class="db-hint">This assessment's underlying health dataset recorded sex only as female or male.</p>
-                        <p class="db-field-error" id="genderError" role="alert" hidden></p>
+                        <p class="db-field-error" id="sexError" role="alert" hidden></p>
                     </div>
 
                     <div class="db-field">
                         <label class="db-question" for="dbAge">What is your age in years?</label>
-                        <input type="number" id="dbAge" class="db-input" min="1" max="120" placeholder="e.g. 45" required>
+                        <input type="number" id="dbAge" class="db-input" min="20" max="120" placeholder="e.g. 45" required>
+                        <p class="db-hint">This assessment is trained on adults aged 20 and over.</p>
                         <p class="db-field-error" id="age_yearsError" role="alert" hidden></p>
                     </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="dbRace">Which of these best describes your race/ethnicity?</label>
+                        <div class="db-select-wrap">
+                            <select id="dbRace" class="db-select" required>
+                                <option value="" selected disabled>Select an option</option>
+                                <option value="Mexican American">Mexican American</option>
+                                <option value="Other Hispanic">Other Hispanic</option>
+                                <option value="Non-Hispanic White">Non-Hispanic White</option>
+                                <option value="Non-Hispanic Black">Non-Hispanic Black</option>
+                                <option value="Other/Multi-Racial">Other / Multi-Racial</option>
+                            </select>
+                        </div>
+                        <p class="db-hint">This assessment's underlying health survey recorded race/ethnicity using these categories.</p>
+                        <p class="db-field-error" id="race_ethnicityError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <p class="db-question">Height and weight</p>
+                        <div class="db-bmi-row">
+                            <div class="db-input-unit">
+                                <label class="db-input-unit__label" for="dbHeight">Height</label>
+                                <input type="number" id="dbHeight" inputmode="numeric" min="50" max="250" placeholder="170" required>
+                                <span class="db-input-unit__suffix">cm</span>
+                            </div>
+                            <div class="db-input-unit">
+                                <label class="db-input-unit__label" for="dbWeight">Weight</label>
+                                <input type="number" id="dbWeight" inputmode="decimal" step="0.1" min="10" max="300" placeholder="64" required>
+                                <span class="db-input-unit__suffix">kg</span>
+                            </div>
+                            <div class="db-bmi-result">
+                                <span class="db-input-unit__label">BMI</span>
+                                <span class="db-bmi-value" id="dbBmiValue" aria-live="polite">&mdash;</span>
+                            </div>
+                        </div>
+                        <p class="db-field-error" id="heightError" role="alert" hidden></p>
+                        <p class="db-field-error" id="weightError" role="alert" hidden></p>
+                        <p class="db-field-error" id="bmiError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="dbWaist">Waist circumference</label>
+                        <div class="db-input-unit">
+                            <input type="number" id="dbWaist" inputmode="decimal" step="0.1" min="30" max="250" placeholder="90" required>
+                            <span class="db-input-unit__suffix">cm</span>
+                        </div>
+                        <p class="db-hint">Measured at the level of your belly button, at the end of a normal breath out.</p>
+                        <p class="db-field-error" id="waist_circumference_cmError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="dbGenHlth">In general, would you say your health is...</label>
+                        <div class="db-select-wrap">
+                            <select id="dbGenHlth" class="db-select" required>
+                                <option value="" selected disabled>Select an option</option>
+                                <option value="Excellent">Excellent</option>
+                                <option value="Very good">Very good</option>
+                                <option value="Good">Good</option>
+                                <option value="Fair">Fair</option>
+                                <option value="Poor">Poor</option>
+                            </select>
+                        </div>
+                        <p class="db-field-error" id="general_healthError" role="alert" hidden></p>
+                    </div>
                 </fieldset>
 
-                <!-- ---- Section 1: Bilirubin & Proteins ---- -->
+                <!-- ---- Section 1: Health History ---- -->
                 <fieldset class="db-step" data-step="1" hidden>
-                    <legend class="db-step__legend">Bilirubin & Proteins</legend>
-                    <p class="db-step__sub">Results from your liver function test (LFT).</p>
+                    <legend class="db-step__legend">Health History</legend>
+                    <p class="db-step__sub">Conditions a healthcare professional has told you about.</p>
 
                     <div class="db-field">
-                        <label class="db-question" for="dbTotalBilirubin">Total Bilirubin (mg/dL)</label>
-                        <input type="number" id="dbTotalBilirubin" class="db-input" step="0.1" min="0.1" max="100.0" placeholder="e.g. 0.8" required>
-                        <p class="db-hint">Normal range: 0.2–1.2 mg/dL</p>
-                        <p class="db-field-error" id="total_bilirubin_mg_dlError" role="alert" hidden></p>
+                        <p class="db-question" id="q-diabetes">Has a doctor ever told you that you have diabetes?</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-diabetes">
+                            <label class="db-toggle__option"><input type="radio" name="diabetes_status" id="dbDiabetes_yes" value="Yes" class="db-toggle__input">Yes</label>
+                            <label class="db-toggle__option"><input type="radio" name="diabetes_status" id="dbDiabetes_no" value="No" class="db-toggle__input">No</label>
+                            <label class="db-toggle__option"><input type="radio" name="diabetes_status" id="dbDiabetes_border" value="Borderline" class="db-toggle__input">Borderline / prediabetes</label>
+                        </div>
+                        <p class="db-field-error" id="diabetes_statusError" role="alert" hidden></p>
                     </div>
 
                     <div class="db-field">
-                        <label class="db-question" for="dbDirectBilirubin">Direct Bilirubin (mg/dL)</label>
-                        <input type="number" id="dbDirectBilirubin" class="db-input" step="0.1" min="0.0" max="50.0" placeholder="e.g. 0.2" required>
-                        <p class="db-hint">Normal range: 0.0–0.3 mg/dL</p>
-                        <p class="db-field-error" id="direct_bilirubin_mg_dlError" role="alert" hidden></p>
-                    </div>
-
-                    <div class="db-field">
-                        <label class="db-question" for="dbTotalProteins">Total Proteins (g/dL)</label>
-                        <input type="number" id="dbTotalProteins" class="db-input" step="0.1" min="1.0" max="12.0" placeholder="e.g. 7.0" required>
-                        <p class="db-hint">Normal range: 6.0–8.3 g/dL</p>
-                        <p class="db-field-error" id="total_proteins_g_dlError" role="alert" hidden></p>
-                    </div>
-
-                    <div class="db-field">
-                        <label class="db-question" for="dbAlbumin">Albumin (g/dL)</label>
-                        <input type="number" id="dbAlbumin" class="db-input" step="0.1" min="0.5" max="6.0" placeholder="e.g. 4.0" required>
-                        <p class="db-hint">Normal range: 3.5–5.0 g/dL</p>
-                        <p class="db-field-error" id="albumin_g_dlError" role="alert" hidden></p>
-                    </div>
-
-                    <div class="db-field">
-                        <label class="db-question" for="dbAlbuminGlobulinRatio">Albumin/Globulin Ratio</label>
-                        <input type="number" id="dbAlbuminGlobulinRatio" class="db-input" step="0.1" min="0.1" max="10.0" placeholder="e.g. 1.2" required>
-                        <p class="db-hint">Normal range: 1.0–2.5</p>
-                        <p class="db-field-error" id="albumin_globulin_ratioError" role="alert" hidden></p>
+                        <p class="db-question" id="q-hypertension">Have you ever been told by a doctor that you have high blood pressure?</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-hypertension">
+                            <label class="db-toggle__option"><input type="radio" name="hypertension" id="dbHtn_yes" value="Yes" class="db-toggle__input">Yes</label>
+                            <label class="db-toggle__option"><input type="radio" name="hypertension" id="dbHtn_no" value="No" class="db-toggle__input">No</label>
+                        </div>
+                        <p class="db-field-error" id="hypertensionError" role="alert" hidden></p>
                     </div>
                 </fieldset>
 
-                <!-- ---- Section 2: Enzymes ---- -->
+                <!-- ---- Section 2: Lifestyle ---- -->
                 <fieldset class="db-step" data-step="2" hidden>
-                    <legend class="db-step__legend">Enzymes</legend>
-                    <p class="db-step__sub">Additional results from your liver function test.</p>
+                    <legend class="db-step__legend">Lifestyle</legend>
+                    <p class="db-step__sub">Everyday habits that factor into liver disease risk.</p>
 
                     <div class="db-field">
-                        <label class="db-question" for="dbAlkalinePhosphatase">Alkaline Phosphatase (U/L)</label>
-                        <input type="number" id="dbAlkalinePhosphatase" class="db-input" min="10" max="5000" placeholder="e.g. 150" required>
-                        <p class="db-hint">Normal range: 44–147 U/L</p>
-                        <p class="db-field-error" id="alkaline_phosphatase_u_lError" role="alert" hidden></p>
+                        <p class="db-question" id="q-alcohol">In any one year, have you ever had 4/5 or more alcoholic drinks almost every day?</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-alcohol">
+                            <label class="db-toggle__option"><input type="radio" name="heavy_alcohol_use" id="dbAlcohol_yes" value="Yes" class="db-toggle__input">Yes</label>
+                            <label class="db-toggle__option"><input type="radio" name="heavy_alcohol_use" id="dbAlcohol_no" value="No" class="db-toggle__input">No</label>
+                        </div>
+                        <p class="db-field-error" id="heavy_alcohol_useError" role="alert" hidden></p>
                     </div>
 
                     <div class="db-field">
-                        <label class="db-question" for="dbSGPT">Alanine Aminotransferase (ALT/SGPT) (U/L)</label>
-                        <input type="number" id="dbSGPT" class="db-input" min="1" max="10000" placeholder="e.g. 25" required>
-                        <p class="db-hint">Normal range: 7–56 U/L</p>
-                        <p class="db-field-error" id="alanine_aminotransferase_u_lError" role="alert" hidden></p>
+                        <p class="db-question" id="q-smoker">Have you smoked at least 100 cigarettes in your entire life (about 5 packs)?</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-smoker">
+                            <label class="db-toggle__option"><input type="radio" name="smoker" id="dbSmoker_yes" value="Yes" class="db-toggle__input">Yes</label>
+                            <label class="db-toggle__option"><input type="radio" name="smoker" id="dbSmoker_no" value="No" class="db-toggle__input">No</label>
+                        </div>
+                        <p class="db-field-error" id="smokerError" role="alert" hidden></p>
                     </div>
 
                     <div class="db-field">
-                        <label class="db-question" for="dbSGOT">Aspartate Aminotransferase (AST/SGOT) (U/L)</label>
-                        <input type="number" id="dbSGOT" class="db-input" min="1" max="10000" placeholder="e.g. 20" required>
-                        <p class="db-hint">Normal range: 10–40 U/L</p>
-                        <p class="db-field-error" id="aspartate_aminotransferase_u_lError" role="alert" hidden></p>
+                        <p class="db-question" id="q-activity">Do you do moderate-intensity recreational physical activity for at least 10 minutes continuously?</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-activity">
+                            <label class="db-toggle__option"><input type="radio" name="physical_activity" id="dbActivity_yes" value="Yes" class="db-toggle__input">Yes</label>
+                            <label class="db-toggle__option"><input type="radio" name="physical_activity" id="dbActivity_no" value="No" class="db-toggle__input">No</label>
+                        </div>
+                        <p class="db-field-error" id="physical_activityError" role="alert" hidden></p>
                     </div>
                 </fieldset>
 
@@ -179,7 +234,7 @@
             </div>
         </section>
 
-        <p class="db-safety-note"><i class="fas fa-shield-heart" aria-hidden="true"></i> This tool provides an AI-generated risk indicator, not a medical diagnosis. It is not a substitute for professional medical advice.</p>
+        <p class="db-safety-note"><i class="fas fa-shield-heart" aria-hidden="true"></i> This tool provides an AI-generated risk indicator, not a medical diagnosis. It is not a substitute for professional medical advice — an elevated result means you should consider getting a liver function test, not that you have liver disease.</p>
     </div>
 
             </main>

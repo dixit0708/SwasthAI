@@ -65,12 +65,19 @@ async def lifespan(app: FastAPI):
         app.state.diabetes_model = None
         app.state.diabetes_model_metadata = None
 
-    # Liver risk model: loads sklearn pipeline trained on ILPD dataset.
+    # Liver risk model: a lab-free sklearn Pipeline trained on pooled NHANES
+    # 2013-2018 survey/exam data (age, sex, BMI, waist circumference,
+    # self-rated health, alcohol/smoking/activity habits, previously
+    # diagnosed diabetes/hypertension) — no LFT/blood values required. The
+    # original liver-ilpd-v1 (which required an LFT panel as input, and so
+    # added no triage value — see ml_pipeline/liver/reports/evaluation_nhanes.md)
+    # is deliberately left on disk untouched as the immutable comparison
+    # baseline; production now loads liver-nhanes-v1 instead.
     try:
         liver_artifacts_dir = Path(base_dir) / "ml_pipeline" / "liver" / "artifacts"
         app.state.liver_model, app.state.liver_model_metadata = load_liver_model(
-            liver_artifacts_dir / "liver_pipeline.pkl",
-            liver_artifacts_dir / "liver_metadata.json",
+            liver_artifacts_dir / "liver_pipeline_nhanes_v1.pkl",
+            liver_artifacts_dir / "liver_metadata_nhanes_v1.json",
         )
         logger.info(
             f"Loaded liver risk model {app.state.liver_model_metadata.get('model_version')} "

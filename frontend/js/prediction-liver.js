@@ -1,34 +1,79 @@
+/**
+ * SwasthAI — Liver Disease Risk Screening page.
+ *
+ * A bounded 4-section wizard (3 question sections + review) collecting the
+ * 11 features the production liver-nhanes-v1 model expects
+ * (backend/app/models/prediction.py: LiverPredictionInput), mapped to the
+ * exact field names that endpoint requires. The backend is the sole
+ * authority on risk classification: this file never computes a probability,
+ * never applies its own threshold, and only ever renders the
+ * risk_level/is_elevated/message/disclaimer the backend actually returned.
+ *
+ * Deliberately lab-free, mirroring prediction-diabetes.js's design: every
+ * question here is something a person can answer from memory or a routine
+ * physical exam (age, sex, race/ethnicity, height/weight → BMI, waist
+ * circumference, self-rated general health, alcohol/smoking/activity
+ * habits, previously-diagnosed diabetes/hypertension). The prior
+ * liver-ilpd-v1 model asked for the LFT panel itself (bilirubin, ALP, ALT,
+ * AST, proteins, albumin) — a form only fillable by someone who already had
+ * lab results, at which point the model added no triage value. See
+ * ml_pipeline/liver/reports/evaluation_nhanes.md for the full rationale.
+ */
+
 const STEPS = [
   { key: 'about-you', title: 'About You' },
-  { key: 'bilirubin-proteins', title: 'Bilirubin & Proteins' },
-  { key: 'enzymes', title: 'Enzymes' },
+  { key: 'health-history', title: 'Health History' },
+  { key: 'lifestyle', title: 'Lifestyle' },
   { key: 'review', title: 'Review' },
 ];
 const TOTAL_STEPS = STEPS.length;
 
+// Every field the API requires except bmi (derived from height/weight,
+// handled separately since it has no single control of its own).
 const FIELD_CONFIG = [
-  { apiField: 'gender', step: 0, kind: 'radio', name: 'gender', questionId: 'q-gender' },
-  { apiField: 'age_years', step: 0, kind: 'input', elId: 'dbAge', min: 1, max: 120, unit: 'years' },
-  { apiField: 'total_bilirubin_mg_dl', step: 1, kind: 'input', elId: 'dbTotalBilirubin', min: 0.1, max: 100.0, unit: 'mg/dL' },
-  { apiField: 'direct_bilirubin_mg_dl', step: 1, kind: 'input', elId: 'dbDirectBilirubin', min: 0.0, max: 50.0, unit: 'mg/dL' },
-  { apiField: 'total_proteins_g_dl', step: 1, kind: 'input', elId: 'dbTotalProteins', min: 1.0, max: 12.0, unit: 'g/dL' },
-  { apiField: 'albumin_g_dl', step: 1, kind: 'input', elId: 'dbAlbumin', min: 0.5, max: 6.0, unit: 'g/dL' },
-  { apiField: 'albumin_globulin_ratio', step: 1, kind: 'input', elId: 'dbAlbuminGlobulinRatio', min: 0.1, max: 10.0, unit: '' },
-  { apiField: 'alkaline_phosphatase_u_l', step: 2, kind: 'input', elId: 'dbAlkalinePhosphatase', min: 10, max: 5000, unit: 'U/L' },
-  { apiField: 'alanine_aminotransferase_u_l', step: 2, kind: 'input', elId: 'dbSGPT', min: 1, max: 10000, unit: 'U/L' },
-  { apiField: 'aspartate_aminotransferase_u_l', step: 2, kind: 'input', elId: 'dbSGOT', min: 1, max: 10000, unit: 'U/L' },
+  { apiField: 'sex', step: 0, kind: 'radio', name: 'sex', questionId: 'q-sex' },
+  { apiField: 'age_years', step: 0, kind: 'input', elId: 'dbAge', min: 20, max: 120, unit: 'years' },
+  { apiField: 'race_ethnicity', step: 0, kind: 'select', elId: 'dbRace' },
+  { apiField: 'waist_circumference_cm', step: 0, kind: 'input', elId: 'dbWaist', min: 30, max: 250, unit: 'cm' },
+  { apiField: 'general_health', step: 0, kind: 'select', elId: 'dbGenHlth' },
+  { apiField: 'diabetes_status', step: 1, kind: 'radio', name: 'diabetes_status', questionId: 'q-diabetes' },
+  { apiField: 'hypertension', step: 1, kind: 'radio', name: 'hypertension', questionId: 'q-hypertension' },
+  { apiField: 'heavy_alcohol_use', step: 2, kind: 'radio', name: 'heavy_alcohol_use', questionId: 'q-alcohol' },
+  { apiField: 'smoker', step: 2, kind: 'radio', name: 'smoker', questionId: 'q-smoker' },
+  { apiField: 'physical_activity', step: 2, kind: 'radio', name: 'physical_activity', questionId: 'q-activity' },
 ];
+// 10 entries above + bmi (derived from height/weight, no entry of its own)
+// = the full 11-feature contract: age_years, sex, race_ethnicity, bmi,
+// waist_circumference_cm, general_health, heavy_alcohol_use, smoker,
+// diabetes_status, hypertension, physical_activity.
 
-let currentStep = null;
+let currentStep = null; // null until the assessment actually starts
 let isTransitioning = false;
 
-function isFirstStep() { return currentStep === 0; }
-function isLastStep() { return currentStep === TOTAL_STEPS - 1; }
-function clampStep(next) { return Math.max(0, Math.min(TOTAL_STEPS - 1, next)); }
+function isFirstStep() {
+  return currentStep === 0;
+}
+
+function isLastStep() {
+  return currentStep === TOTAL_STEPS - 1;
+}
+
+function clampStep(next) {
+  return Math.max(0, Math.min(TOTAL_STEPS - 1, next));
+}
 
 function dbPrefersReducedMotion() {
   return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
+
+function computeBmi(heightCm, weightKg) {
+  const heightM = heightCm / 100;
+  return Math.round((weightKg / (heightM * heightM)) * 10) / 10;
+}
+
+// ---------------------------------------------------------------------------
+// Field access helpers
+// ---------------------------------------------------------------------------
 
 function getFieldValue(cfg) {
   if (cfg.kind === 'radio') {
@@ -44,8 +89,13 @@ function getFieldDisplayValue(cfg) {
     if (!checked) return '';
     return checked.closest('label').textContent.trim();
   }
+  if (cfg.kind === 'select') {
+    const select = document.getElementById(cfg.elId);
+    const option = select.options[select.selectedIndex];
+    return option && option.value !== '' ? option.textContent.trim() : '';
+  }
   const value = document.getElementById(cfg.elId).value;
-  return value === '' ? '' : `${value} ${cfg.unit}`.trim();
+  return value === '' ? '' : `${value} ${cfg.unit}`;
 }
 
 function getFieldQuestionText(cfg) {
@@ -60,6 +110,7 @@ function getFieldErrorEl(cfg) {
 }
 
 function getFieldInvalidTarget(cfg) {
+  // The element/group to visually mark invalid and to focus.
   if (cfg.kind === 'radio') return document.querySelector(`input[name="${cfg.name}"]`);
   return document.getElementById(cfg.elId);
 }
@@ -95,6 +146,17 @@ function validateField(cfg) {
     return true;
   }
 
+  if (cfg.kind === 'select') {
+    const el = document.getElementById(cfg.elId);
+    if (el.value === '') {
+      setFieldError(cfg, 'Please select an option to continue.');
+      return false;
+    }
+    clearFieldError(cfg);
+    return true;
+  }
+
+  // number
   const el = document.getElementById(cfg.elId);
   const raw = el.value.trim();
   if (raw === '') {
@@ -110,9 +172,74 @@ function validateField(cfg) {
   return true;
 }
 
+function validateBmiInputs() {
+  const heightEl = document.getElementById('dbHeight');
+  const weightEl = document.getElementById('dbWeight');
+  const heightError = document.getElementById('heightError');
+  const weightError = document.getElementById('weightError');
+  const bmiError = document.getElementById('bmiError');
+  let valid = true;
+
+  const heightVal = Number(heightEl.value);
+  if (heightEl.value.trim() === '' || !Number.isFinite(heightVal) || heightVal < 50 || heightVal > 250) {
+    heightEl.classList.add('is-invalid');
+    heightError.textContent = 'Please enter a valid height (50-250 cm).';
+    heightError.hidden = false;
+    valid = false;
+  } else {
+    heightEl.classList.remove('is-invalid');
+    heightError.hidden = true;
+  }
+
+  const weightVal = Number(weightEl.value);
+  if (weightEl.value.trim() === '' || !Number.isFinite(weightVal) || weightVal < 10 || weightVal > 300) {
+    weightEl.classList.add('is-invalid');
+    weightError.textContent = 'Please enter a valid weight (10-300 kg).';
+    weightError.hidden = false;
+    valid = false;
+  } else {
+    weightEl.classList.remove('is-invalid');
+    weightError.hidden = true;
+  }
+
+  if (!valid) {
+    bmiError.hidden = true;
+    return false;
+  }
+
+  const bmi = computeBmi(heightVal, weightVal);
+  if (!Number.isFinite(bmi) || bmi < 10 || bmi > 100) {
+    bmiError.textContent = 'Please check your height and weight — the resulting BMI is outside the range this assessment supports.';
+    bmiError.hidden = false;
+    return false;
+  }
+  bmiError.hidden = true;
+  return true;
+}
+
+function updateBmiPreview() {
+  const heightVal = Number(document.getElementById('dbHeight').value);
+  const weightVal = Number(document.getElementById('dbWeight').value);
+  const valueEl = document.getElementById('dbBmiValue');
+  const next = (Number.isFinite(heightVal) && heightVal > 0 && Number.isFinite(weightVal) && weightVal > 0)
+    ? String(computeBmi(heightVal, weightVal))
+    : '—';
+  if (valueEl.textContent === next) return;
+  valueEl.style.opacity = '0';
+  window.setTimeout(() => {
+    valueEl.textContent = next;
+    valueEl.style.opacity = '1';
+  }, dbPrefersReducedMotion() ? 0 : 120);
+}
+
 function validateStep(step) {
   let valid = true;
   let firstInvalid = null;
+
+  if (step === 0 && !validateBmiInputs()) {
+    valid = false;
+    firstInvalid = document.getElementById('dbHeight');
+  }
 
   FIELD_CONFIG.filter((cfg) => cfg.step === step).forEach((cfg) => {
     if (!validateField(cfg)) {
@@ -126,6 +253,10 @@ function validateStep(step) {
   }
   return valid;
 }
+
+// ---------------------------------------------------------------------------
+// Wizard rendering — every render derives purely from `currentStep`.
+// ---------------------------------------------------------------------------
 
 function renderProgress() {
   const stepNumber = currentStep + 1;
@@ -176,6 +307,9 @@ function transitionSteps(fromStep, toStep) {
   }, 180);
 }
 
+/** The single gatekeeper for wizard navigation — every step change goes
+ * through here, and `next` is always clamped, so currentStep can never
+ * leave [0, TOTAL_STEPS - 1] regardless of how many times this is called. */
 function goToStep(next) {
   if (isTransitioning) return;
   const clamped = clampStep(next);
@@ -197,16 +331,20 @@ function goToStep(next) {
 }
 
 function goToNextStep() {
-  if (isTransitioning || isLastStep()) return;
+  if (isTransitioning || isLastStep()) return; // defensive: last step has no Next
   if (!validateStep(currentStep)) return;
-  if (currentStep === TOTAL_STEPS - 2) renderReview();
+  if (currentStep === TOTAL_STEPS - 2) renderReview(); // entering the review step next
   goToStep(currentStep + 1);
 }
 
 function goToPreviousStep() {
-  if (isTransitioning || isFirstStep()) return;
+  if (isTransitioning || isFirstStep()) return; // defensive: first step has no Back
   goToStep(currentStep - 1);
 }
+
+// ---------------------------------------------------------------------------
+// Review
+// ---------------------------------------------------------------------------
 
 function renderReview() {
   const list = document.getElementById('dbReviewList');
@@ -231,6 +369,14 @@ function renderReview() {
     head.appendChild(editBtn);
     section.appendChild(head);
 
+    if (step === 0) {
+      const heightVal = document.getElementById('dbHeight').value;
+      const weightVal = document.getElementById('dbWeight').value;
+      section.appendChild(reviewRow('Height', `${heightVal} cm`));
+      section.appendChild(reviewRow('Weight', `${weightVal} kg`));
+      section.appendChild(reviewRow('BMI', String(computeBmi(Number(heightVal), Number(weightVal)))));
+    }
+
     FIELD_CONFIG.filter((cfg) => cfg.step === step).forEach((cfg) => {
       section.appendChild(reviewRow(getFieldQuestionText(cfg), getFieldDisplayValue(cfg)));
     });
@@ -253,15 +399,19 @@ function reviewRow(question, answer) {
   return row;
 }
 
+// ---------------------------------------------------------------------------
+// Submission
+// ---------------------------------------------------------------------------
+
 function mapFormToApiPayload() {
   const payload = {};
   FIELD_CONFIG.forEach((cfg) => {
-    if (cfg.apiField === 'gender') {
-        payload[cfg.apiField] = getFieldValue(cfg);
-    } else {
-        payload[cfg.apiField] = Number(getFieldValue(cfg));
-    }
+    payload[cfg.apiField] = cfg.kind === 'input' ? Number(getFieldValue(cfg)) : getFieldValue(cfg);
   });
+  const heightVal = Number(document.getElementById('dbHeight').value);
+  const weightVal = Number(document.getElementById('dbWeight').value);
+  payload.bmi = computeBmi(heightVal, weightVal);
+  payload.age_years = Math.trunc(payload.age_years);
   return payload;
 }
 
@@ -417,6 +567,10 @@ async function retrySubmission() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Init
+// ---------------------------------------------------------------------------
+
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('diabetesForm');
   if (!form) return;
@@ -426,6 +580,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('dbAssessment').hidden = false;
     goToStep(0);
   });
+
+  document.getElementById('dbHeight').addEventListener('input', updateBmiPreview);
+  document.getElementById('dbWeight').addEventListener('input', updateBmiPreview);
 
   document.getElementById('dbNextBtn').addEventListener('click', goToNextStep);
   document.getElementById('dbBackBtn').addEventListener('click', goToPreviousStep);

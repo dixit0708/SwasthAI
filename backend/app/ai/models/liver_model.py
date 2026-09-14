@@ -3,17 +3,23 @@ SwasthAI — Liver Disease Risk Model — Production Loader & Inference
 ====================================================================
 Mirrors the architecture of backend/app/ai/models/diabetes_model.py exactly.
 
-Loads the complete sklearn Pipeline (ColumnTransformer preprocessing + Random
-Forest classifier) produced by ml_pipeline/liver/train.py, together with its
-liver_metadata.json, and exposes predict_liver() for the predict endpoint.
+Loads the complete sklearn Pipeline (ColumnTransformer preprocessing +
+Logistic Regression classifier) produced by ml_pipeline/liver/train_nhanes.py,
+together with its liver_metadata_nhanes_v1.json, and exposes predict_liver()
+for the predict endpoint.
 
-The Pipeline internally handles:
-  - SimpleImputer(median)   for numerical features
-  - StandardScaler          for numerical features  
-  - OneHotEncoder(drop=first) for gender (Male → 1, Female → 0 encoded)
+Deliberately lab-free: every feature this model uses (age, sex, BMI, waist
+circumference, self-rated general health, alcohol/smoking/activity habits,
+previously-diagnosed diabetes/hypertension) is something a person can answer
+from memory or a routine physical exam — never a value from an LFT panel. A
+model that requires lab results as input has no triage value (by the time
+you have the labs, a clinician reading them already tells you the answer);
+this one is meant to run *before* a lab visit, to help decide whether one is
+worth getting. See ml_pipeline/liver/reports/evaluation_nhanes.md for the
+full rationale and honest performance limitations.
 
 predict_liver() accepts a plain dict of raw named features (no pandas import
-needed in production), rebuilds the feature DataFrame in the exact order
+needed in production), rebuilds the feature row in the exact order
 metadata["feature_order"] specifies, and calls pipeline.predict_proba().
 """
 
@@ -25,20 +31,24 @@ import joblib
 import numpy as np
 
 # ── Valid ranges (used for input validation) ─────────────────────────────────
-# Derived from the training dataset's min/max plus reasonable clinical
-# extensions. These exist to reject clearly impossible inputs at the API layer
-# before they reach the model — they are not used for preprocessing.
+# Derived from the training dataset (NHANES 2013-2018) plus reasonable
+# extensions. These exist to reject clearly impossible inputs at the API
+# layer before they reach the model — they are not used for preprocessing.
 FEATURE_RANGES = {
-    "age_years": (1, 120),
-    "total_bilirubin_mg_dl": (0.1, 100.0),
-    "direct_bilirubin_mg_dl": (0.0, 50.0),
-    "alkaline_phosphatase_u_l": (10, 5000),
-    "alanine_aminotransferase_u_l": (1, 10000),
-    "aspartate_aminotransferase_u_l": (1, 10000),
-    "total_proteins_g_dl": (1.0, 12.0),
-    "albumin_g_dl": (0.5, 6.0),
-    "albumin_globulin_ratio": (0.1, 10.0),
-    "gender": {"Male", "Female"},
+    "age_years": (20, 120),
+    "bmi": (10.0, 100.0),
+    "waist_circumference_cm": (30.0, 250.0),
+    "sex": {"Male", "Female"},
+    "race_ethnicity": {
+        "Mexican American", "Other Hispanic", "Non-Hispanic White",
+        "Non-Hispanic Black", "Other/Multi-Racial",
+    },
+    "general_health": {"Excellent", "Very good", "Good", "Fair", "Poor"},
+    "heavy_alcohol_use": {"Yes", "No"},
+    "smoker": {"Yes", "No"},
+    "diabetes_status": {"Yes", "No", "Borderline"},
+    "hypertension": {"Yes", "No"},
+    "physical_activity": {"Yes", "No"},
 }
 
 REQUIRED_METADATA_FIELDS = [

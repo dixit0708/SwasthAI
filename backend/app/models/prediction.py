@@ -58,48 +58,44 @@ class RiskPredictionOut(BaseModel):
 
 
 class LiverPredictionInput(BaseModel):
-    """10-feature Indian Liver Patient Dataset (ILPD) contract for liver-ilpd-v1.
+    """11-feature, lab-free contract for liver-nhanes-v1, trained on pooled
+    NHANES 2013-2014/2015-2016/2017-2018 survey and exam data — see
+    ml_pipeline/liver/reports/evaluation_nhanes.md.
 
-    Features are the actual column names from Indian_Liver_Patient_549_Clean_Dataset.xlsx
-    (cleaned ILPD). All values are in the units shown in the column names.
+    Every field here is something a person can answer from memory or a
+    routine physical exam (age, sex, BMI, waist circumference, self-rated
+    general health, alcohol/smoking/activity habits, previously-diagnosed
+    diabetes/hypertension). None of them require an LFT/blood panel — this
+    model is meant to run *before* a lab visit, as a "should you get one"
+    screen, unlike the retired liver-ilpd-v1 contract (which required the
+    LFT panel itself as input, preserved untouched on disk as the baseline
+    at ml_pipeline/liver/artifacts/liver_pipeline.pkl + liver_metadata.json).
 
     extra="forbid" rejects any field not listed here at the HTTP layer, preventing
     accidental submission of the target column or other unexpected fields.
     """
     model_config = ConfigDict(extra="forbid")
 
-    age_years: int = Field(ge=1, le=120, description="Patient age in years")
-    gender: Literal["Male", "Female"] = Field(description="Patient gender")
-    total_bilirubin_mg_dl: float = Field(
-        ge=0.1, le=100.0,
-        description="Total bilirubin in mg/dL (normal range: 0.2–1.2 mg/dL)"
+    age_years: int = Field(ge=20, le=120, description="Age in years (model trained on adults 20+)")
+    sex: Literal["Male", "Female"] = Field(description="Sex")
+    race_ethnicity: Literal[
+        "Mexican American", "Other Hispanic", "Non-Hispanic White",
+        "Non-Hispanic Black", "Other/Multi-Racial",
+    ] = Field(description="Race/ethnicity (NHANES categories)")
+    bmi: float = Field(ge=10.0, le=100.0, description="Body mass index")
+    waist_circumference_cm: float = Field(ge=30.0, le=250.0, description="Waist circumference in cm")
+    general_health: Literal["Excellent", "Very good", "Good", "Fair", "Poor"] = Field(
+        description="Self-rated general health"
     )
-    direct_bilirubin_mg_dl: float = Field(
-        ge=0.0, le=50.0,
-        description="Direct (conjugated) bilirubin in mg/dL (normal: 0.0–0.3 mg/dL)"
+    heavy_alcohol_use: Literal["Yes", "No"] = Field(
+        description="Ever had 4/5 or more alcoholic drinks almost every day in any one year"
     )
-    alkaline_phosphatase_u_l: int = Field(
-        ge=10, le=5000,
-        description="Alkaline Phosphatase enzyme level in U/L (normal: 44–147 U/L)"
+    smoker: Literal["Yes", "No"] = Field(description="Smoked at least 100 cigarettes in your lifetime")
+    diabetes_status: Literal["Yes", "No", "Borderline"] = Field(
+        description="Ever told by a doctor that you have diabetes"
     )
-    alanine_aminotransferase_u_l: int = Field(
-        ge=1, le=10000,
-        description="Alanine Aminotransferase (ALT/SGPT) in U/L (normal: 7–56 U/L)"
-    )
-    aspartate_aminotransferase_u_l: int = Field(
-        ge=1, le=10000,
-        description="Aspartate Aminotransferase (AST/SGOT) in U/L (normal: 10–40 U/L)"
-    )
-    total_proteins_g_dl: float = Field(
-        ge=1.0, le=12.0,
-        description="Total protein concentration in g/dL (normal: 6.0–8.3 g/dL)"
-    )
-    albumin_g_dl: float = Field(
-        ge=0.5, le=6.0,
-        description="Albumin in g/dL (normal: 3.5–5.0 g/dL)"
-    )
-    albumin_globulin_ratio: float = Field(
-        ge=0.1, le=10.0,
-        description="Albumin/Globulin ratio (normal: 1.0–2.5)"
+    hypertension: Literal["Yes", "No"] = Field(description="Ever told by a doctor that you have high blood pressure")
+    physical_activity: Literal["Yes", "No"] = Field(
+        description="Do moderate-intensity recreational physical activity for at least 10 minutes continuously"
     )
 

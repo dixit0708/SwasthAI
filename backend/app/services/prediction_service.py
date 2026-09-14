@@ -10,7 +10,7 @@ from app.models.prediction import DiabetesPredictionInput, LiverPredictionInput
 # already rejects that at startup) — kept as a last-resort label, never the
 # primary source of truth.
 FALLBACK_MODEL_VERSION = "diabetes-brfss-v2"
-FALLBACK_LIVER_MODEL_VERSION = "liver-ilpd-v1"
+FALLBACK_LIVER_MODEL_VERSION = "liver-nhanes-v1"
 
 
 async def predict_diabetes_risk(user_id: str, payload: DiabetesPredictionInput, model, metadata: dict) -> dict:
@@ -56,21 +56,23 @@ async def predict_diabetes_risk(user_id: str, payload: DiabetesPredictionInput, 
 async def predict_liver_risk(user_id: str, payload: LiverPredictionInput, model, metadata: dict) -> dict:
     """Runs inference using the saved liver risk pipeline and stores the result.
 
-    Field mapping mirrors the training-time feature names from
-    Indian_Liver_Patient_549_Clean_Dataset.xlsx. The feature dict key order
-    does not matter — predict_liver() rebuilds the row from metadata['feature_order'].
+    Field mapping mirrors the training-time feature names used by
+    ml_pipeline/liver/train_nhanes.py (pooled NHANES 2013-2018 data). The
+    feature dict key order does not matter — predict_liver() rebuilds the
+    row from metadata['feature_order'].
     """
     features = {
         "age_years": payload.age_years,
-        "gender": payload.gender,
-        "total_bilirubin_mg_dl": payload.total_bilirubin_mg_dl,
-        "direct_bilirubin_mg_dl": payload.direct_bilirubin_mg_dl,
-        "alkaline_phosphatase_u_l": payload.alkaline_phosphatase_u_l,
-        "alanine_aminotransferase_u_l": payload.alanine_aminotransferase_u_l,
-        "aspartate_aminotransferase_u_l": payload.aspartate_aminotransferase_u_l,
-        "total_proteins_g_dl": payload.total_proteins_g_dl,
-        "albumin_g_dl": payload.albumin_g_dl,
-        "albumin_globulin_ratio": payload.albumin_globulin_ratio,
+        "sex": payload.sex,
+        "race_ethnicity": payload.race_ethnicity,
+        "bmi": payload.bmi,
+        "waist_circumference_cm": payload.waist_circumference_cm,
+        "general_health": payload.general_health,
+        "heavy_alcohol_use": payload.heavy_alcohol_use,
+        "smoker": payload.smoker,
+        "diabetes_status": payload.diabetes_status,
+        "hypertension": payload.hypertension,
+        "physical_activity": payload.physical_activity,
     }
 
     result = predict_liver(model, metadata, features)

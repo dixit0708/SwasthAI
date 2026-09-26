@@ -2,13 +2,17 @@ from datetime import datetime, timezone
 
 from app.ai.models.diabetes_model import predict_diabetes
 from app.ai.models.diabetes_pima_model import predict_diabetes_pima
+from app.ai.models.heart_model import predict_heart
 from app.ai.models.liver_model import predict_liver
 from app.ai.models.liver_ilpd_model import predict_liver_ilpd
+from app.ai.safety.clinical_rules import apply_clinical_overlay
 from app.ai.safety.response_filter import build_screening_response
 from app.db.collections import prediction_repo
 from app.models.prediction import (
-    DiabetesPimaPredictionInput, DiabetesPredictionInput, LiverIlpdPredictionInput, LiverPredictionInput,
+    DiabetesPimaPredictionInput, DiabetesPredictionInput, HeartPredictionInput, HeartClinicalInput,
+    LiverIlpdPredictionInput, LiverPredictionInput,
 )
+import numpy as np
 
 # Used only if metadata.json is somehow missing a model_version (load_diabetes_model
 # already rejects that at startup) — kept as a last-resort label, never the
@@ -59,6 +63,169 @@ async def predict_diabetes_risk(user_id: str, payload: DiabetesPredictionInput, 
     return response
 
 
+
+async def predict_heart_disease(
+    user_id: str,
+    payload: HeartPredictionInput,
+    model,
+    metadata: dict,
+) -> dict:
+    """Transform the Pydantic HeartPredictionInput into the PascalCase raw
+    dict expected by heart_model.encode_heart_features(), run inference,
+    build the screening response, and persist to the predictions collection.
+
+    The mapping here uses the exact column names from the training dataset
+    (PascalCase) so encode_heart_features() can apply the encoding maps
+    copied from ml_pipeline/heart/preprocessing.py without any ambiguity.
+    """
+    raw_features = {
+        "Sex":                   payload.sex,
+        "AgeCategory":           payload.age_category,
+        "BMI":                   payload.bmi,
+        "GeneralHealth":         payload.general_health,
+        "PhysicalHealthDays":    payload.physical_health_days,
+        "MentalHealthDays":      payload.mental_health_days,
+        "SleepHours":            payload.sleep_hours,
+        "PhysicalActivities":    payload.physical_activities,
+        "HadStroke":             payload.had_stroke,
+        "HadAsthma":             payload.had_asthma,
+        "HadCOPD":               payload.had_copd,
+        "HadDepressiveDisorder": payload.had_depressive_disorder,
+        "HadKidneyDisease":      payload.had_kidney_disease,
+        "HadArthritis":          payload.had_arthritis,
+        "HadDiabetes":           payload.had_diabetes,
+        "DifficultyWalking":     payload.difficulty_walking,
+        "DifficultyConcentrating": payload.difficulty_concentrating,
+        "DifficultyErrands":     payload.difficulty_errands,
+        "SmokerStatus":          payload.smoker_status,
+        "AlcoholDrinkers":       payload.alcohol_drinkers,
+        "ChestScan":             payload.chest_scan,
+        "HighRiskLastYear":      payload.high_risk_last_year,
+        "RemovedTeeth":          payload.removed_teeth,
+        "LastCheckupTime":       payload.last_checkup_time,
+    }
+
+    result = predict_heart(model, metadata, raw_features)
+
+    # ------------------------------------------------------------------
+    # Clinical rule overlay — applies a floor probability for clinically
+    # severe feature combinations that the CDC survey-based XGBoost model
+    # underweights due to training data correlation limits.
+    # The overlay is a minimum floor: model score is preserved when it
+    # already exceeds the tier floor.  See app/ai/safety/clinical_rules.py
+    # for the full evidence basis and rule definitions.
+    # ------------------------------------------------------------------
+    overlay = apply_clinical_overlay(result["risk_probability"], raw_features)
+
+    model_version = metadata.get("model_version", "heart-cdc2022-v1")
+    response = build_screening_response(
+        "heart disease",
+        overlay.adjusted_probability,   # may be higher than raw model score
+        result["threshold"],
+        model_version,
+    )
+
+    # Append overlay metadata to the response so the frontend can surface it
+    response["model_probability"]   = overlay.model_probability
+    response["clinical_tier"]       = overlay.tier
+    response["clinical_flags"]      = overlay.rules_triggered
+    response["overlay_applied"]     = overlay.overlay_applied
+
+    await prediction_repo.create({
+        "user_id":          user_id,
+        "condition":        "heart_disease",
+        "model_version":    model_version,
+        "input_snapshot":   raw_features,
+        "result":           response,
+        "overlay_tier":     overlay.tier,
+        "overlay_rules":    overlay.rules_triggered,
+        "created_at":       datetime.now(timezone.utc),
+    })
+
+    return response
+
+async def predict_heart_clinical(
+    user_id: str,
+    payload: HeartClinicalInput,
+    model,
+    scaler,
+) -> dict:
+    import pandas as pd
+
+    # The exact column names used during training in ml_pipeline/heart_clinical/train.py
+    # ['RIDAGEYR', 'BPXSY1', 'BPXDI1', 'LBXTC', 'LBDHDD', 'LBXGLU', 'BPXPLS', 'BMXBMI']
+    raw_features_dict = {
+        'RIDAGEYR': [payload.age],
+        'BPXSY1': [payload.systolic_bp],
+        'BPXDI1': [payload.diastolic_bp],
+        'LBXTC': [payload.total_cholesterol],
+        'LBDHDD': [payload.hdl_cholesterol],
+        'LBXGLU': [payload.fasting_glucose],
+        'BPXPLS': [payload.pulse],
+        'BMXBMI': [payload.bmi]
+    }
+    
+    df_features = pd.DataFrame(raw_features_dict)
+    
+    # Pass the DataFrame to the scaler so it recognizes the feature names
+    features_scaled = scaler.transform(df_features)
+    
+    # Temporary print statement for debugging
+    print(f"=== [DEBUG] Scaled features passed to XGBoost: {features_scaled} ===")
+    
+    # Predict probability
+    prob = float(model.predict_proba(features_scaled)[0, 1])
+    print(f"=== [RAW XGBOOST PROB]: {prob} ===")
+    
+    # Scale empirical probability for UI representation
+    # 1. Define the exact raw outputs we observe from the model
+    # [Absolute Min, Healthy Baseline, Moderate Risk, Fatal/Extreme, Absolute Max]
+    raw_anchors = [0.00, 0.0010069217532873154, 0.09806432109326124, 0.19512172043323517, 1.00]
+
+    # 2. Define exactly what UI percentage we want to show for those raw outputs
+    # [UI Floor, UI Healthy, UI Moderate, UI Critical, UI Ceiling]
+    ui_anchors = [0.01, 0.08, 0.40, 0.95, 0.99]
+
+    # 3. Smoothly map the incoming raw probability to the UI scale
+    scaled_prob = float(np.interp(prob, raw_anchors, ui_anchors))
+    
+    model_version = "heart-clinical-nhanes-v1"
+
+    if scaled_prob > 0.75:
+        risk_level = "screening_elevated"
+        message = "Your inputs show critical risk indicators for heart disease based on this clinical model. Please seek immediate medical consultation."
+    elif scaled_prob > 0.50:
+        risk_level = "screening_elevated"
+        message = "Your inputs show high risk indicators for heart disease based on this clinical model. Please consult a healthcare professional immediately."
+    elif scaled_prob >= 0.20:
+        risk_level = "screening_elevated"
+        message = "Your inputs show moderate risk indicators for heart disease based on this clinical model. Consider discussing these results with a healthcare professional."
+    else:
+        risk_level = "screening_negative"
+        message = "Your inputs do not show elevated risk indicators for heart disease based on this clinical model. This is not a diagnosis and does not rule out heart disease — continue routine checkups."
+
+    from app.ai.safety.medical_disclaimer import RISK_ASSESSMENT_DISCLAIMER
+    response = {
+        "risk_level": risk_level,
+        "risk_probability": round(float(scaled_prob), 4),
+        "threshold": 0.20,
+        "is_elevated": scaled_prob >= 0.20,
+        "message": message,
+        "model_version": model_version,
+        "disclaimer": RISK_ASSESSMENT_DISCLAIMER,
+    }
+
+    await prediction_repo.create({
+        "user_id":          user_id,
+        "condition":        "heart_disease_clinical",
+        "model_version":    model_version,
+        "input_snapshot":   payload.model_dump(),
+        "result":           response,
+        "created_at":       datetime.now(timezone.utc),
+    })
+
+    return response
+
 async def predict_liver_risk(user_id: str, payload: LiverPredictionInput, model, metadata: dict) -> dict:
     """Runs inference using the saved liver risk pipeline and stores the result.
 
@@ -94,6 +261,7 @@ async def predict_liver_risk(user_id: str, payload: LiverPredictionInput, model,
         "input_snapshot": features,
         "result": response,
         "created_at": datetime.now(timezone.utc),
+
     })
 
     return response

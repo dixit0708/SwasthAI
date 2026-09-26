@@ -106,6 +106,20 @@ const SwasthAPI = {
         body: JSON.stringify(payload)
       });
     },
+    heart(payload) {
+      return swasthaiAuthedRequest('/predict/heart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    },
+    heartClinical(payload) {
+      return swasthaiAuthedRequest('/predict/heart/clinical', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    },
     liver(payload) {
       return swasthaiAuthedRequest('/predict/liver', {
         method: 'POST',

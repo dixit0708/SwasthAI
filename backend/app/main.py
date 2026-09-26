@@ -3,6 +3,7 @@ import logging
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
+import joblib
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,6 +12,7 @@ from app.core.config import settings
 from app.db.mongodb import connect_to_mongo, close_mongo_connection
 from app.ai.models.diabetes_model import load_diabetes_model
 from app.ai.models.diabetes_pima_model import load_diabetes_pima_model
+from app.ai.models.heart_model import load_heart_model
 from app.ai.models.liver_model import load_liver_model
 from app.ai.models.liver_ilpd_model import load_liver_ilpd_model
 
@@ -66,6 +68,43 @@ async def lifespan(app: FastAPI):
         logger.error(f"Failed to load diabetes risk model: {e}")
         app.state.diabetes_model = None
         app.state.diabetes_model_metadata = None
+
+
+    # Heart Disease Risk model: a small sklearn Pipeline (StandardScaler +
+    # calibrated XGBoost) trained on the CDC BRFSS 2022 dataset.
+    # Loaded eagerly alongside the diabetes model — both are lightweight
+    # joblib artifacts. The metadata file is the single source of truth for
+    # the decision threshold and feature order; a missing/malformed metadata
+    # file fails loudly here rather than silently guessing defaults.
+    try:
+        heart_model_dir  = Path(__file__).parent / "ai" / "models"
+        heart_metadata_path = (
+            Path(base_dir) / "ml_pipeline" / "heart" / "artifacts" / "heart_metadata.json"
+        )
+        app.state.heart_model, app.state.heart_model_metadata = load_heart_model(
+            heart_model_dir / "heart_disease_model.pkl",
+            heart_metadata_path,
+        )
+        logger.info(
+            f"Loaded heart disease risk model "
+            f"{app.state.heart_model_metadata.get('model_version')} "
+            f"from {heart_model_dir}"
+        )
+    except Exception as e:
+        logger.error(f"Failed to load heart disease risk model: {e}")
+        app.state.heart_model          = None
+        app.state.heart_model_metadata = None
+
+    # Load Heart Clinical model
+    try:
+        clinical_model_dir = Path(base_dir) / "ml_pipeline" / "heart_clinical"
+        app.state.heart_clinical_model = joblib.load(clinical_model_dir / "heart_clinical_model.pkl")
+        app.state.heart_clinical_scaler = joblib.load(clinical_model_dir / "scaler.pkl")
+        logger.info(f"Loaded heart clinical model from {clinical_model_dir}")
+    except Exception as e:
+        logger.error(f"Failed to load heart clinical model: {e}")
+        app.state.heart_clinical_model = None
+        app.state.heart_clinical_scaler = None
 
     # Liver risk model: a lab-free sklearn Pipeline trained on pooled NHANES
     # 2013-2018 survey/exam data (age, sex, BMI, waist circumference,
@@ -146,19 +185,22 @@ async def lifespan(app: FastAPI):
         app.state.liver_ilpd_model_metadata = None
 
     # Load Skin Disease PyTorch model
+    # Load Skin Disease PyTorch model (Eager Loading)
     try:
-        from app.ai.models.skin_cnn import load_skin_model
-        skin_ckpt = os.path.join(base_dir, "ml-services", "skin-disease-detector", "checkpoints", "skin_disease_resnet50.pt")
+        from app.ai.models.skin_model import load_skin_model
+        skin_ckpt = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ai", "models", "skin_cnn.pt")
         
         if os.path.exists(skin_ckpt):
-            app.state.skin_model = load_skin_model(skin_ckpt, num_classes=7)
-            logger.info(f"Loaded Skin Disease CNN model from {skin_ckpt}")
+            app.state.skin_model, app.state.skin_idx_to_class = load_skin_model(skin_ckpt)
+            logger.info(f"Loaded Skin Disease CNN model eagerly from {skin_ckpt}")
         else:
-            logger.warning(f"Skin Disease CNN model not found at {skin_ckpt}. Please train the model first.")
+            logger.warning(f"Skin Disease CNN checkpoint not found at {skin_ckpt}. Endpoints will return 503.")
             app.state.skin_model = None
+            app.state.skin_idx_to_class = None
     except Exception as e:
-        logger.error(f"Failed to load Skin Disease CNN model: {e}")
+        logger.error(f"Failed to eagerly load Skin Disease CNN model: {e}")
         app.state.skin_model = None
+        app.state.skin_idx_to_class = None
     yield
     # Shutdown
     await close_mongo_connection()
@@ -184,3 +226,5 @@ app.include_router(api_router, prefix="/api/v1")
 @app.get("/health", tags=["Health"])
 async def health_check():
     return {"status": "healthy", "project": settings.PROJECT_NAME}
+
+# reload trigger

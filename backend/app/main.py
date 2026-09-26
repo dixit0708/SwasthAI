@@ -65,6 +65,7 @@ async def lifespan(app: FastAPI):
         app.state.diabetes_model = None
         app.state.diabetes_model_metadata = None
 
+<<<<<<< Updated upstream
     # Liver risk model: a lab-free sklearn Pipeline trained on pooled NHANES
     # 2013-2018 survey/exam data (age, sex, BMI, waist circumference,
     # self-rated health, alcohol/smoking/activity habits, previously
@@ -89,19 +90,24 @@ async def lifespan(app: FastAPI):
         app.state.liver_model_metadata = None
 
     # Load Skin Disease PyTorch model
+=======
+    # Load Skin Disease PyTorch model (Eager Loading)
+>>>>>>> Stashed changes
     try:
-        from app.ai.models.skin_cnn import load_skin_model
-        skin_ckpt = os.path.join(base_dir, "ml-services", "skin-disease-detector", "checkpoints", "skin_disease_resnet50.pt")
+        from app.ai.models.skin_model import load_skin_model
+        skin_ckpt = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ai", "models", "skin_cnn.pt")
         
         if os.path.exists(skin_ckpt):
-            app.state.skin_model = load_skin_model(skin_ckpt, num_classes=7)
-            logger.info(f"Loaded Skin Disease CNN model from {skin_ckpt}")
+            app.state.skin_model, app.state.skin_idx_to_class = load_skin_model(skin_ckpt)
+            logger.info(f"Loaded Skin Disease CNN model eagerly from {skin_ckpt}")
         else:
-            logger.warning(f"Skin Disease CNN model not found at {skin_ckpt}. Please train the model first.")
+            logger.warning(f"Skin Disease CNN checkpoint not found at {skin_ckpt}. Endpoints will return 503.")
             app.state.skin_model = None
+            app.state.skin_idx_to_class = None
     except Exception as e:
-        logger.error(f"Failed to load Skin Disease CNN model: {e}")
+        logger.error(f"Failed to eagerly load Skin Disease CNN model: {e}")
         app.state.skin_model = None
+        app.state.skin_idx_to_class = None
     yield
     # Shutdown
     await close_mongo_connection()

@@ -65,7 +65,6 @@ async def lifespan(app: FastAPI):
         app.state.diabetes_model = None
         app.state.diabetes_model_metadata = None
 
-<<<<<<< Updated upstream
     # Liver risk model: a lab-free sklearn Pipeline trained on pooled NHANES
     # 2013-2018 survey/exam data (age, sex, BMI, waist circumference,
     # self-rated health, alcohol/smoking/activity habits, previously
@@ -90,9 +89,7 @@ async def lifespan(app: FastAPI):
         app.state.liver_model_metadata = None
 
     # Load Skin Disease PyTorch model
-=======
     # Load Skin Disease PyTorch model (Eager Loading)
->>>>>>> Stashed changes
     try:
         from app.ai.models.skin_model import load_skin_model
         skin_ckpt = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ai", "models", "skin_cnn.pt")

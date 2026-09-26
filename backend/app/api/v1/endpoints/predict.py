@@ -103,8 +103,6 @@ async def predict_diabetes_endpoint(
         logger.error(f"Diabetes prediction failed: {e}")
         raise HTTPException(status_code=500, detail="Prediction failed. Please try again later.")
 
-<<<<<<< Updated upstream
-
 @router.post("/liver", summary="Predict Liver Disease Risk", response_model=RiskPredictionOut)
 async def predict_liver_endpoint(
     payload: LiverPredictionInput,
@@ -122,7 +120,6 @@ async def predict_liver_endpoint(
         logger.error(f"Liver disease prediction failed: {e}")
         raise HTTPException(status_code=500, detail="Prediction failed. Please try again later.")
 
-=======
 @router.post("/skin", summary="Predict Skin Disease from Image")
 async def predict_skin_endpoint(request: Request, file: UploadFile = File(...)):
     try:
@@ -161,4 +158,3 @@ async def predict_skin_endpoint(request: Request, file: UploadFile = File(...)):
     except Exception as e:
         logger.error(f"Skin Prediction failed: {e}")
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
->>>>>>> Stashed changes

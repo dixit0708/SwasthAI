@@ -3,6 +3,7 @@ import logging
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
+import joblib
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.db.mongodb import connect_to_mongo, close_mongo_connection
 from app.ai.models.diabetes_model import load_diabetes_model
+from app.ai.models.heart_model import load_heart_model
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +66,42 @@ async def lifespan(app: FastAPI):
         app.state.diabetes_model = None
         app.state.diabetes_model_metadata = None
 
+    # Heart Disease Risk model: a small sklearn Pipeline (StandardScaler +
+    # calibrated XGBoost) trained on the CDC BRFSS 2022 dataset.
+    # Loaded eagerly alongside the diabetes model — both are lightweight
+    # joblib artifacts. The metadata file is the single source of truth for
+    # the decision threshold and feature order; a missing/malformed metadata
+    # file fails loudly here rather than silently guessing defaults.
+    try:
+        heart_model_dir  = Path(__file__).parent / "ai" / "models"
+        heart_metadata_path = (
+            Path(base_dir) / "ml_pipeline" / "heart" / "artifacts" / "heart_metadata.json"
+        )
+        app.state.heart_model, app.state.heart_model_metadata = load_heart_model(
+            heart_model_dir / "heart_disease_model.pkl",
+            heart_metadata_path,
+        )
+        logger.info(
+            f"Loaded heart disease risk model "
+            f"{app.state.heart_model_metadata.get('model_version')} "
+            f"from {heart_model_dir}"
+        )
+    except Exception as e:
+        logger.error(f"Failed to load heart disease risk model: {e}")
+        app.state.heart_model          = None
+        app.state.heart_model_metadata = None
+
+    # Load Heart Clinical model
+    try:
+        clinical_model_dir = Path(base_dir) / "ml_pipeline" / "heart_clinical"
+        app.state.heart_clinical_model = joblib.load(clinical_model_dir / "heart_clinical_model.pkl")
+        app.state.heart_clinical_scaler = joblib.load(clinical_model_dir / "scaler.pkl")
+        logger.info(f"Loaded heart clinical model from {clinical_model_dir}")
+    except Exception as e:
+        logger.error(f"Failed to load heart clinical model: {e}")
+        app.state.heart_clinical_model = None
+        app.state.heart_clinical_scaler = None
+
     # Load Skin Disease PyTorch model
     try:
         from app.ai.models.skin_cnn import load_skin_model
@@ -103,3 +141,5 @@ app.include_router(api_router, prefix="/api/v1")
 @app.get("/health", tags=["Health"])
 async def health_check():
     return {"status": "healthy", "project": settings.PROJECT_NAME}
+
+# reload trigger

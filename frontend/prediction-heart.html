@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI-powered heart disease risk screening — answer 24 health questions and receive an instant personalised risk estimate.">
     <link rel="icon" type="image/png" href="assets/images/logo.png">
-    <title>SwasthAI - Prediction Heart</title>
+    <title>SwasthAI - Heart Disease Risk Screening</title>
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/prediction-heart.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js for visualizations -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <script src="js/auth-guard.js"></script>
@@ -21,11 +21,492 @@
         <div class="main-content">
             <header id="header-container" class="top-header"></header>
             <main class="page-content">
-                <!-- PAGE CONTENT: prediction-heart -->
-                <div class="container">
-                    <h1>Prediction Heart</h1>
-                    <p>This is the Prediction Heart page prototype.</p>
+
+    <div class="hd-page" id="hdPage">
+
+        <!-- ============ WELCOME ============ -->
+        <section class="hd-panel hd-welcome" id="hdWelcome" data-phase="welcome">
+            <div class="hd-welcome__icon" aria-hidden="true">
+                <i class="fas fa-heart-pulse"></i>
+            </div>
+            <h1 class="hd-welcome__title">Heart Disease Risk Screening</h1>
+            <p class="hd-welcome__lede">A short health questionnaire — about 4 minutes — that generates an AI-powered heart disease risk estimate based on the CDC 2022 health survey model.</p>
+            <ul class="hd-welcome__facts">
+                <li><i class="fas fa-list-check" aria-hidden="true"></i> 5 sections, 24 questions</li>
+                <li><i class="fas fa-lock" aria-hidden="true"></i> Your answers are private to your account</li>
+                <li><i class="fas fa-circle-info" aria-hidden="true"></i> A screening estimate — never a diagnosis</li>
+            </ul>
+            <button type="button" class="btn btn-primary btn-lg" id="hdBeginBtn">Begin Assessment</button>
+            <a href="predictions.html" class="hd-welcome__back">Back to AI Insights</a>
+        </section>
+
+        <!-- ============ ASSESSMENT ============ -->
+        <section class="hd-panel hd-assessment" id="hdAssessment" data-phase="assessment" hidden>
+            <div class="hd-assessment__header">
+                <button type="button" class="hd-assessment__back" id="hdBackToWelcome">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> AI Insights
+                </button>
+                <div class="hd-progress" id="hdProgress" role="group" aria-label="Assessment progress">
+                    <p class="hd-progress__label" id="hdProgressLabel" aria-live="polite">Section 1 of 5 · About You</p>
+                    <div class="hd-progress__bar"><div class="hd-progress__fill" id="hdProgressFill"></div></div>
                 </div>
+            </div>
+
+            <div id="hdFormAlert" class="hd-alert" role="alert" hidden>
+                <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+                <span id="hdFormAlertText"></span>
+                <button type="button" class="hd-alert__retry" id="hdRetryBtn" hidden>Try again</button>
+            </div>
+
+            <form id="heartForm" novalidate>
+                
+                <!-- ---- Step 0: Gateway Screen ---- -->
+                <div class="hd-gateway-screen" id="gatewayScreen">
+                    <div class="hd-field" id="pathwaySelector" style="margin-bottom: 2rem; padding: 2rem 1.5rem; background: var(--surface-2); border-radius: var(--radius-lg); text-align: center;">
+                        <h2 class="hd-question" id="q-pathway" style="font-size: 1.25rem; margin-bottom: 0.75rem;">Do you have recent blood test results?</h2>
+                        <p style="color: var(--text-secondary); margin: 0 auto 2rem; font-size: 0.95rem; line-height: 1.6; max-width: 500px;">Providing exact lab values gives a highly precise clinical assessment. If you don't have them, you can take a quick lifestyle survey instead.</p>
+                        
+                        <div class="hd-gateway-cards" role="radiogroup" aria-labelledby="q-pathway">
+                            <label class="hd-gateway-card">
+                                <input type="radio" name="pathway" id="pathway_Y" value="clinical" class="hd-toggle__input">
+                                <div class="hd-gateway-card__content">
+                                    <i class="fas fa-file-medical" aria-hidden="true"></i>
+                                    <h3 class="hd-gateway-card__title">Yes, I have them</h3>
+                                    <p class="hd-gateway-card__desc">Use exact clinical metrics</p>
+                                </div>
+                            </label>
+                            <label class="hd-gateway-card">
+                                <input type="radio" name="pathway" id="pathway_N" value="survey" class="hd-toggle__input">
+                                <div class="hd-gateway-card__content">
+                                    <i class="fas fa-clipboard-list" aria-hidden="true"></i>
+                                    <h3 class="hd-gateway-card__title">No, I don't</h3>
+                                    <p class="hd-gateway-card__desc">Take the lifestyle survey</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ---- Clinical Track ---- -->
+                <fieldset class="hd-clinical-track" id="clinicalTrack" style="display: none;">
+                    <legend class="hd-step__legend">Clinical Lab Report</legend>
+                    <p class="hd-step__sub">Enter your exact lab values.</p>
+
+                    <div class="hd-field">
+                        <label class="hd-question" for="clinAge">Age</label>
+                        <div class="hd-input-unit hd-input-unit--inline">
+                            <input type="number" id="clinAge" min="18" max="120" placeholder="45" required>
+                            <span class="hd-input-unit__suffix">yrs</span>
+                        </div>
+                        <p class="hd-field-error" id="clinAgeError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <label class="hd-question" for="clinSysBp">Upper Blood Pressure Number (Systolic)</label>
+                        <div class="hd-input-unit hd-input-unit--inline">
+                            <input type="number" id="clinSysBp" min="60" max="250" placeholder="120" required>
+                            <span class="hd-input-unit__suffix">mmHg</span>
+                        </div>
+                        <p class="hd-field-error" id="clinSysBpError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <label class="hd-question" for="clinDiaBp">Lower Blood Pressure Number (Diastolic)</label>
+                        <div class="hd-input-unit hd-input-unit--inline">
+                            <input type="number" id="clinDiaBp" min="30" max="150" placeholder="80" required>
+                            <span class="hd-input-unit__suffix">mmHg</span>
+                        </div>
+                        <p class="hd-field-error" id="clinDiaBpError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <label class="hd-question" for="clinTotChol">Total Cholesterol</label>
+                        <div class="hd-input-unit hd-input-unit--inline">
+                            <input type="number" id="clinTotChol" min="50" max="600" placeholder="200" required>
+                            <span class="hd-input-unit__suffix">mg/dL</span>
+                        </div>
+                        <p class="hd-field-error" id="clinTotCholError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <label class="hd-question" for="clinHdl">HDL Cholesterol</label>
+                        <div class="hd-input-unit hd-input-unit--inline">
+                            <input type="number" id="clinHdl" min="10" max="200" placeholder="50" required>
+                            <span class="hd-input-unit__suffix">mg/dL</span>
+                        </div>
+                        <p class="hd-field-error" id="clinHdlError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <label class="hd-question" for="clinGlu">Fasting Glucose</label>
+                        <div class="hd-input-unit hd-input-unit--inline">
+                            <input type="number" id="clinGlu" min="40" max="500" placeholder="90" required>
+                            <span class="hd-input-unit__suffix">mg/dL</span>
+                        </div>
+                        <p class="hd-field-error" id="clinGluError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <label class="hd-question" for="clinPulse">Resting Pulse / Heart Rate</label>
+                        <div class="hd-input-unit hd-input-unit--inline">
+                            <input type="number" id="clinPulse" min="30" max="200" placeholder="70" required>
+                            <span class="hd-input-unit__suffix">bpm</span>
+                        </div>
+                        <p class="hd-field-error" id="clinPulseError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <p class="hd-question">Height and weight (used to calculate BMI)</p>
+                        <div class="hd-bmi-row">
+                            <div class="hd-input-unit">
+                                <label class="hd-input-unit__label" for="clinHeight">Height</label>
+                                <input type="number" id="clinHeight" inputmode="numeric" min="50" max="250" placeholder="170" required>
+                                <span class="hd-input-unit__suffix">cm</span>
+                            </div>
+                            <div class="hd-input-unit">
+                                <label class="hd-input-unit__label" for="clinWeight">Weight</label>
+                                <input type="number" id="clinWeight" inputmode="decimal" step="0.1" min="10" max="300" placeholder="70" required>
+                                <span class="hd-input-unit__suffix">kg</span>
+                            </div>
+                            <div class="hd-bmi-result">
+                                <span class="hd-input-unit__label">BMI</span>
+                                <span class="hd-bmi-value" id="clinBmiValue" aria-live="polite">&mdash;</span>
+                            </div>
+                        </div>
+                        <p class="hd-field-error" id="clinBmiError" role="alert" hidden></p>
+                    </div>
+                </fieldset>
+
+                <!-- ---- Step 0: About You ---- -->
+                <fieldset class="hd-step hd-step-survey" data-step="0">
+                    <legend class="hd-step__legend">About You</legend>
+                    <p class="hd-step__sub">A few basics to establish your baseline.</p>
+
+                    <div class="hd-field">
+                        <p class="hd-question" id="q-sex">How do you identify your sex for this health assessment?</p>
+                        <div class="hd-toggle" role="radiogroup" aria-labelledby="q-sex">
+                            <label class="hd-toggle__option"><input type="radio" name="sex" id="hdSex_F" value="Female" class="hd-toggle__input">Female</label>
+                            <label class="hd-toggle__option"><input type="radio" name="sex" id="hdSex_M" value="Male" class="hd-toggle__input">Male</label>
+                        </div>
+                        <p class="hd-hint">This assessment's underlying survey recorded sex as female or male.</p>
+                        <p class="hd-field-error" id="sexError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <label class="hd-question" for="hdAgeCategory">Which age range do you belong to?</label>
+                        <div class="hd-select-wrap">
+                            <select id="hdAgeCategory" class="hd-select" required>
+                                <option value="" selected disabled>Select your age range</option>
+                                <option value="Age 18 to 24">18–24</option>
+                                <option value="Age 25 to 29">25–29</option>
+                                <option value="Age 30 to 34">30–34</option>
+                                <option value="Age 35 to 39">35–39</option>
+                                <option value="Age 40 to 44">40–44</option>
+                                <option value="Age 45 to 49">45–49</option>
+                                <option value="Age 50 to 54">50–54</option>
+                                <option value="Age 55 to 59">55–59</option>
+                                <option value="Age 60 to 64">60–64</option>
+                                <option value="Age 65 to 69">65–69</option>
+                                <option value="Age 70 to 74">70–74</option>
+                                <option value="Age 75 to 79">75–79</option>
+                                <option value="Age 80 or older">80 or older</option>
+                            </select>
+                        </div>
+                        <p class="hd-field-error" id="ageCategoryError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <p class="hd-question">Height and weight (used to calculate BMI)</p>
+                        <div class="hd-bmi-row">
+                            <div class="hd-input-unit">
+                                <label class="hd-input-unit__label" for="hdHeight">Height</label>
+                                <input type="number" id="hdHeight" inputmode="numeric" min="50" max="250" placeholder="170" required>
+                                <span class="hd-input-unit__suffix">cm</span>
+                            </div>
+                            <div class="hd-input-unit">
+                                <label class="hd-input-unit__label" for="hdWeight">Weight</label>
+                                <input type="number" id="hdWeight" inputmode="decimal" step="0.1" min="10" max="300" placeholder="70" required>
+                                <span class="hd-input-unit__suffix">kg</span>
+                            </div>
+                            <div class="hd-bmi-result">
+                                <span class="hd-input-unit__label">BMI</span>
+                                <span class="hd-bmi-value" id="hdBmiValue" aria-live="polite">&mdash;</span>
+                            </div>
+                        </div>
+                        <p class="hd-field-error" id="bmiError" role="alert" hidden></p>
+                    </div>
+
+
+
+                    <div class="hd-field">
+                        <label class="hd-question" for="hdSleepHours">On average, how many hours of sleep do you get in a 24-hour period?</label>
+                        <div class="hd-input-unit hd-input-unit--inline">
+                            <input type="number" id="hdSleepHours" inputmode="numeric" min="1" max="24" placeholder="7" required>
+                            <span class="hd-input-unit__suffix">hrs</span>
+                        </div>
+                        <p class="hd-field-error" id="sleepHoursError" role="alert" hidden></p>
+                    </div>
+                </fieldset>
+
+                <!-- ---- Step 1: Recent Health ---- -->
+                <fieldset class="hd-step" data-step="1" hidden>
+                    <legend class="hd-step__legend">Recent Health</legend>
+                    <p class="hd-step__sub">How your body and mind have felt in the past 30 days.</p>
+
+                    <div class="hd-field">
+                        <label class="hd-question" for="hdPhysicalHealthDays">During the past 30 days, how many days was your <strong>physical health</strong> not good?</label>
+                        <div class="hd-input-unit hd-input-unit--inline">
+                            <input type="number" id="hdPhysicalHealthDays" inputmode="numeric" min="0" max="30" placeholder="0" required>
+                            <span class="hd-input-unit__suffix">days</span>
+                        </div>
+                        <p class="hd-field-error" id="physicalHealthDaysError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <label class="hd-question" for="hdMentalHealthDays">During the past 30 days, how many days was your <strong>mental health</strong> not good?</label>
+                        <div class="hd-input-unit hd-input-unit--inline">
+                            <input type="number" id="hdMentalHealthDays" inputmode="numeric" min="0" max="30" placeholder="0" required>
+                            <span class="hd-input-unit__suffix">days</span>
+                        </div>
+                        <p class="hd-field-error" id="mentalHealthDaysError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <label class="hd-question" for="hdLastCheckup">About how long has it been since your last routine health checkup?</label>
+                        <div class="hd-select-wrap">
+                            <select id="hdLastCheckup" class="hd-select" required>
+                                <option value="" selected disabled>Select an option</option>
+                                <option value="Within past year (anytime less than 12 months ago)">Within the past year</option>
+                                <option value="Within past 2 years (1 year but less than 2 years ago)">1–2 years ago</option>
+                                <option value="Within past 5 years (2 years but less than 5 years ago)">2–5 years ago</option>
+                                <option value="5 or more years ago">5 or more years ago</option>
+                            </select>
+                        </div>
+                        <p class="hd-field-error" id="lastCheckupError" role="alert" hidden></p>
+                    </div>
+                </fieldset>
+
+                <!-- ---- Step 2: Medical History ---- -->
+                <fieldset class="hd-step" data-step="2" hidden>
+                    <legend class="hd-step__legend">Medical History</legend>
+                    <p class="hd-step__sub">Conditions a healthcare professional has told you about.</p>
+
+                    <div class="hd-field">
+                        <p class="hd-question" id="q-stroke">Have you ever been told you had a stroke?</p>
+                        <div class="hd-toggle" role="radiogroup" aria-labelledby="q-stroke">
+                            <label class="hd-toggle__option"><input type="radio" name="had_stroke" id="hdStroke_Y" value="Yes" class="hd-toggle__input">Yes</label>
+                            <label class="hd-toggle__option"><input type="radio" name="had_stroke" id="hdStroke_N" value="No" class="hd-toggle__input">No</label>
+                        </div>
+                        <p class="hd-field-error" id="hadStrokeError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <p class="hd-question" id="q-asthma">Have you ever been told you have asthma?</p>
+                        <div class="hd-toggle" role="radiogroup" aria-labelledby="q-asthma">
+                            <label class="hd-toggle__option"><input type="radio" name="had_asthma" id="hdAsthma_Y" value="Yes" class="hd-toggle__input">Yes</label>
+                            <label class="hd-toggle__option"><input type="radio" name="had_asthma" id="hdAsthma_N" value="No" class="hd-toggle__input">No</label>
+                        </div>
+                        <p class="hd-field-error" id="hadAsthmaError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <p class="hd-question" id="q-copd">Have you ever been told you have COPD, emphysema, or chronic bronchitis?</p>
+                        <div class="hd-toggle" role="radiogroup" aria-labelledby="q-copd">
+                            <label class="hd-toggle__option"><input type="radio" name="had_copd" id="hdCopd_Y" value="Yes" class="hd-toggle__input">Yes</label>
+                            <label class="hd-toggle__option"><input type="radio" name="had_copd" id="hdCopd_N" value="No" class="hd-toggle__input">No</label>
+                        </div>
+                        <p class="hd-field-error" id="hadCopdError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <p class="hd-question" id="q-depression">Have you ever been told you had a depressive disorder?</p>
+                        <div class="hd-toggle" role="radiogroup" aria-labelledby="q-depression">
+                            <label class="hd-toggle__option"><input type="radio" name="had_depressive_disorder" id="hdDep_Y" value="Yes" class="hd-toggle__input">Yes</label>
+                            <label class="hd-toggle__option"><input type="radio" name="had_depressive_disorder" id="hdDep_N" value="No" class="hd-toggle__input">No</label>
+                        </div>
+                        <p class="hd-field-error" id="hadDepressiveDisorderError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <p class="hd-question" id="q-kidney">Have you ever been told you have kidney disease (excluding kidney stones)?</p>
+                        <div class="hd-toggle" role="radiogroup" aria-labelledby="q-kidney">
+                            <label class="hd-toggle__option"><input type="radio" name="had_kidney_disease" id="hdKidney_Y" value="Yes" class="hd-toggle__input">Yes</label>
+                            <label class="hd-toggle__option"><input type="radio" name="had_kidney_disease" id="hdKidney_N" value="No" class="hd-toggle__input">No</label>
+                        </div>
+                        <p class="hd-field-error" id="hadKidneyDiseaseError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <p class="hd-question" id="q-arthritis">Have you ever been told you have arthritis, rheumatoid arthritis, gout, or lupus?</p>
+                        <div class="hd-toggle" role="radiogroup" aria-labelledby="q-arthritis">
+                            <label class="hd-toggle__option"><input type="radio" name="had_arthritis" id="hdArthritis_Y" value="Yes" class="hd-toggle__input">Yes</label>
+                            <label class="hd-toggle__option"><input type="radio" name="had_arthritis" id="hdArthritis_N" value="No" class="hd-toggle__input">No</label>
+                        </div>
+                        <p class="hd-field-error" id="hadArthritisError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <label class="hd-question" for="hdDiabetes">Have you ever been told you have diabetes?</label>
+                        <div class="hd-select-wrap">
+                            <select id="hdDiabetes" class="hd-select" required>
+                                <option value="" selected disabled>Select an option</option>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                                <option value="No, pre-diabetes or borderline diabetes">Pre-diabetes or borderline diabetes</option>
+                                <option value="Yes, but only during pregnancy (female)">Yes, but only during pregnancy</option>
+                            </select>
+                        </div>
+                        <p class="hd-field-error" id="hadDiabetesError" role="alert" hidden></p>
+                    </div>
+                </fieldset>
+
+                <!-- ---- Step 3: Lifestyle ---- -->
+                <fieldset class="hd-step" data-step="3" hidden>
+                    <legend class="hd-step__legend">Lifestyle &amp; Daily Activities</legend>
+                    <p class="hd-step__sub">Everyday habits and functional abilities.</p>
+
+                    <div class="hd-field">
+                        <p class="hd-question" id="q-physical">Have you done any physical activity or exercise in the past 30 days, other than your regular job?</p>
+                        <div class="hd-toggle" role="radiogroup" aria-labelledby="q-physical">
+                            <label class="hd-toggle__option"><input type="radio" name="physical_activities" id="hdPhys_Y" value="Yes" class="hd-toggle__input">Yes</label>
+                            <label class="hd-toggle__option"><input type="radio" name="physical_activities" id="hdPhys_N" value="No" class="hd-toggle__input">No</label>
+                        </div>
+                        <p class="hd-field-error" id="physicalActivitiesError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <label class="hd-question" for="hdSmokerStatus">What best describes your smoking status?</label>
+                        <div class="hd-select-wrap">
+                            <select id="hdSmokerStatus" class="hd-select" required>
+                                <option value="" selected disabled>Select an option</option>
+                                <option value="Never smoked">Never smoked</option>
+                                <option value="Former smoker">Former smoker</option>
+                                <option value="Current smoker - now smokes some days">Current smoker — some days</option>
+                                <option value="Current smoker - now smokes every day">Current smoker — every day</option>
+                            </select>
+                        </div>
+                        <p class="hd-field-error" id="smokerStatusError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <p class="hd-question" id="q-alcohol">Have you had at least one alcoholic drink in the past 30 days?</p>
+                        <div class="hd-toggle" role="radiogroup" aria-labelledby="q-alcohol">
+                            <label class="hd-toggle__option"><input type="radio" name="alcohol_drinkers" id="hdAlc_Y" value="Yes" class="hd-toggle__input">Yes</label>
+                            <label class="hd-toggle__option"><input type="radio" name="alcohol_drinkers" id="hdAlc_N" value="No" class="hd-toggle__input">No</label>
+                        </div>
+                        <p class="hd-field-error" id="alcoholDrinkersError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <p class="hd-question" id="q-walk">Do you have serious difficulty walking or climbing stairs?</p>
+                        <div class="hd-toggle" role="radiogroup" aria-labelledby="q-walk">
+                            <label class="hd-toggle__option"><input type="radio" name="difficulty_walking" id="hdWalk_Y" value="Yes" class="hd-toggle__input">Yes</label>
+                            <label class="hd-toggle__option"><input type="radio" name="difficulty_walking" id="hdWalk_N" value="No" class="hd-toggle__input">No</label>
+                        </div>
+                        <p class="hd-field-error" id="difficultyWalkingError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <p class="hd-question" id="q-concentrate">Do you have difficulty concentrating, remembering, or making decisions?</p>
+                        <div class="hd-toggle" role="radiogroup" aria-labelledby="q-concentrate">
+                            <label class="hd-toggle__option"><input type="radio" name="difficulty_concentrating" id="hdConc_Y" value="Yes" class="hd-toggle__input">Yes</label>
+                            <label class="hd-toggle__option"><input type="radio" name="difficulty_concentrating" id="hdConc_N" value="No" class="hd-toggle__input">No</label>
+                        </div>
+                        <p class="hd-field-error" id="difficultyConcentratingError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <p class="hd-question" id="q-errands">Do you have difficulty doing errands alone, like shopping or visiting a doctor?</p>
+                        <div class="hd-toggle" role="radiogroup" aria-labelledby="q-errands">
+                            <label class="hd-toggle__option"><input type="radio" name="difficulty_errands" id="hdErr_Y" value="Yes" class="hd-toggle__input">Yes</label>
+                            <label class="hd-toggle__option"><input type="radio" name="difficulty_errands" id="hdErr_N" value="No" class="hd-toggle__input">No</label>
+                        </div>
+                        <p class="hd-field-error" id="difficultyErrandsError" role="alert" hidden></p>
+                    </div>
+                </fieldset>
+
+                <!-- ---- Step 4: Other Factors ---- -->
+                <fieldset class="hd-step" data-step="4" hidden>
+                    <legend class="hd-step__legend">Other Health Factors</legend>
+                    <p class="hd-step__sub">A few additional factors that inform the model.</p>
+
+                    <div class="hd-field">
+                        <p class="hd-question" id="q-chest">Have you ever had a CT or CAT scan of your chest area?</p>
+                        <div class="hd-toggle" role="radiogroup" aria-labelledby="q-chest">
+                            <label class="hd-toggle__option"><input type="radio" name="chest_scan" id="hdChest_Y" value="Yes" class="hd-toggle__input">Yes</label>
+                            <label class="hd-toggle__option"><input type="radio" name="chest_scan" id="hdChest_N" value="No" class="hd-toggle__input">No</label>
+                        </div>
+                        <p class="hd-field-error" id="chestScanError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <p class="hd-question" id="q-highrisk">In the past 12 months, did you engage in any high-risk behaviour for HIV infection?</p>
+                        <div class="hd-toggle" role="radiogroup" aria-labelledby="q-highrisk">
+                            <label class="hd-toggle__option"><input type="radio" name="high_risk_last_year" id="hdHR_Y" value="Yes" class="hd-toggle__input">Yes</label>
+                            <label class="hd-toggle__option"><input type="radio" name="high_risk_last_year" id="hdHR_N" value="No" class="hd-toggle__input">No</label>
+                        </div>
+                        <p class="hd-field-error" id="highRiskLastYearError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="hd-field">
+                        <label class="hd-question" for="hdRemovedTeeth">How many of your permanent teeth have been removed due to tooth decay or gum disease?</label>
+                        <div class="hd-select-wrap">
+                            <select id="hdRemovedTeeth" class="hd-select" required>
+                                <option value="" selected disabled>Select an option</option>
+                                <option value="None of them">None</option>
+                                <option value="1 to 5">1 to 5</option>
+                                <option value="6 or more, but not all">6 or more, but not all</option>
+                                <option value="All">All</option>
+                            </select>
+                        </div>
+                        <p class="hd-field-error" id="removedTeethError" role="alert" hidden></p>
+                    </div>
+                </fieldset>
+
+                <!-- ---- Nav buttons ---- -->
+                <div class="hd-nav">
+                    <button type="button" class="btn btn-outline" id="hdBackBtn" hidden>Back</button>
+                    <button type="button" class="btn btn-primary" id="hdNextBtn">Next</button>
+                    <button type="button" class="btn btn-primary" id="hdSubmitBtn" hidden>Assess My Risk</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- ============ RESULT ============ -->
+        <section class="hd-panel hd-result" id="hdResultPanel" data-phase="result" hidden>
+            <div class="hd-result__mark" id="hdResultMark" aria-hidden="true"></div>
+            <h1 class="hd-result__title" id="hdResultTitle"></h1>
+            <div class="hd-result__gauge-wrap" aria-hidden="true">
+                <div class="hd-gauge">
+                    <div class="hd-gauge__arc">
+                        <svg viewBox="0 0 120 70" width="240" height="140">
+                            <path d="M10 65 A50 50 0 0 1 110 65" stroke="var(--border)" stroke-width="10" fill="none" stroke-linecap="round"/>
+                            <path id="hdGaugeArc" d="M10 65 A50 50 0 0 1 110 65" stroke="var(--primary)" stroke-width="10" fill="none" stroke-linecap="round"
+                                  stroke-dasharray="157" stroke-dashoffset="157" style="transition: stroke-dashoffset 1s ease, stroke 0.5s ease"/>
+                        </svg>
+                    </div>
+                    <div class="hd-gauge__label">
+                        <span class="hd-gauge__pct" id="hdGaugePct">0%</span>
+                        <span class="hd-gauge__sub">risk score</span>
+                    </div>
+                </div>
+            </div>
+            <p class="hd-result__probability" id="hdResultProbability"></p>
+            <p class="hd-result__message" id="hdResultMessage"></p>
+            <p class="hd-result__disclaimer" id="hdResultDisclaimer"></p>
+            <div class="hd-result__actions">
+                <button type="button" class="btn btn-outline" id="hdReassessBtn">Start Again</button>
+                <a href="dashboard.html" class="btn btn-primary">Return to Dashboard</a>
+            </div>
+        </section>
+
+        <p class="hd-safety-note">
+            <i class="fas fa-shield-heart" aria-hidden="true"></i>
+            This tool provides an AI-generated risk indicator, not a medical diagnosis. It is not a substitute for professional medical advice.
+        </p>
+
+    </div><!-- /.hd-page -->
+
             </main>
         </div>
     </div>

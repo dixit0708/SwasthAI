@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -55,3 +55,155 @@ class RiskPredictionOut(BaseModel):
     message: str
     model_version: str
     disclaimer: str
+
+
+# ---------------------------------------------------------------------------
+# Heart Disease Risk — 24-feature CDC 2022 contract
+# (ml_pipeline/heart/artifacts/heart_metadata.json is the authoritative source
+#  for feature_order and decision_threshold; this schema's field names mirror
+#  the preprocessing.py encoding keys 1-to-1 so the service layer can build
+#  the feature vector without any secondary name mapping).
+# ---------------------------------------------------------------------------
+
+class HeartPredictionInput(BaseModel):
+    """24-feature CDC BRFSS 2022 contract for heart-cdc2022-v1.
+
+    All categorical inputs are accepted as the raw human-readable strings
+    that the frontend dropdowns will send; the service layer encodes them
+    into the integer representation the model was trained on using the same
+    mapping dictionaries copied from ml_pipeline/heart/preprocessing.py.
+
+    extra="forbid" ensures the target columns (HadHeartAttack, HadAngina,
+    HeartDiseaseRisk) and any unexpected field cannot be submitted.
+    """
+    model_config = ConfigDict(extra="forbid")
+
+    # ---- Demographics ----
+    sex: Literal["Female", "Male"] = Field(
+        description="Biological sex"
+    )
+    age_category: Literal[
+        "Age 18 to 24", "Age 25 to 29", "Age 30 to 34", "Age 35 to 39",
+        "Age 40 to 44", "Age 45 to 49", "Age 50 to 54", "Age 55 to 59",
+        "Age 60 to 64", "Age 65 to 69", "Age 70 to 74", "Age 75 to 79",
+        "Age 80 or older",
+    ] = Field(description="5-year age band")
+
+    # ---- Body metrics ----
+    bmi: float = Field(ge=10.0, le=100.0, description="Body mass index (kg/m²)")
+
+    # ---- General health ----
+    general_health: Optional[Literal["Poor", "Fair", "Good", "Very good", "Excellent"]] = Field(
+        default="Good", description="Self-rated general health"
+    )
+    physical_health_days: float = Field(
+        ge=0, le=30,
+        description="Days of poor physical health in the past 30 days",
+    )
+    mental_health_days: float = Field(
+        ge=0, le=30,
+        description="Days of poor mental health in the past 30 days",
+    )
+    sleep_hours: float = Field(
+        ge=1, le=24,
+        description="Average hours of sleep per 24-hour period",
+    )
+
+    # ---- Lifestyle ----
+    physical_activities: Literal["Yes", "No"] = Field(
+        description="Physical activity or exercise outside of work in the past 30 days"
+    )
+    smoker_status: Literal[
+        "Never smoked",
+        "Former smoker",
+        "Current smoker - now smokes some days",
+        "Current smoker - now smokes every day",
+    ] = Field(description="Smoking status")
+    alcohol_drinkers: Literal["Yes", "No"] = Field(
+        description="Had at least one drink of alcohol in the past 30 days"
+    )
+
+    # ---- Medical history ----
+    had_stroke: Literal["Yes", "No"] = Field(description="Ever told you had a stroke")
+    had_asthma: Literal["Yes", "No"] = Field(description="Ever told you had asthma")
+    had_copd: Literal["Yes", "No"] = Field(
+        description="Ever told you had COPD, emphysema, or chronic bronchitis"
+    )
+    had_depressive_disorder: Literal["Yes", "No"] = Field(
+        description="Ever told you had a depressive disorder"
+    )
+    had_kidney_disease: Literal["Yes", "No"] = Field(
+        description="Ever told you had kidney disease (excluding kidney stones/bladder infection)"
+    )
+    had_arthritis: Literal["Yes", "No"] = Field(
+        description="Ever told you had some form of arthritis, rheumatoid arthritis, gout, or lupus"
+    )
+    had_diabetes: Literal["Yes", "No", "Yes, but only during pregnancy (female)",
+                           "No, pre-diabetes or borderline diabetes"] = Field(
+        description="Ever told you had diabetes (Yes encodes to 1; all other responses encode to 0)"
+    )
+
+    # ---- Functional difficulties ----
+    difficulty_walking: Literal["Yes", "No"] = Field(
+        description="Serious difficulty walking or climbing stairs"
+    )
+    difficulty_concentrating: Literal["Yes", "No"] = Field(
+        description="Difficulty concentrating, remembering, or making decisions"
+    )
+    difficulty_errands: Literal["Yes", "No"] = Field(
+        description="Difficulty doing errands alone such as shopping or visiting a doctor"
+    )
+
+    # ---- Preventive / other ----
+    chest_scan: Literal["Yes", "No"] = Field(
+        description="Ever had a CT or CAT scan of your chest area"
+    )
+    high_risk_last_year: Literal["Yes", "No"] = Field(
+        description="HIV high-risk behaviour in the past 12 months"
+    )
+    removed_teeth: Literal[
+        "None of them", "1 to 5", "6 or more, but not all", "All"
+    ] = Field(description="How many of your permanent teeth have been removed")
+    last_checkup_time: Literal[
+        "Within past year (anytime less than 12 months ago)",
+        "Within past 2 years (1 year but less than 2 years ago)",
+        "Within past 5 years (2 years but less than 5 years ago)",
+        "5 or more years ago",
+    ] = Field(description="About how long has it been since your last routine checkup")
+
+
+class HeartRiskPredictionOut(BaseModel):
+    """Response contract for /predict/heart.  Mirrors RiskPredictionOut but
+    uses heart-specific risk_level literals so the frontend can distinguish
+    the two endpoints unambiguously.
+
+    Clinical overlay fields are included when the clinical rule engine applies
+    a floor above the raw model probability.  They are always present in the
+    response (None / [] / False when no overlay fired) so the frontend can
+    conditionally surface a clinical context notice to the user.
+    """
+    risk_level: Literal["screening_negative", "screening_elevated"]
+    risk_probability: float          # adjusted probability (after overlay)
+    threshold: float
+    is_elevated: bool
+    message: str
+    model_version: str
+    disclaimer: str
+
+    # ---- Clinical overlay fields (always present, None/[] when no overlay) ----
+    model_probability: Optional[float] = None    # raw XGBoost score pre-overlay
+    clinical_tier: Optional[int] = None          # None, 1, or 2
+    clinical_flags: Optional[list] = None        # human-readable rule descriptions
+    overlay_applied: Optional[bool] = None       # True only if floor was binding
+
+class HeartClinicalInput(BaseModel):
+    """8-feature CDC NHANES clinical contract."""
+    model_config = ConfigDict(extra="forbid")
+    age: float = Field(ge=18, le=120, description="Age in years")
+    systolic_bp: float = Field(ge=60, le=250, description="Systolic blood pressure (mmHg)")
+    diastolic_bp: float = Field(ge=30, le=150, description="Diastolic blood pressure (mmHg)")
+    total_cholesterol: float = Field(ge=50, le=600, description="Total cholesterol (mg/dL)")
+    hdl_cholesterol: float = Field(ge=10, le=200, description="HDL cholesterol (mg/dL)")
+    fasting_glucose: float = Field(ge=40, le=500, description="Fasting glucose (mg/dL)")
+    pulse: float = Field(ge=30, le=200, description="60-sec heart rate (bpm)")
+    bmi: float = Field(ge=10, le=100, description="Body Mass Index (kg/m^2)")

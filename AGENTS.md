@@ -1475,31 +1475,50 @@ This section does not replace the reporting workflow in Section 40 — it is the
 This section exists so an agent doesn't assume a described component is already built. Update it whenever a major piece described elsewhere in this file actually lands.
 
 **Backend — implemented:**
-* FastAPI app skeleton (`backend/app/main.py`), `/health` endpoint.
+* FastAPI app skeleton (`backend/app/main.py`), `/health` endpoint, CORS middleware.
 * API versioning scaffold: `backend/app/api/v1/router.py`, `deps.py`.
-* Auth endpoint: `backend/app/api/v1/endpoints/auth.py` (register/login-style flow, bcrypt + JWT — this is the only endpoint module that exists).
+* Auth endpoint: `backend/app/api/v1/endpoints/auth.py` (register/login, bcrypt + JWT).
+* Health profile endpoint: `backend/app/api/v1/endpoints/health_profile.py`.
+* Prediction endpoints: `backend/app/api/v1/endpoints/predict.py`
+  - `POST /predict/diabetes` — auth-protected, live, producing `RiskPredictionOut`
+  - `POST /predict/heart` — auth-protected, live, producing `HeartRiskPredictionOut` (with clinical overlay fields)
+  - `POST /predict/pneumonia` — unauthenticated (no user record tied), live, OOD detection enabled
 * Core: `backend/app/core/config.py` (pydantic-settings), `backend/app/core/security.py` (hashing/JWT).
-* DB layer: `backend/app/db/mongodb.py` (connection), `backend/app/db/repository.py` (`BaseRepository`), `backend/app/db/collections.py` (all 14 collection repositories from Section 14 are already scaffolded, instantiated and ready to use even though most have no endpoints yet).
-* Models: `backend/app/models/user.py` only.
-* AI scaffolding: `backend/app/ai/models/`, `backend/app/ai/inference/image_processing.py`, `backend/app/ai/safety/` exist as empty/near-empty packages — no trained models are loaded yet.
+* DB layer: `backend/app/db/mongodb.py` (connection), `backend/app/db/repository.py` (`BaseRepository`), `backend/app/db/collections.py` (all 14 collection repositories already scaffolded).
+* Models: `backend/app/models/user.py`, `backend/app/models/prediction.py` (`DiabetesPredictionInput`, `HeartPredictionInput`, `RiskPredictionOut`, `HeartRiskPredictionOut`).
+* Services layer: `backend/app/services/prediction_service.py` (diabetes + heart), `backend/app/services/health_profile_service.py`.
+* AI — fully loaded and serving:
+  - `backend/app/ai/models/diabetes_model.py` (diabetes-brfss-v2 XGBoost pipeline)
+  - `backend/app/ai/models/heart_model.py` (heart-cdc2022-v2-smote XGBoost pipeline, named-DataFrame fix applied)
+  - `backend/app/ai/models/pneumonia_cnn.py` (ResNet18, lazy-loaded on first request, OOD detection)
+  - `backend/app/ai/inference/image_processing.py`
+  - `backend/app/ai/safety/clinical_rules.py` — Tier 1 (60–75%) and Tier 2 (85–93%) clinical overlay for heart
+  - `backend/app/ai/safety/response_filter.py` — `build_screening_response()` for all prediction endpoints
 * Tests: `backend/tests/test_ai_inference.py`, `backend/tests/test_security.py`.
 
 **Backend — not yet implemented:**
-* `backend/app/services/` (service layer) does not exist yet — create it per Section 13 as soon as a route needs non-trivial business logic.
-* No endpoints yet for health profiles, family members, medical records/reports, predictions, health metrics/goals, medications, notifications, doctors, appointments, AI conversations, or audit logs, despite their repositories already existing.
-* No trained ML/CNN model artifacts are loaded or served yet.
-* Consent management (Section 45) and account-deletion cascade (Section 46) are not implemented.
+* No endpoints yet for family members, medical records/reports, health metrics/goals, medications, notifications, doctors, appointments, AI conversations, or audit logs — repositories are scaffolded but have no routes.
+* Liver disease model (ml_pipeline/liver/) — ML pipeline not yet built.
+* Skin disease CNN — model training not yet done; `load_skin_model` called at startup with a `not found` guard.
+* Consent management (Section 45) and account-deletion cascade (Section 46) not implemented.
 * No CI pipeline exists yet (Section 52).
 
 **ML pipeline:**
-* `ml_pipeline/diabetes/`, `heart/`, `liver/`, `pneumonia/`, `skin/` are currently placeholder/empty directories — no training scripts, data, or model artifacts exist yet. Follow the Section 5/7 layout when populating each.
+* `ml_pipeline/diabetes/` — fully built: preprocessing, train (v1 + v2), evaluate, artifacts. V2 is production.
+* `ml_pipeline/heart/` — fully built: preprocessing, train (v2-smote), evaluate, artifacts. Production copy lives at `backend/app/ai/models/heart_disease_model.pkl`.
+* `ml_pipeline/pneumonia/` — CNN checkpoint at `backend/app/ai/models/pneumonia_cnn.pt`, OOD stats at `backend/app/ai/models/ood_stats.npz`.
+* `ml_pipeline/liver/`, `ml_pipeline/skin/` — placeholder directories, no training scripts or data yet.
 
 **Frontend — implemented:**
-* Full static HTML page set already exists for the planned surface area: landing/marketing pages (`index.html`, `about.html`, `features.html`, `how-it-works.html`), auth pages (`login.html`, `register.html`, `forgot-password.html`), and authenticated app pages (`dashboard.html`, `ai-health.html`, `ai-assistant.html`, `health-insights.html`, `health-profile.html`, `health-tracking.html`, `diet-lifestyle.html`, `medical-records.html`, `medications.html`, `family.html`, `doctors.html`, `doctor-profile.html`, `appointments.html`, `predictions.html` plus per-disease `prediction-*.html` pages, `report-analyzer.html`), plus `privacy.html`/`terms.html`.
-* Corresponding JS modules exist per page under `frontend/js/`, plus shared `auth.js`, `auth-guard.js`, `components.js`, `main.js`, `site-nav.js`.
-* Styling is organized under `frontend/css/` with `variables.css`, `layout.css`, `typography.css`, `responsive.css`, `components.css` (+ `css/components/`), and per-page stylesheets.
-* Because most backend endpoints don't exist yet, most of these pages are necessarily working against empty states, local/mock-free placeholders, or partial API integration — per Section 29, do not fabricate data to make them look more complete than the backend supports.
+* Full static HTML page set exists (see original listing above).
+* Fully functional AI prediction pages:
+  - `prediction-diabetes.html` + `prediction-diabetes.js` — live API integration, auth-protected
+  - `prediction-heart.html` + `prediction-heart.js` — live API integration, auth-protected (uses `SwasthAPI.predictions.heart()` from `auth.js`)
+  - `prediction-pneumonia.html` + `prediction-pneumonia.js` — live API integration, unauthenticated
+* `frontend/js/auth.js` — centralized API client with `swasthaiAuthedRequest()`, `SwasthAPI.predictions.*` (diabetes, heart, pneumonia).
+* All other app pages are wired to real auth/session but most still show empty states because backend endpoints don't exist yet.
 
 **Infra:**
 * `docker-compose.yml` exists at the repo root (verify its services before assuming what it runs).
 * `frontend/.vercel/` indicates the frontend is deployed via Vercel; treat `frontend/.env.local` and `backend/.env` as environment-specific and never commit real values.
+* `render.yaml` exists — backend is deployed to Render.com; production API base in `frontend/js/auth.js` points to `https://swasthai-slac.onrender.com/api/v1`.

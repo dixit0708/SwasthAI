@@ -106,6 +106,20 @@ const SwasthAPI = {
         body: JSON.stringify(payload)
       });
     },
+    heart(payload) {
+      return swasthaiAuthedRequest('/predict/heart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    },
+    heartClinical(payload) {
+      return swasthaiAuthedRequest('/predict/heart/clinical', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    },
     // No Content-Type header here on purpose: the browser sets
     // multipart/form-data with the correct boundary itself when the body
     // is a FormData instance. The pneumonia endpoint doesn't require auth

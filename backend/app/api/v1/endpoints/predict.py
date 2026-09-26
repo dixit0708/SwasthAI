@@ -7,7 +7,11 @@ from starlette.concurrency import run_in_threadpool
 from app.ai.inference.image_processing import validate_and_decode_image, preprocess_for_cnn
 from app.ai.models.pneumonia_cnn import load_pneumonia_model, predict_pneumonia
 from app.api.v1.deps import get_current_user
-from app.models.prediction import DiabetesPredictionInput, RiskPredictionOut
+from app.models.prediction import (
+    DiabetesPredictionInput, RiskPredictionOut,
+    HeartPredictionInput, HeartRiskPredictionOut,
+    HeartClinicalInput,
+)
 from app.models.user import UserOut
 from app.services import prediction_service
 
@@ -101,3 +105,66 @@ async def predict_diabetes_endpoint(
     except Exception as e:
         logger.error(f"Diabetes prediction failed: {e}")
         raise HTTPException(status_code=500, detail="Prediction failed. Please try again later.")
+
+
+@router.post(
+    "/heart",
+    summary="Predict Heart Disease Risk from Health Parameters",
+    response_model=HeartRiskPredictionOut,
+)
+async def predict_heart_endpoint(
+    payload: HeartPredictionInput,
+    request: Request,
+    current_user: UserOut = Depends(get_current_user),
+):
+    model    = getattr(request.app.state, "heart_model", None)
+    metadata = getattr(request.app.state, "heart_model_metadata", None)
+    if model is None or metadata is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Heart disease risk model is not loaded or currently unavailable",
+        )
+
+    try:
+        return await prediction_service.predict_heart_disease(
+            current_user.id, payload, model, metadata
+        )
+    except ValueError as ve:
+        # Encoding validation errors (bad categorical value) -> 422-equivalent
+        logger.warning(f"Heart prediction input error: {ve}")
+        raise HTTPException(status_code=422, detail=str(ve))
+    except Exception as e:
+        logger.error(f"Heart prediction failed: {e}")
+        raise HTTPException(status_code=500, detail="Prediction failed. Please try again later.")
+
+@router.post(
+    "/heart/clinical",
+    summary="Predict Heart Disease Risk from Clinical Lab Parameters",
+    response_model=HeartRiskPredictionOut,
+)
+async def predict_heart_clinical_endpoint(
+    payload: HeartClinicalInput,
+    request: Request,
+    current_user: UserOut = Depends(get_current_user),
+):
+    model = getattr(request.app.state, "heart_clinical_model", None)
+    scaler = getattr(request.app.state, "heart_clinical_scaler", None)
+    if model is None or scaler is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Heart clinical risk model is not loaded or currently unavailable",
+        )
+
+    # Temporary print statement for debugging
+    print(f"=== [DEBUG] Incoming HeartClinicalInput payload: {payload.model_dump()} ===")
+
+    try:
+        return await prediction_service.predict_heart_clinical(
+            current_user.id, payload, model, scaler
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=422, detail=str(ve))
+    except Exception as e:
+        logger.error(f"Heart clinical prediction failed: {e}")
+        raise HTTPException(status_code=500, detail="Prediction failed. Please try again later.")
+

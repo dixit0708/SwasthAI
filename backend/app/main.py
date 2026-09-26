@@ -10,7 +10,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.db.mongodb import connect_to_mongo, close_mongo_connection
 from app.ai.models.diabetes_model import load_diabetes_model
+from app.ai.models.diabetes_pima_model import load_diabetes_pima_model
 from app.ai.models.liver_model import load_liver_model
+from app.ai.models.liver_ilpd_model import load_liver_ilpd_model
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +74,12 @@ async def lifespan(app: FastAPI):
     # original liver-ilpd-v1 (which required an LFT panel as input, and so
     # added no triage value — see ml_pipeline/liver/reports/evaluation_nhanes.md)
     # is deliberately left on disk untouched as the immutable comparison
-    # baseline; production now loads liver-nhanes-v1 instead.
+    # baseline; production loads liver-nhanes-v1. A candidate v2 (with
+    # general_health removed) was trained and evaluated but NOT adopted —
+    # see ml_pipeline/liver/reports/v2_general_health_removal.md — because
+    # removing general_health from diabetes-brfss-v3 (the sibling attempt)
+    # caused an unacceptable false-positive regression, and the same
+    # feature-removal decision was reverted for both models for consistency.
     try:
         liver_artifacts_dir = Path(base_dir) / "ml_pipeline" / "liver" / "artifacts"
         app.state.liver_model, app.state.liver_model_metadata = load_liver_model(
@@ -87,6 +94,56 @@ async def lifespan(app: FastAPI):
         logger.error(f"Failed to load liver risk model: {e}")
         app.state.liver_model = None
         app.state.liver_model_metadata = None
+
+    # Diabetes risk model, LAB-BASED (Pima): a second, independent diabetes
+    # model — the "I have recent lab results" counterpart to diabetes-brfss-v2
+    # above. Trained on the Pima Indians Diabetes Database (NIDDK/UCI, Smith
+    # et al. 1988, see ml_pipeline/diabetes_pima/README.md). Requires an
+    # actual glucose reading, blood pressure, BMI, and skinfold measurement
+    # — not lab-free, and trained on a narrow population (female, Pima
+    # Indian heritage, 21+). Never merged or blended with the BRFSS model.
+    try:
+        diabetes_pima_artifacts_dir = Path(base_dir) / "ml_pipeline" / "diabetes_pima" / "artifacts"
+        app.state.diabetes_pima_model, app.state.diabetes_pima_model_metadata = load_diabetes_pima_model(
+            diabetes_pima_artifacts_dir / "diabetes_pima_pipeline_v1.pkl",
+            diabetes_pima_artifacts_dir / "diabetes_pima_metadata_v1.json",
+        )
+        logger.info(
+            f"Loaded diabetes (Pima) risk model {app.state.diabetes_pima_model_metadata.get('model_version')} "
+            f"from {diabetes_pima_artifacts_dir}"
+        )
+    except Exception as e:
+        logger.error(f"Failed to load diabetes (Pima) risk model: {e}")
+        app.state.diabetes_pima_model = None
+        app.state.diabetes_pima_model_metadata = None
+
+    # Liver risk model, LAB-BASED (ILPD): a second, independent liver model —
+    # the "I have my lab report" counterpart to liver-nhanes-v1 above.
+    # Trained on the canonical UCI ILPD dataset (583 rows, see
+    # ml_pipeline/liver/reports/ilpd_final_model_report.md). This is a
+    # LOCKED artifact: load_liver_ilpd_model() verifies its SHA-256
+    # checksum before loading and raises ArtifactIntegrityError if it has
+    # drifted — that exception is deliberately allowed to propagate into
+    # this try/except like any other load failure, so a checksum mismatch
+    # disables the endpoint (503) rather than silently serving predictions
+    # from an unverified file. Explicitly NOT trained on the rejected
+    # liver_lpd dataset (see
+    # ml_pipeline/liver_lpd/reports/data_integrity_investigation.md).
+    # Never merged or blended with liver-nhanes-v1.
+    try:
+        liver_ilpd_artifacts_dir = Path(base_dir) / "ml_pipeline" / "liver" / "artifacts"
+        app.state.liver_ilpd_model, app.state.liver_ilpd_model_metadata = load_liver_ilpd_model(
+            liver_ilpd_artifacts_dir / "liver_ilpd_logistic_v1.pkl",
+            liver_ilpd_artifacts_dir / "liver_ilpd_logistic_metadata_v1.json",
+        )
+        logger.info(
+            f"Loaded liver risk model (ILPD) {app.state.liver_ilpd_model_metadata.get('model_version')} "
+            f"from {liver_ilpd_artifacts_dir}"
+        )
+    except Exception as e:
+        logger.error(f"Failed to load liver risk model (ILPD): {e}")
+        app.state.liver_ilpd_model = None
+        app.state.liver_ilpd_model_metadata = None
 
     # Load Skin Disease PyTorch model
     try:

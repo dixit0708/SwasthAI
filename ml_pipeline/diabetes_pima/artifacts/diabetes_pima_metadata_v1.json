@@ -1,0 +1,67 @@
+{
+  "model_name": "diabetes_risk_model_pima_lab",
+  "model_version": "diabetes-pima-v1",
+  "model_algorithm": "logistic_regression_calibrated_sigmoid",
+  "feature_order": [
+    "Pregnancies",
+    "Glucose",
+    "BloodPressure",
+    "SkinThickness",
+    "BMI",
+    "Age"
+  ],
+  "target_column": "Outcome",
+  "decision_threshold": 0.26000000000000006,
+  "training_date": "2026-09-15T15:45:47.046938+00:00",
+  "cv_results": {
+    "logistic_regression": {
+      "roc_auc": 0.8395141196013288,
+      "f1": 0.6668695130404083,
+      "recall": 0.7197120708748616
+    },
+    "random_forest": {
+      "roc_auc": 0.807142165005537,
+      "f1": 0.649672145794546,
+      "recall": 0.6822812846068661
+    },
+    "xgboost": {
+      "roc_auc": 0.7901495016611294,
+      "f1": 0.6231634016878604,
+      "recall": 0.6211517165005537
+    }
+  },
+  "test_metrics": {
+    "accuracy": 0.7077922077922078,
+    "precision": 0.5569620253164557,
+    "recall": 0.8148148148148148,
+    "f1": 0.6616541353383458,
+    "roc_auc": 0.8033333333333332,
+    "confusion_matrix": {
+      "tp": 44,
+      "tn": 65,
+      "fp": 35,
+      "fn": 10
+    },
+    "threshold": 0.26000000000000006
+  },
+  "data_source": "Pima Indians Diabetes Database (NIDDK/UCI, Smith et al. 1988)",
+  "target_definition": "Outcome: diabetes diagnosis per WHO criteria applied to the original NIDDK study population",
+  "independent_of": [
+    "diabetes-brfss-v2 (ml_pipeline/diabetes)",
+    "liver-nhanes-v1 (ml_pipeline/liver)"
+  ],
+  "lab_free": false,
+  "lab_free_note": "Glucose, BloodPressure, SkinThickness, and BMI are clinical/point-of-care measurements, not self-report \u2014 this is the 'I have recent lab results' counterpart to diabetes-brfss-v2, not a pre-lab-visit triage tool.",
+  "population_note": "Training population is exclusively female, of Pima Indian heritage, age 21+ (the original NIDDK study cohort) \u2014 predictions for users outside this population should be treated with added caution.",
+  "excluded_features": {
+    "Insulin": "48.7% missing in raw data \u2014 least reliable column by a wide margin",
+    "DiabetesPedigreeFunction": "hard-to-self-report derived score based on family history"
+  },
+  "n_train": 614,
+  "n_test": 154,
+  "positive_rate": 0.3489583333333333,
+  "library_versions": {
+    "scikit-learn": "1.9.0",
+    "pandas": "3.0.5"
+  }
+}

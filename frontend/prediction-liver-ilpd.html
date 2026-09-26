@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="assets/images/logo.png">
+    <title>SwasthAI - Liver Disease Risk (Lab-Based)</title>
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/prediction-diabetes.css?v=2"> <!-- Reusing styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <script src="js/auth-guard.js"></script>
+    <div id="app-layout" class="app-layout">
+        <aside id="sidebar-container" class="sidebar"></aside>
+        <div class="main-content">
+            <header id="header-container" class="top-header"></header>
+            <main class="page-content">
+
+    <div class="db-page" id="dbPage">
+
+        <!-- ============ WELCOME ============ -->
+        <section class="db-panel db-welcome" id="dbWelcome" data-phase="welcome">
+            <div class="db-hero">
+                <div class="db-hero__marquee" aria-hidden="true">
+                    <div class="db-hero__row db-hero__row--a">
+                        <div class="db-hero__track">
+                            <img src="https://images.unsplash.com/photo-1683727186226-910f31a9da45?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1666887360680-9dc27a1d2753?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1758684051120-60735855c088?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1683727186226-910f31a9da45?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1666887360680-9dc27a1d2753?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1758684051120-60735855c088?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                        </div>
+                    </div>
+                    <div class="db-hero__row db-hero__row--b">
+                        <div class="db-hero__track">
+                            <img src="https://images.unsplash.com/photo-1658280388403-09f61d0eb311?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1758599880788-e49f6ee77bc7?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1543352632-5a4b24e4d2a6?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1658280388403-09f61d0eb311?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1758599880788-e49f6ee77bc7?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1543352632-5a4b24e4d2a6?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                        </div>
+                    </div>
+                </div>
+                <div class="db-hero__scrim"></div>
+                <div class="db-hero__content">
+                    <h1 class="db-welcome__title">Liver Disease Risk Screening (Lab-Based)</h1>
+                    <p class="db-welcome__lede">This assessment uses your actual Liver Function Test (LFT) values — bilirubin, liver enzymes, and proteins — for a more precise risk estimate than a lifestyle questionnaire alone.</p>
+                    <button type="button" class="btn btn-primary btn-lg" id="dbBeginBtn">Begin Assessment</button>
+                </div>
+            </div>
+            <div class="db-welcome__body">
+                <ul class="db-welcome__facts">
+                    <li><i class="fas fa-list-check" aria-hidden="true"></i> 1 short section, 10 questions</li>
+                    <li><i class="fas fa-vial" aria-hidden="true"></i> You'll need a recent Liver Function Test (LFT) report</li>
+                    <li><i class="fas fa-flask" aria-hidden="true"></i> Trained on the UCI ILPD (Indian Liver Patient Dataset)</li>
+                    <li><i class="fas fa-circle-info" aria-hidden="true"></i> A screening estimate — never a diagnosis</li>
+                </ul>
+                <a href="prediction-liver-choose.html" class="db-welcome__back">Back to Liver Disease Risk</a>
+            </div>
+        </section>
+
+        <!-- ============ ASSESSMENT ============ -->
+        <section class="db-panel db-assessment" id="dbAssessment" data-phase="assessment" hidden>
+            <div class="db-assessment__header">
+                <a href="prediction-liver-choose.html" class="db-assessment__back"><i class="fas fa-arrow-left" aria-hidden="true"></i> Liver Disease Risk</a>
+                <div class="db-progress" id="dbProgress" role="group" aria-label="Assessment progress">
+                    <p class="db-progress__label" id="dbProgressLabel" aria-live="polite">Section 1 of 2 &middot; Lab Results</p>
+                    <div class="db-progress__bar"><div class="db-progress__fill" id="dbProgressFill"></div></div>
+                </div>
+            </div>
+
+            <div id="liverIlpdFormAlert" class="db-alert" role="alert" hidden>
+                <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+                <span id="liverIlpdFormAlertText"></span>
+                <button type="button" class="db-alert__retry" id="dbRetryBtn" hidden>Try again</button>
+            </div>
+
+            <form id="liverIlpdForm" novalidate>
+
+                <!-- ---- Section 0: Lab Results ---- -->
+                <fieldset class="db-step" data-step="0">
+                    <legend class="db-step__legend">Lab Results</legend>
+                    <p class="db-step__sub">Enter the values from your Liver Function Test (LFT) report. This model was trained on a dataset from Northeast Andhra Pradesh, India — if that doesn't describe your background, treat the result with extra caution.</p>
+
+                    <div class="db-field">
+                        <p class="db-question" id="q-liGender">Gender</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-liGender">
+                            <label class="db-toggle__option"><input type="radio" name="gender" id="liGender_F" value="Female" class="db-toggle__input">Female</label>
+                            <label class="db-toggle__option"><input type="radio" name="gender" id="liGender_M" value="Male" class="db-toggle__input">Male</label>
+                        </div>
+                        <p class="db-field-error" id="genderError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="liAge">Age</label>
+                        <input type="number" id="liAge" class="db-input" min="1" max="120" step="1" placeholder="e.g. 45" required>
+                        <p class="db-hint">In years.</p>
+                        <p class="db-field-error" id="ageError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="liTotalBilirubin">Total Bilirubin</label>
+                        <div class="db-input-unit">
+                            <input type="number" id="liTotalBilirubin" inputmode="decimal" step="0.1" min="0.1" max="100" placeholder="e.g. 1.2" required>
+                            <span class="db-input-unit__suffix">mg/dL</span>
+                        </div>
+                        <p class="db-field-error" id="total_bilirubinError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="liDirectBilirubin">Direct Bilirubin</label>
+                        <div class="db-input-unit">
+                            <input type="number" id="liDirectBilirubin" inputmode="decimal" step="0.05" min="0.05" max="30" placeholder="e.g. 0.4" required>
+                            <span class="db-input-unit__suffix">mg/dL</span>
+                        </div>
+                        <p class="db-field-error" id="direct_bilirubinError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="liAlkPhos">Alkaline Phosphatase (ALP)</label>
+                        <div class="db-input-unit">
+                            <input type="number" id="liAlkPhos" inputmode="decimal" step="1" min="20" max="3000" placeholder="e.g. 187" required>
+                            <span class="db-input-unit__suffix">U/L</span>
+                        </div>
+                        <p class="db-field-error" id="alkaline_phosphataseError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="liAlt">ALT (SGPT)</label>
+                        <div class="db-input-unit">
+                            <input type="number" id="liAlt" inputmode="decimal" step="1" min="5" max="3000" placeholder="e.g. 42" required>
+                            <span class="db-input-unit__suffix">U/L</span>
+                        </div>
+                        <p class="db-field-error" id="alt_sgptError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="liAst">AST (SGOT)</label>
+                        <div class="db-input-unit">
+                            <input type="number" id="liAst" inputmode="decimal" step="1" min="5" max="6000" placeholder="e.g. 38" required>
+                            <span class="db-input-unit__suffix">U/L</span>
+                        </div>
+                        <p class="db-field-error" id="ast_sgotError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="liTotalProteins">Total Protein</label>
+                        <div class="db-input-unit">
+                            <input type="number" id="liTotalProteins" inputmode="decimal" step="0.1" min="2" max="12" placeholder="e.g. 6.8" required>
+                            <span class="db-input-unit__suffix">g/dL</span>
+                        </div>
+                        <p class="db-field-error" id="total_proteinsError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="liAlbumin">Albumin</label>
+                        <div class="db-input-unit">
+                            <input type="number" id="liAlbumin" inputmode="decimal" step="0.1" min="0.5" max="7" placeholder="e.g. 3.4" required>
+                            <span class="db-input-unit__suffix">g/dL</span>
+                        </div>
+                        <p class="db-field-error" id="albuminError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="liAgRatio">Albumin/Globulin Ratio (A/G Ratio)</label>
+                        <input type="number" id="liAgRatio" class="db-input" inputmode="decimal" step="0.1" min="0.1" max="4" placeholder="e.g. 1.0" required>
+                        <p class="db-field-error" id="albumin_globulin_ratioError" role="alert" hidden></p>
+                    </div>
+                </fieldset>
+
+                <!-- ---- Section 1: Review ---- -->
+                <div class="db-step db-step--review" data-step="1" hidden>
+                    <h2 class="db-step__legend">Review your answers</h2>
+                    <p class="db-step__sub">Review your lab values before we calculate your estimated liver disease risk.</p>
+                    <div id="dbReviewList" class="db-review"></div>
+                </div>
+
+                <div class="db-nav">
+                    <button type="button" class="btn btn-outline" id="dbBackBtn" hidden>Back</button>
+                    <button type="button" class="btn btn-primary" id="dbNextBtn">Next</button>
+                    <button type="submit" class="btn btn-primary" id="dbSubmitBtn" hidden>Assess My Risk</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- ============ RESULT ============ -->
+        <section class="db-panel db-result" id="dbResultPanel" data-phase="result" hidden>
+            <div class="db-result__mark" id="dbResultMark" aria-hidden="true"></div>
+            <h1 class="db-result__title" id="resultRiskLevel"></h1>
+            <p class="db-result__probability" id="resultProbability"></p>
+            <p class="db-result__message" id="resultMessage"></p>
+            <p class="db-result__disclaimer" id="resultDisclaimer"></p>
+            <div class="db-result__actions">
+                <button type="button" class="btn btn-outline" id="dbReviewAgainBtn">Review My Answers</button>
+                <a href="dashboard.html" class="btn btn-primary">Return to Dashboard</a>
+            </div>
+        </section>
+
+        <p class="db-safety-note"><i class="fas fa-shield-heart" aria-hidden="true"></i> This tool provides an AI-generated risk indicator, not a medical diagnosis. It is trained on a small, single-region dataset (Northeast Andhra Pradesh, India) — if that doesn't describe you, treat this result with extra caution. It is a separate model from the lab-free liver assessment and its score is not directly comparable. Not a substitute for professional medical advice.</p>
+    </div>
+
+            </main>
+        </div>
+    </div>
+    <script src="js/auth.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/prediction-liver-ilpd.js"></script>
+    <script src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

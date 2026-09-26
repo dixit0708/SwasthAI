@@ -113,6 +113,26 @@ const SwasthAPI = {
         body: JSON.stringify(payload)
       });
     },
+    // Second, independent diabetes model — the "I have recent lab results"
+    // counterpart to diabetes() above. Trained on the Pima Indians Diabetes
+    // Database. See ml_pipeline/diabetes_pima/README.md.
+    diabetesPima(payload) {
+      return swasthaiAuthedRequest('/predict/diabetes-pima', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    },
+    // Second, independent liver model — the "I have my lab report"
+    // counterpart to liver() above. Trained on the canonical UCI ILPD
+    // dataset. See ml_pipeline/liver/reports/ilpd_final_model_report.md.
+    liverIlpd(payload) {
+      return swasthaiAuthedRequest('/predict/liver-ilpd', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    },
     // No Content-Type header here on purpose: the browser sets
     // multipart/form-data with the correct boundary itself when the body
     // is a FormData instance. The pneumonia endpoint doesn't require auth
@@ -122,6 +142,18 @@ const SwasthAPI = {
       const formData = new FormData();
       formData.append('file', file);
       return swasthaiApiRequest('/predict/pneumonia', {
+        method: 'POST',
+        body: formData
+      });
+    }
+  },
+  reportAnalysis: {
+    // Tied to the user's own medical_reports record, unlike pneumonia()
+    // above, so this always goes through the authed request helper.
+    analyze(file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      return swasthaiAuthedRequest('/report-analysis/analyze', {
         method: 'POST',
         body: formData
       });

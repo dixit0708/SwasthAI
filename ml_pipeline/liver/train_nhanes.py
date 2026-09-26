@@ -6,6 +6,7 @@ import joblib
 import numpy as np
 import pandas as pd
 import sklearn
+from sklearn.base import clone
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
@@ -52,6 +53,18 @@ def build_pipeline(classifier):
     ])
 
 
+def sweep_threshold_for_recall(proba: np.ndarray, y_true: pd.Series, target_recall: float = 0.80) -> float:
+    thresholds = np.linspace(0.05, 0.95, 91)
+    threshold = 0.5
+    for t in thresholds:
+        preds = (proba >= t).astype(int)
+        if recall_score(y_true, preds) >= target_recall:
+            threshold = float(t)
+        else:
+            break
+    return threshold
+
+
 def main():
     ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -62,13 +75,25 @@ def main():
     X = df[FEATURE_COLUMNS].values
     y = df[TARGET_COLUMN].astype(int)
 
-    X_train, X_test, y_train, y_test = train_test_split(
+    # Three-way split, not two: the decision threshold is itself a choice
+    # made *using* labeled data (AGENTS.md Section 8 — "never allow test
+    # data to influence training/model selection"). A threshold picked by
+    # sweeping against the same test set used for final reporting is a
+    # real, if narrow, form of that leak — it optimizes the threshold for
+    # the exact data the headline numbers are computed on. Held out here:
+    # X_val exists only to choose the threshold; X_test is touched exactly
+    # once, after the threshold is already fixed.
+    X_trainval, X_test, y_trainval, y_test = train_test_split(
         X, y, test_size=0.2, random_state=RANDOM_STATE, stratify=y
     )
+    X_train, X_val, y_train, y_val = train_test_split(
+        X_trainval, y_trainval, test_size=0.25, random_state=RANDOM_STATE, stratify=y_trainval
+    )
+    # Overall split is ~60% train / 20% val / 20% test.
 
-    scale_pos_weight = float((y_train == 0).sum() / (y_train == 1).sum())
+    scale_pos_weight = float((y_trainval == 0).sum() / (y_trainval == 1).sum())
 
-    print("Evaluating Model Families...")
+    print("Evaluating Model Families (CV on train+val, test set untouched)...")
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE)
 
     candidates = {
@@ -87,7 +112,7 @@ def main():
     best_roc = 0
     best_name = ""
     for name, pipeline in candidates.items():
-        scores = cross_validate(pipeline, X_train, y_train, cv=cv, scoring=["roc_auc", "f1", "recall"])
+        scores = cross_validate(pipeline, X_trainval, y_trainval, cv=cv, scoring=["roc_auc", "f1", "recall"])
         mean_roc = scores["test_roc_auc"].mean()
         cv_results[name] = {
             "roc_auc": mean_roc,
@@ -101,24 +126,24 @@ def main():
 
     print(f"\nBest Family (by CV ROC-AUC): {best_name}")
 
+    # Threshold selection: fit a fresh (unfit) clone of the chosen pipeline
+    # on train only, sweep against the held-out validation split — the
+    # test set plays no part in this decision.
+    threshold_pipeline = clone(candidates[best_name])
+    threshold_pipeline.fit(X_train, y_train)
+    val_proba = threshold_pipeline.predict_proba(X_val)[:, 1]
+    threshold = sweep_threshold_for_recall(val_proba, y_val, target_recall=0.80)
+    print(f"Threshold chosen on validation split: {threshold:.2f}")
+
+    # Final production pipeline: refit on train+val combined (all
+    # non-test data) at the threshold just chosen, so the shipped model
+    # isn't trained on less data than necessary — then evaluate this exact
+    # pipeline+threshold on the test set exactly once, for the headline
+    # numbers.
     final_pipeline = candidates[best_name]
-    final_pipeline.fit(X_train, y_train)
+    final_pipeline.fit(X_trainval, y_trainval)
 
     test_proba = final_pipeline.predict_proba(X_test)[:, 1]
-
-    # Screening tool: sweep thresholds and pick the lowest one that still
-    # clears 80% recall, so as few true liver-condition cases as possible
-    # are missed (mirrors the diabetes model's own sensitivity-first framing
-    # in ml_pipeline/diabetes/reports/v2_final_recommendation.md).
-    thresholds = np.linspace(0.05, 0.95, 91)
-    threshold = 0.5
-    for t in thresholds:
-        preds = (test_proba >= t).astype(int)
-        if recall_score(y_test, preds) >= 0.80:
-            threshold = float(t)
-        else:
-            break
-
     test_preds = (test_proba >= threshold).astype(int)
     tn, fp, fn, tp = confusion_matrix(y_test, test_preds).ravel()
 
@@ -132,7 +157,7 @@ def main():
         "threshold": threshold,
     }
 
-    print("\nTest Metrics:")
+    print("\nTest Metrics (test set touched exactly once, after threshold was fixed on validation):")
     print(json.dumps(test_metrics, indent=2))
 
     pipeline_path = ARTIFACTS_DIR / "liver_pipeline_nhanes_v1.pkl"
@@ -150,7 +175,9 @@ def main():
         "test_metrics": test_metrics,
         "data_source": "NHANES 2013-2014 / 2015-2016 / 2017-2018 pooled (SEQN-merged within cycle)",
         "target_definition": "MCQ160L: self-reported, doctor-diagnosed liver condition (Yes/No)",
+        "split_methodology": "60/20/20 train/val/test (stratified); threshold chosen by recall-sweep on the val split only, final pipeline refit on train+val, test set evaluated exactly once",
         "n_train": int(len(X_train)),
+        "n_val": int(len(X_val)),
         "n_test": int(len(X_test)),
         "positive_rate": float(y.mean()),
         "library_versions": {

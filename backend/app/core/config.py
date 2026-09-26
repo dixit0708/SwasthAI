@@ -8,6 +8,11 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "insecure-dev-secret-change-me"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080
+    # Free-tier Google AI Studio key (aistudio.google.com/apikey) for the
+    # report analyzer's plain-language explanation step. Optional: left
+    # empty, that step is skipped and the rule-based summary is still
+    # returned on its own (see app/ai/inference/report_explanation.py).
+    GEMINI_API_KEY: str = ""
 
     class Config:
         env_file = ".env"

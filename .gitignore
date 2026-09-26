@@ -63,6 +63,7 @@ node_modules/
 test-results/
 playwright-report/
 blob-report/
+.playwright-mcp/
 
 # Claude Code tooling (local agent/skill config, not part of the app)
 .claude/

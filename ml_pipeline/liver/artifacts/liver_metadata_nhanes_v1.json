@@ -16,44 +16,46 @@
     "physical_activity"
   ],
   "target_column": "liver_condition",
-  "decision_threshold": 0.4099999999999999,
-  "training_date": "2026-09-14T06:21:12.689140+00:00",
+  "decision_threshold": 0.38999999999999996,
+  "training_date": "2026-09-25T15:00:37.870500+00:00",
   "cv_results": {
     "logistic_regression": {
-      "roc_auc": 0.7299213788058696,
-      "f1": 0.16520652073529288,
-      "recall": 0.639024914089347
+      "roc_auc": 0.7302262186455171,
+      "f1": 0.164603896404289,
+      "recall": 0.6443640350877193
     },
     "random_forest": {
-      "roc_auc": 0.7130203536115767,
-      "f1": 0.12111927827789179,
-      "recall": 0.08301116838487972
+      "roc_auc": 0.7048085127225487,
+      "f1": 0.11072529595212684,
+      "recall": 0.07537280701754387
     },
     "xgboost": {
-      "roc_auc": 0.6824879133236419,
-      "f1": 0.14443479211436244,
-      "recall": 0.14944158075601374
+      "roc_auc": 0.660923676476747,
+      "f1": 0.13222373505946852,
+      "recall": 0.14228070175438595
     }
   },
   "test_metrics": {
-    "accuracy": 0.560785918952108,
-    "precision": 0.08536585365853659,
-    "recall": 0.8099173553719008,
-    "f1": 0.15445232466509062,
-    "roc_auc": 0.7422961112178871,
+    "accuracy": 0.5242798353909465,
+    "precision": 0.08225806451612903,
+    "recall": 0.85,
+    "f1": 0.15,
+    "roc_auc": 0.7479689754689754,
     "confusion_matrix": {
-      "tp": 98,
-      "tn": 1272,
-      "fp": 1050,
-      "fn": 23
+      "tp": 102,
+      "tn": 1172,
+      "fp": 1138,
+      "fn": 18
     },
-    "threshold": 0.4099999999999999
+    "threshold": 0.38999999999999996
   },
   "data_source": "NHANES 2013-2014 / 2015-2016 / 2017-2018 pooled (SEQN-merged within cycle)",
   "target_definition": "MCQ160L: self-reported, doctor-diagnosed liver condition (Yes/No)",
-  "n_train": 9772,
-  "n_test": 2443,
-  "positive_rate": 0.04936553417928776,
+  "split_methodology": "60/20/20 train/val/test (stratified); threshold chosen by recall-sweep on the val split only, final pipeline refit on train+val, test set evaluated exactly once",
+  "n_train": 7287,
+  "n_val": 2430,
+  "n_test": 2430,
+  "positive_rate": 0.049230262616283854,
   "library_versions": {
     "scikit-learn": "1.9.0",
     "pandas": "3.0.5"

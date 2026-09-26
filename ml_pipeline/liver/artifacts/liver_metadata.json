@@ -1,0 +1,38 @@
+{
+  "model_name": "liver_risk_model_ilpd",
+  "model_version": "liver-ilpd-v1",
+  "model_algorithm": "logistic_regression",
+  "feature_order": [
+    "age_years",
+    "gender",
+    "total_bilirubin_mg_dl",
+    "direct_bilirubin_mg_dl",
+    "alkaline_phosphatase_u_l",
+    "alanine_aminotransferase_u_l",
+    "aspartate_aminotransferase_u_l",
+    "total_proteins_g_dl",
+    "albumin_g_dl",
+    "albumin_globulin_ratio"
+  ],
+  "target_column": "liver_disease_status",
+  "decision_threshold": 0.4,
+  "training_date": "2026-09-13T17:23:59.311762+00:00",
+  "test_metrics": {
+    "accuracy": 0.7,
+    "precision": 0.8194444444444444,
+    "recall": 0.7468354430379747,
+    "f1": 0.7814569536423841,
+    "roc_auc": 0.7827684769293589,
+    "confusion_matrix": {
+      "tp": 59,
+      "tn": 18,
+      "fp": 13,
+      "fn": 20
+    },
+    "threshold": 0.4
+  },
+  "library_versions": {
+    "scikit-learn": "1.7.2",
+    "pandas": "2.3.1"
+  }
+}

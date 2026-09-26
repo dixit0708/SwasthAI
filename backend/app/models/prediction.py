@@ -57,6 +57,7 @@ class RiskPredictionOut(BaseModel):
     disclaimer: str
 
 
+
 # ---------------------------------------------------------------------------
 # Heart Disease Risk — 24-feature CDC 2022 contract
 # (ml_pipeline/heart/artifacts/heart_metadata.json is the authoritative source
@@ -207,3 +208,47 @@ class HeartClinicalInput(BaseModel):
     fasting_glucose: float = Field(ge=40, le=500, description="Fasting glucose (mg/dL)")
     pulse: float = Field(ge=30, le=200, description="60-sec heart rate (bpm)")
     bmi: float = Field(ge=10, le=100, description="Body Mass Index (kg/m^2)")
+
+class LiverPredictionInput(BaseModel):
+    """11-feature, lab-free contract for liver-nhanes-v1, trained on pooled
+    NHANES 2013-2014/2015-2016/2017-2018 survey and exam data — see
+    ml_pipeline/liver/reports/evaluation_nhanes.md.
+
+    Every field here is something a person can answer from memory or a
+    routine physical exam (age, sex, BMI, waist circumference, self-rated
+    general health, alcohol/smoking/activity habits, previously-diagnosed
+    diabetes/hypertension). None of them require an LFT/blood panel — this
+    model is meant to run *before* a lab visit, as a "should you get one"
+    screen, unlike the retired liver-ilpd-v1 contract (which required the
+    LFT panel itself as input, preserved untouched on disk as the baseline
+    at ml_pipeline/liver/artifacts/liver_pipeline.pkl + liver_metadata.json).
+
+    extra="forbid" rejects any field not listed here at the HTTP layer, preventing
+    accidental submission of the target column or other unexpected fields.
+    """
+    model_config = ConfigDict(extra="forbid")
+
+    age_years: int = Field(ge=20, le=120, description="Age in years (model trained on adults 20+)")
+    sex: Literal["Male", "Female"] = Field(description="Sex")
+    race_ethnicity: Literal[
+        "Mexican American", "Other Hispanic", "Non-Hispanic White",
+        "Non-Hispanic Black", "Other/Multi-Racial",
+    ] = Field(description="Race/ethnicity (NHANES categories)")
+    bmi: float = Field(ge=10.0, le=100.0, description="Body mass index")
+    waist_circumference_cm: float = Field(ge=30.0, le=250.0, description="Waist circumference in cm")
+    general_health: Literal["Excellent", "Very good", "Good", "Fair", "Poor"] = Field(
+        description="Self-rated general health"
+    )
+    heavy_alcohol_use: Literal["Yes", "No"] = Field(
+        description="Ever had 4/5 or more alcoholic drinks almost every day in any one year"
+    )
+    smoker: Literal["Yes", "No"] = Field(description="Smoked at least 100 cigarettes in your lifetime")
+    diabetes_status: Literal["Yes", "No", "Borderline"] = Field(
+        description="Ever told by a doctor that you have diabetes"
+    )
+    hypertension: Literal["Yes", "No"] = Field(description="Ever told by a doctor that you have high blood pressure")
+    physical_activity: Literal["Yes", "No"] = Field(
+        description="Do moderate-intensity recreational physical activity for at least 10 minutes continuously"
+    )
+
+

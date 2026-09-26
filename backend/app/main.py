@@ -12,6 +12,7 @@ from app.core.config import settings
 from app.db.mongodb import connect_to_mongo, close_mongo_connection
 from app.ai.models.diabetes_model import load_diabetes_model
 from app.ai.models.heart_model import load_heart_model
+from app.ai.models.liver_model import load_liver_model
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +67,7 @@ async def lifespan(app: FastAPI):
         app.state.diabetes_model = None
         app.state.diabetes_model_metadata = None
 
+
     # Heart Disease Risk model: a small sklearn Pipeline (StandardScaler +
     # calibrated XGBoost) trained on the CDC BRFSS 2022 dataset.
     # Loaded eagerly alongside the diabetes model — both are lightweight
@@ -102,20 +104,46 @@ async def lifespan(app: FastAPI):
         app.state.heart_clinical_model = None
         app.state.heart_clinical_scaler = None
 
-    # Load Skin Disease PyTorch model
+    # Liver risk model: a lab-free sklearn Pipeline trained on pooled NHANES
+    # 2013-2018 survey/exam data (age, sex, BMI, waist circumference,
+    # self-rated health, alcohol/smoking/activity habits, previously
+    # diagnosed diabetes/hypertension) — no LFT/blood values required. The
+    # original liver-ilpd-v1 (which required an LFT panel as input, and so
+    # added no triage value — see ml_pipeline/liver/reports/evaluation_nhanes.md)
+    # is deliberately left on disk untouched as the immutable comparison
+    # baseline; production now loads liver-nhanes-v1 instead.
     try:
-        from app.ai.models.skin_cnn import load_skin_model
-        skin_ckpt = os.path.join(base_dir, "ml-services", "skin-disease-detector", "checkpoints", "skin_disease_resnet50.pt")
+        liver_artifacts_dir = Path(base_dir) / "ml_pipeline" / "liver" / "artifacts"
+        app.state.liver_model, app.state.liver_model_metadata = load_liver_model(
+            liver_artifacts_dir / "liver_pipeline_nhanes_v1.pkl",
+            liver_artifacts_dir / "liver_metadata_nhanes_v1.json",
+        )
+        logger.info(
+            f"Loaded liver risk model {app.state.liver_model_metadata.get('model_version')} "
+            f"from {liver_artifacts_dir}"
+        )
+    except Exception as e:
+        logger.error(f"Failed to load liver risk model: {e}")
+        app.state.liver_model = None
+        app.state.liver_model_metadata = None
+
+    # Load Skin Disease PyTorch model
+    # Load Skin Disease PyTorch model (Eager Loading)
+    try:
+        from app.ai.models.skin_model import load_skin_model
+        skin_ckpt = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ai", "models", "skin_cnn.pt")
         
         if os.path.exists(skin_ckpt):
-            app.state.skin_model = load_skin_model(skin_ckpt, num_classes=7)
-            logger.info(f"Loaded Skin Disease CNN model from {skin_ckpt}")
+            app.state.skin_model, app.state.skin_idx_to_class = load_skin_model(skin_ckpt)
+            logger.info(f"Loaded Skin Disease CNN model eagerly from {skin_ckpt}")
         else:
-            logger.warning(f"Skin Disease CNN model not found at {skin_ckpt}. Please train the model first.")
+            logger.warning(f"Skin Disease CNN checkpoint not found at {skin_ckpt}. Endpoints will return 503.")
             app.state.skin_model = None
+            app.state.skin_idx_to_class = None
     except Exception as e:
-        logger.error(f"Failed to load Skin Disease CNN model: {e}")
+        logger.error(f"Failed to eagerly load Skin Disease CNN model: {e}")
         app.state.skin_model = None
+        app.state.skin_idx_to_class = None
     yield
     # Shutdown
     await close_mongo_connection()

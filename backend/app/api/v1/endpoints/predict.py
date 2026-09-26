@@ -8,12 +8,13 @@ from app.ai.inference.image_processing import validate_and_decode_image, preproc
 from app.ai.models.pneumonia_cnn import load_pneumonia_model, predict_pneumonia
 from app.api.v1.deps import get_current_user
 from app.models.prediction import (
-    DiabetesPredictionInput, RiskPredictionOut,
+    DiabetesPredictionInput, LiverPredictionInput, RiskPredictionOut,
     HeartPredictionInput, HeartRiskPredictionOut,
     HeartClinicalInput,
 )
 from app.models.user import UserOut
 from app.services import prediction_service
+
 
 logger = logging.getLogger(__name__)
 
@@ -167,4 +168,61 @@ async def predict_heart_clinical_endpoint(
     except Exception as e:
         logger.error(f"Heart clinical prediction failed: {e}")
         raise HTTPException(status_code=500, detail="Prediction failed. Please try again later.")
+
+
+@router.post("/liver", summary="Predict Liver Disease Risk", response_model=RiskPredictionOut)
+async def predict_liver_endpoint(
+    payload: LiverPredictionInput,
+    request: Request,
+    current_user: UserOut = Depends(get_current_user),
+):
+    model = getattr(request.app.state, "liver_model", None)
+    metadata = getattr(request.app.state, "liver_model_metadata", None)
+    if model is None or metadata is None:
+        raise HTTPException(status_code=503, detail="Liver risk model is not loaded or currently unavailable")
+
+    try:
+        return await prediction_service.predict_liver_risk(current_user.id, payload, model, metadata)
+    except Exception as e:
+        logger.error(f"Liver disease prediction failed: {e}")
+        raise HTTPException(status_code=500, detail="Prediction failed. Please try again later.")
+
+@router.post("/skin", summary="Predict Skin Disease from Image")
+async def predict_skin_endpoint(request: Request, file: UploadFile = File(...)):
+    try:
+        # Read file contents
+        contents = await file.read()
+
+        # 1. Validate and decode into OpenCV numpy array
+        image_np = validate_and_decode_image(contents, file.content_type)
+
+        # 2. Preprocess specifically for the Skin Disease CNN
+        # Note: image_processing.py needs to import cv2 and np, which it already does.
+        from app.ai.inference.image_processing import preprocess_for_skin
+        preprocessed_img = preprocess_for_skin(image_np)
+
+        # 3. Fetch the eagerly loaded model from app state
+        model = getattr(request.app.state, "skin_model", None)
+        idx_to_class = getattr(request.app.state, "skin_idx_to_class", None)
+        
+        if model is None or idx_to_class is None:
+            logger.error("Skin Disease model is not loaded in app state.")
+            raise HTTPException(status_code=503, detail="Skin Disease model is currently unavailable")
+
+        # 4. Run inference
+        from app.ai.models.skin_model import predict_skin
+        result = predict_skin(model, idx_to_class, preprocessed_img)
+        
+        if result.get("prediction") == "OOD":
+            raise ValueError(result.get("message"))
+
+        return JSONResponse(status_code=200, content=result)
+
+    except HTTPException:
+        raise
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        logger.error(f"Skin Prediction failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
 

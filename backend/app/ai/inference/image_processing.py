@@ -66,3 +66,34 @@ def preprocess_for_cnn(image: np.ndarray, target_size: Tuple[int, int] = (224, 2
     batched_img = np.expand_dims(normalized_img, axis=0)
     
     return batched_img
+
+
+def preprocess_for_skin(image: np.ndarray, target_size: Tuple[int, int] = (224, 224)) -> np.ndarray:
+    """
+    Preprocesses the decoded image for the Skin Disease CNN Inference.
+    Resizes (aspect-preserving to 256), center crops (to 224), converts BGR to RGB,
+    normalizes to [0, 1], and expands dims.
+    """
+    # 1. Convert BGR (OpenCV default) to RGB (what the PIL-trained model expects)
+    rgb_img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    
+    # 2. Aspect-preserving resize to 256 on the shortest edge
+    h, w = rgb_img.shape[:2]
+    if h < w:
+        new_h, new_w = 256, int(w * (256 / h))
+    else:
+        new_h, new_w = int(h * (256 / w)), 256
+    resized_img = cv2.resize(rgb_img, (new_w, new_h))
+    
+    # 3. Center Crop to target_size (e.g., 224x224)
+    start_y = (new_h - target_size[1]) // 2
+    start_x = (new_w - target_size[0]) // 2
+    cropped_img = resized_img[start_y:start_y+target_size[1], start_x:start_x+target_size[0]]
+    
+    # 4. Normalize pixel values (0-1) - NO ImageNet normalization, exactly matching training
+    normalized_img = cropped_img.astype(np.float32) / 255.0
+    
+    # 5. Expand dims (batch size 1)
+    batched_img = np.expand_dims(normalized_img, axis=0)
+    
+    return batched_img

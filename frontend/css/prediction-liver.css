@@ -1,0 +1,731 @@
+/* prediction-diabetes.css
+   Diabetes Risk Screening — premium assessment experience.
+   Built on the existing tokens in variables.css and reuses .btn from
+   components.css; everything else here is bespoke to this page, which
+   intentionally steps outside the generic .card/.grid shell for a calmer,
+   single-column, task-focused layout appropriate to a multi-step wizard. */
+
+.db-page {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: var(--sp-6) var(--sp-4) var(--sp-16);
+}
+
+/* Shared panel shell (welcome / assessment / result). Elevation declared
+   once — shadow only, no competing border — per this page's own design
+   pass; the sitewide .card keeps border+shadow elsewhere. */
+.db-panel {
+    background: var(--bg-surface);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    padding: var(--sp-10) var(--sp-8);
+}
+
+/* Several of this page's own classes (.db-result, .db-welcome, .btn, etc.)
+   set `display` at the same specificity as the browser's default
+   `[hidden] { display: none }`, and win by source order since this
+   stylesheet loads after the UA sheet — silently defeating `.hidden`
+   toggles in JS. This blanket, `!important` rule (scoped to this page's
+   own container, not sitewide) is the systemic fix, rather than chasing
+   the same collision class-by-class as it's discovered. */
+#dbPage [hidden] {
+    display: none !important;
+}
+
+/* ---------- Welcome ---------- */
+
+.db-welcome {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.db-welcome__mark {
+    margin-bottom: var(--sp-6);
+}
+
+#dbWelcomeArc {
+    stroke-dasharray: 126;
+    stroke-dashoffset: 126;
+    animation: db-arc-draw 900ms cubic-bezier(0.4, 0, 0.2, 1) 200ms forwards;
+}
+
+.db-welcome__title {
+    font-size: var(--text-4xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--sp-4);
+    letter-spacing: -0.02em;
+}
+
+.db-welcome__lede {
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+    max-width: 46ch;
+    margin-bottom: var(--sp-8);
+    line-height: 1.6;
+}
+
+.db-welcome__facts {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-10);
+    text-align: left;
+}
+
+.db-welcome__facts li {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+}
+
+.db-welcome__facts i {
+    color: var(--primary);
+    width: 1.1em;
+}
+
+.db-welcome__back {
+    display: inline-block;
+    margin-top: var(--sp-6);
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+}
+
+.db-welcome__back:hover {
+    color: var(--primary);
+}
+
+/* ---------- Assessment shell ---------- */
+
+.db-assessment__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-6);
+    margin-bottom: var(--sp-8);
+}
+
+.db-assessment__back {
+    flex-shrink: 0;
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.db-assessment__back:hover {
+    color: var(--primary);
+}
+
+.db-progress {
+    flex: 1;
+    max-width: 320px;
+}
+
+.db-progress__label {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: var(--sp-2);
+    text-align: right;
+}
+
+.db-progress__bar {
+    height: 6px;
+    border-radius: var(--radius-full);
+    background: var(--border-light);
+    overflow: hidden;
+}
+
+.db-progress__fill {
+    height: 100%;
+    width: 100%;
+    background: var(--primary);
+    border-radius: var(--radius-full);
+    transform-origin: left center;
+    transform: scaleX(0.1666);
+    transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---------- Alert ---------- */
+
+.db-alert {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-4) var(--sp-5);
+    border-radius: var(--radius-md);
+    background: #FEF2F2;
+    color: var(--danger);
+    font-size: var(--text-sm);
+    margin-bottom: var(--sp-6);
+}
+
+.db-alert i {
+    flex-shrink: 0;
+}
+
+.db-alert span {
+    flex: 1;
+}
+
+.db-alert__retry {
+    flex-shrink: 0;
+    background: none;
+    border: 1px solid currentColor;
+    border-radius: var(--radius-full);
+    padding: var(--sp-1) var(--sp-4);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    color: var(--danger);
+    cursor: pointer;
+}
+
+.db-alert__retry:hover {
+    background: rgba(220, 38, 38, 0.08);
+}
+
+/* ---------- Steps ---------- */
+
+.db-step {
+    border: none;
+    padding: 0;
+    margin: 0;
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 180ms cubic-bezier(0.4, 0, 0.2, 1), transform 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.db-step--leaving {
+    opacity: 0;
+    transform: translateY(-6px);
+}
+
+.db-step--entering {
+    opacity: 0;
+    transform: translateY(6px);
+}
+
+.db-step__legend {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    padding: 0;
+    margin-bottom: var(--sp-2);
+    letter-spacing: -0.01em;
+}
+
+.db-step__sub {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    margin-bottom: var(--sp-8);
+}
+
+.db-field {
+    margin-bottom: var(--sp-8);
+}
+
+.db-question {
+    display: block;
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--sp-4);
+    line-height: 1.5;
+}
+
+.db-hint {
+    margin-top: var(--sp-2);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+}
+
+.db-field-error {
+    margin-top: var(--sp-2);
+    font-size: var(--text-xs);
+    color: var(--danger);
+    font-weight: 600;
+}
+
+/* ---------- Yes/No toggle (accessible custom radio pair) ---------- */
+
+.db-toggle {
+    display: flex;
+    gap: var(--sp-3);
+}
+
+/* The input is nested INSIDE its label (native label-activates-input
+   semantics) rather than a sibling positioned via absolute offsets — a
+   sibling with no positioned containing block has an unpredictable hit
+   target and can end up covered by the flex container, intercepting every
+   click aimed at it. Nesting removes that failure mode entirely: there is
+   nothing to position, the whole visible label IS the click target. */
+.db-toggle__input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    margin: 0;
+}
+
+.db-toggle__option {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    padding: var(--sp-3) var(--sp-4);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--bg-surface);
+    cursor: pointer;
+    text-align: center;
+    transition: border-color 150ms ease, background-color 150ms ease, color 150ms ease, transform 120ms ease;
+}
+
+.db-toggle__option:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.db-toggle__option:has(.db-toggle__input:checked) {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    color: var(--primary-hover);
+    /* Selection confirmation: a brief settle animation, not a permanent one */
+    animation: db-select-pulse 150ms ease;
+}
+
+/* content:"" (not a glyph character) is deliberate: CSS generated text
+   content is included in accessible-name computation, which would silently
+   append this checkmark's character to the option's a11y name once
+   checked. A mask-image carries the glyph purely visually instead. */
+.db-toggle__option:has(.db-toggle__input:checked)::after {
+    content: "";
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-left: var(--sp-2);
+    background-color: var(--primary-hover);
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2 8.5l4 4 8-9' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2 8.5l4 4 8-9' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    mask-repeat: no-repeat;
+    mask-size: contain;
+}
+
+.db-toggle__option:has(.db-toggle__input:focus-visible) {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--primary-light);
+    border-color: var(--primary);
+}
+
+.db-field.is-invalid .db-toggle__option {
+    border-color: var(--danger);
+}
+
+/* ---------- Selects ---------- */
+
+.db-select-wrap {
+    position: relative;
+}
+
+.db-select {
+    display: block;
+    width: 100%;
+    height: 52px;
+    padding: 0 var(--sp-10) 0 var(--sp-4);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    color: var(--text-primary);
+    background: var(--bg-surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+    appearance: none;
+    cursor: pointer;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.db-select-wrap::after {
+    content: "";
+    position: absolute;
+    right: var(--sp-4);
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid var(--text-muted);
+    border-bottom: 2px solid var(--text-muted);
+    transform: translateY(-65%) rotate(45deg);
+    pointer-events: none;
+}
+
+.db-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.db-select.is-invalid {
+    border-color: var(--danger);
+}
+
+/* ---------- Number inputs with unit suffix ---------- */
+
+.db-input-unit {
+    position: relative;
+}
+
+.db-input-unit__label {
+    display: block;
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    margin-bottom: var(--sp-1);
+}
+
+.db-input-unit input {
+    display: block;
+    width: 100%;
+    height: 52px;
+    padding: 0 var(--sp-12) 0 var(--sp-4);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    color: var(--text-primary);
+    background: var(--bg-surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.db-input-unit input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.db-input-unit input.is-invalid {
+    border-color: var(--danger);
+}
+
+.db-input-unit__suffix {
+    position: absolute;
+    right: var(--sp-4);
+    top: 34px;
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.db-input-unit--wide input {
+    max-width: 160px;
+}
+
+.db-bmi-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: var(--sp-4);
+    align-items: end;
+}
+
+.db-bmi-result {
+    text-align: center;
+    padding: 0 var(--sp-4);
+}
+
+.db-bmi-value {
+    display: block;
+    font-size: var(--text-xl);
+    font-weight: 700;
+    color: var(--primary);
+    transition: opacity 150ms ease;
+}
+
+/* ---------- Review ---------- */
+
+.db-step--review .db-step__legend {
+    margin-bottom: var(--sp-2);
+}
+
+.db-review {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-6);
+    margin-top: var(--sp-6);
+}
+
+.db-review__section {
+    padding: var(--sp-5);
+    border-radius: var(--radius-md);
+    background: var(--bg-surface-alt);
+}
+
+.db-review__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--sp-3);
+}
+
+.db-review__title {
+    font-size: var(--text-sm);
+    font-weight: 700;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.db-review__edit {
+    background: none;
+    border: none;
+    color: var(--primary);
+    font-weight: 600;
+    font-size: var(--text-sm);
+    cursor: pointer;
+    padding: var(--sp-1) var(--sp-2);
+}
+
+.db-review__edit:hover,
+.db-review__edit:focus-visible {
+    text-decoration: underline;
+}
+
+.db-review__row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--sp-4);
+    padding: var(--sp-2) 0;
+    font-size: var(--text-sm);
+}
+
+.db-review__row + .db-review__row {
+    border-top: 1px solid var(--border-light);
+}
+
+.db-review__q {
+    color: var(--text-secondary);
+    flex: 1;
+}
+
+.db-review__a {
+    color: var(--text-primary);
+    font-weight: 600;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+/* ---------- Nav ---------- */
+
+.db-nav {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--sp-3);
+    margin-top: var(--sp-10);
+    padding-top: var(--sp-6);
+    border-top: 1px solid var(--border-light);
+}
+
+.db-nav .btn {
+    min-width: 140px;
+}
+
+/* ---------- Result ---------- */
+
+.db-result {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.db-result__mark {
+    margin-bottom: var(--sp-6);
+}
+
+.db-result__title {
+    font-size: var(--text-3xl);
+    font-weight: 700;
+    margin-bottom: var(--sp-3);
+    letter-spacing: -0.01em;
+}
+
+.db-result__title--negative { color: var(--success); }
+.db-result__title--elevated { color: var(--warning); }
+
+.db-result__probability {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    margin-bottom: var(--sp-6);
+}
+
+.db-result__message {
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    max-width: 48ch;
+    line-height: 1.6;
+    margin-bottom: var(--sp-6);
+}
+
+.db-result__disclaimer {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    max-width: 48ch;
+    padding-top: var(--sp-6);
+    border-top: 1px solid var(--border-light);
+}
+
+.db-result__actions {
+    display: flex;
+    gap: var(--sp-3);
+    margin-top: var(--sp-8);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.db-result__actions .btn {
+    min-width: 180px;
+}
+
+.db-result-ring {
+    stroke-dasharray: 251;
+    stroke-dashoffset: 251;
+    animation: db-arc-draw 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.db-result-check {
+    /* The actual path (32,49 -> 44,61 -> 66,37) is ~49.5 long; 100 is a
+       safely oversized dasharray so the "gap" that follows a single-value
+       dasharray never falls inside the path itself and truncates it. */
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    animation: db-arc-draw 350ms cubic-bezier(0.4, 0, 0.2, 1) 550ms forwards;
+}
+
+.db-result-dot {
+    transform-origin: center;
+    animation: db-dot-in 350ms cubic-bezier(0.16, 1, 0.3, 1) 500ms forwards;
+    opacity: 0;
+}
+
+/* ---------- Safety note ---------- */
+
+.db-safety-note {
+    text-align: center;
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    margin-top: var(--sp-6);
+}
+
+.db-safety-note i {
+    color: var(--warning);
+    margin-right: var(--sp-1);
+}
+
+/* ---------- Keyframes ---------- */
+
+@keyframes db-arc-draw {
+    to { stroke-dashoffset: 0; }
+}
+
+@keyframes db-dot-in {
+    from { opacity: 0; transform: scale(0.4); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes db-select-pulse {
+    0% { transform: scale(0.97); }
+    100% { transform: scale(1); }
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+    .db-step,
+    .db-progress__fill,
+    .db-bmi-value,
+    .db-toggle__option {
+        transition: none !important;
+        animation: none !important;
+    }
+    #dbWelcomeArc,
+    .db-result-ring,
+    .db-result-check,
+    .db-result-dot {
+        animation: none !important;
+        stroke-dashoffset: 0 !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 768px) {
+    .db-page {
+        padding: var(--sp-4) var(--sp-3) var(--sp-12);
+    }
+    .db-panel {
+        padding: var(--sp-8) var(--sp-5);
+    }
+    .db-bmi-row {
+        grid-template-columns: 1fr 1fr;
+    }
+    .db-bmi-result {
+        grid-column: 1 / -1;
+        text-align: left;
+        padding: 0;
+        margin-top: var(--sp-1);
+    }
+}
+
+@media (max-width: 430px) {
+    .db-panel {
+        padding: var(--sp-6) var(--sp-4);
+        border-radius: var(--radius-lg);
+    }
+    .db-welcome__title {
+        font-size: var(--text-3xl);
+    }
+    .db-assessment__header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--sp-3);
+    }
+    .db-progress {
+        max-width: none;
+    }
+    .db-progress__label {
+        text-align: left;
+    }
+    .db-nav {
+        flex-direction: column-reverse;
+    }
+    .db-nav .btn {
+        width: 100%;
+        min-width: 0;
+    }
+    .db-review__row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--sp-1);
+    }
+    .db-review__a {
+        text-align: left;
+    }
+    .db-result__actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    .db-result__actions .btn {
+        width: 100%;
+        min-width: 0;
+    }
+}

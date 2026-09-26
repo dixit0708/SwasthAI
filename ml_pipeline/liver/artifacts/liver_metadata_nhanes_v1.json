@@ -1,0 +1,61 @@
+{
+  "model_name": "liver_risk_model_nhanes",
+  "model_version": "liver-nhanes-v1",
+  "model_algorithm": "logistic_regression",
+  "feature_order": [
+    "age_years",
+    "bmi",
+    "waist_circumference_cm",
+    "sex",
+    "race_ethnicity",
+    "general_health",
+    "heavy_alcohol_use",
+    "smoker",
+    "diabetes_status",
+    "hypertension",
+    "physical_activity"
+  ],
+  "target_column": "liver_condition",
+  "decision_threshold": 0.4099999999999999,
+  "training_date": "2026-09-14T06:21:12.689140+00:00",
+  "cv_results": {
+    "logistic_regression": {
+      "roc_auc": 0.7299213788058696,
+      "f1": 0.16520652073529288,
+      "recall": 0.639024914089347
+    },
+    "random_forest": {
+      "roc_auc": 0.7130203536115767,
+      "f1": 0.12111927827789179,
+      "recall": 0.08301116838487972
+    },
+    "xgboost": {
+      "roc_auc": 0.6824879133236419,
+      "f1": 0.14443479211436244,
+      "recall": 0.14944158075601374
+    }
+  },
+  "test_metrics": {
+    "accuracy": 0.560785918952108,
+    "precision": 0.08536585365853659,
+    "recall": 0.8099173553719008,
+    "f1": 0.15445232466509062,
+    "roc_auc": 0.7422961112178871,
+    "confusion_matrix": {
+      "tp": 98,
+      "tn": 1272,
+      "fp": 1050,
+      "fn": 23
+    },
+    "threshold": 0.4099999999999999
+  },
+  "data_source": "NHANES 2013-2014 / 2015-2016 / 2017-2018 pooled (SEQN-merged within cycle)",
+  "target_definition": "MCQ160L: self-reported, doctor-diagnosed liver condition (Yes/No)",
+  "n_train": 9772,
+  "n_test": 2443,
+  "positive_rate": 0.04936553417928776,
+  "library_versions": {
+    "scikit-learn": "1.9.0",
+    "pandas": "3.0.5"
+  }
+}

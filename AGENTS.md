@@ -1020,6 +1020,12 @@ For AI:
 * model loading failure
 * inference failure
 
+## Playwright usage policy
+
+Playwright must not be used for testing, browser automation, screenshots, visual verification, or UI inspection unless the user explicitly requests Playwright in the current task (e.g. "use Playwright to test this," "run the Playwright tests"). This applies even when Playwright would be the most convenient option for frontend/responsive/visual checks — use lightweight methods instead (code inspection, the existing `backend/tests/` pytest suite, and reasoning about the change), since the frontend is a static site with no build step to verify.
+
+`playwright.config.js` and `tests/e2e/` (the E2E test source and config) must be preserved — this policy governs when Playwright runs, not whether it exists in the project. `package.json`'s `test:e2e` script is already scoped so that no generic test command accidentally invokes Playwright; keep it that way. When Playwright is used because the user explicitly asked for it, clean up the generated artifacts (screenshots, videos, traces, `test-results/`, `playwright-report/`) afterward — they must not persist as unreviewed disk usage between tasks.
+
 ---
 
 # 33. LOGGING

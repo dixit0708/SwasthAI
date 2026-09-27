@@ -57,7 +57,7 @@ SwasthAI is an AI-Powered Personalized Healthcare Ecosystem. It is a B.Tech CSE 
 The Heart Disease Prediction module utilizes an **XGBClassifier**. An unweighted model approach was chosen to preserve the healthy baseline (preventing false-positive inflation), ensuring individuals at a naturally lower baseline risk are not incorrectly flagged due to artificial class balancing during inference. The backend is built on **FastAPI** which serves the model and executes the scaling logic, integrating seamlessly into the **React**-based frontend UI.
 
 ### Dataset & Features
-The model is designed around the **NHANES clinical dataset**. The specific features used for this risk assessment include:
+The model is designed around the **CDC BRFSS / YRBS 2022 survey data**. The specific features used for this risk assessment include:
 * Age
 * SBP (Systolic Blood Pressure)
 * DBP (Diastolic Blood Pressure)
@@ -67,8 +67,6 @@ The model is designed around the **NHANES clinical dataset**. The specific featu
 * Pulse
 * BMI (Body Mass Index)
 
-*(Note: Local training artifacts currently reflect CDC BRFSS / YRBS 2022 survey data; the architecture is adaptable to the clinical feature set.)*
-
 ### Continuous Probabilistic Scaling (The UI Translation)
 To translate the model's raw probabilities into a user-friendly format, custom `numpy.interp` backend logic is utilized. Raw tree-based probabilities mathematically cap between ~5% and ~14% due to the prevalence of the condition in the dataset. To make this intuitive for end-users, these raw probability scores are linearly interpolated to a **1% - 99% frontend visual gauge** using dynamic anchor points. This scaling maps the extremely narrow probability distribution into a full spectrum, allowing the UI to present a meaningful, continuous risk indicator.
 
@@ -77,12 +75,12 @@ Based on the exact metrics extracted from the test evaluation reports (`test_eva
 
 | Metric | Value |
 | :--- | :--- |
-| **Accuracy** | 91.35% (0.9135) |
+| **Accuracy** | 70.89% (0.7089) |
 | **ROC-AUC** | 84.65% (0.8465) |
-| **Precision** | 56.53% (0.5653) |
-| **Recall (Sensitivity)** | 9.42% (0.0942) |
+| **Precision** | 21.11% (0.2111) |
+| **Recall (Sensitivity)** | 83.71% (0.8371) |
 
-*(Note: Feature importance scores (F-scores/P-values) were not explicitly exported in the current training logs.)*
+*(Note: Feature importance scores (F-scores/P-values) were not explicitly exported in the current training logs. Metrics calculated using a custom calibrated threshold (0.08) rather than the default 0.5, aligning the statistical evaluation with the continuous UI scaling logic.)*
 
 ### Testing & Validation
 Thorough testing and validation are performed to ensure reliable output. The system is tested against extreme-value bounds:

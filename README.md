@@ -86,3 +86,40 @@ Based on the exact metrics extracted from the test evaluation reports (`test_eva
 Thorough testing and validation are performed to ensure reliable output. The system is tested against extreme-value bounds:
 * **Healthy baseline mappings:** Ensuring that ideal clinical inputs (e.g., normal BMI, healthy blood pressure and glucose) scale accurately to the lowest bounds of the risk gauge.
 * **Fatal input mappings:** Validating that severe, extreme high-risk inputs maximize the `numpy.interp` anchor points, mapping cleanly to the 99% upper bound of the visual gauge.
+
+
+## API Documentation
+
+Total Number of APIs: 14
+
+1. `/health`
+2. `/api/v1/auth/register`
+3. `/api/v1/auth/login`
+4. `/api/v1/auth/me`
+5. `/api/v1/health-profile/me`
+6. `/api/v1/health-profile/me` (PUT)
+7. `/api/v1/health-profile/me/conditions`
+8. `/api/v1/health-profile/me/conditions/{condition_id}`
+9. `/api/v1/predict/pneumonia`
+10. `/api/v1/predict/diabetes`
+11. `/api/v1/predict/heart`
+12. `/api/v1/predict/heart/clinical`
+13. `/api/v1/predict/liver`
+14. `/api/v1/predict/skin`
+
+| HTTP Method | Endpoint / Route | Description | Request Payload | Response Data |
+| :--- | :--- | :--- | :--- | :--- |
+| **GET** | `/health` | API Health Check | None | `{"status": "healthy", "project": "..."}` |
+| **POST** | `/api/v1/auth/register` | Registers a new user | `UserCreate` (name, email, password) | `Token` (access_token, user_id, email, name) |
+| **POST** | `/api/v1/auth/login` | Authenticates a user | `UserLogin` (email, password) | `Token` (access_token, user_id, email, name) |
+| **GET** | `/api/v1/auth/me` | Retrieves the current user's info | None (Requires JWT) | `UserOut` (id, name, email) |
+| **GET** | `/api/v1/health-profile/me` | Retrieves current user's health profile | None (Requires JWT) | `HealthProfileOut` |
+| **PUT** | `/api/v1/health-profile/me` | Updates current user's basic health info | `HealthProfileUpdate` | `HealthProfileOut` |
+| **POST** | `/api/v1/health-profile/me/conditions` | Adds a medical condition to the user's profile | `ConditionCreate` (label) | `HealthProfileOut` |
+| **DELETE** | `/api/v1/health-profile/me/conditions/{condition_id}` | Removes a specific condition from profile | URL Parameter: `condition_id` | `HealthProfileOut` |
+| **POST** | `/api/v1/predict/pneumonia` | Predicts Pneumonia from X-Ray Image | `UploadFile` (image) | CNN JSON Prediction Result |
+| **POST** | `/api/v1/predict/diabetes` | Predicts Diabetes Risk from Health Params | `DiabetesPredictionInput` | `RiskPredictionOut` |
+| **POST** | `/api/v1/predict/heart` | Predicts Heart Disease Risk from Survey Params | `HeartPredictionInput` | `HeartRiskPredictionOut` |
+| **POST** | `/api/v1/predict/heart/clinical` | Predicts Heart Disease Risk from Lab Params | `HeartClinicalInput` | `HeartRiskPredictionOut` |
+| **POST** | `/api/v1/predict/liver` | Predicts Liver Disease Risk | `LiverPredictionInput` | `RiskPredictionOut` |
+| **POST** | `/api/v1/predict/skin` | Predicts Skin Disease from Image | `UploadFile` (image) | CNN JSON Prediction Result |

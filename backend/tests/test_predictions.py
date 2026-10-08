@@ -18,7 +18,7 @@ from app.ai.models.diabetes_model import predict_diabetes, validate_features
 from app.db.mongodb import db_manager
 from app.main import app
 
-VALID_PASSWORD = "correct-horse-battery-staple"
+VALID_PASSWORD = "Correct-Horse9-Battery"
 
 FEATURE_ORDER = [
     "HighBP", "HighChol", "CholCheck", "BMI", "Smoker", "Stroke",

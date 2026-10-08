@@ -13,7 +13,7 @@ from datetime import datetime, timedelta, timezone
 from app.core.config import settings
 from conftest import unique_email
 
-VALID_PASSWORD = "correct-horse-battery-staple"
+VALID_PASSWORD = "Correct-Horse9-Battery"
 
 
 async def _register(client, email=None, name="Test User", password=VALID_PASSWORD):
@@ -56,6 +56,33 @@ async def test_registration_rejects_short_password(client):
         json={"name": "Short Pw", "email": unique_email(), "password": "short"},
     )
     assert res.status_code == 422
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "weak_password",
+    [
+        "alllowercase1!",  # missing uppercase
+        "ALLUPPERCASE1!",  # missing lowercase
+        "NoDigitsHere!",  # missing number
+        "NoSpecialChar9",  # missing special character
+    ],
+)
+async def test_registration_rejects_weak_password(client, weak_password):
+    res = await client.post(
+        "/api/v1/auth/register",
+        json={"name": "Weak Pw", "email": unique_email(), "password": weak_password},
+    )
+    assert res.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_registration_accepts_strong_password(client):
+    res = await client.post(
+        "/api/v1/auth/register",
+        json={"name": "Strong Pw", "email": unique_email(), "password": "Strong-Pass9"},
+    )
+    assert res.status_code == 201
 
 
 # ---------------------------------------------------------------------------

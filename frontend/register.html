@@ -37,10 +37,16 @@
                     <div class="form-group">
                         <label class="form-label" for="regPassword">Password</label>
                         <div class="form-password">
-                            <input type="password" id="regPassword" class="form-control" required placeholder="Create a password" minlength="8">
+                            <input type="password" id="regPassword" class="form-control" required placeholder="Create a password" minlength="8" maxlength="128" aria-describedby="regPasswordRequirements">
                             <button type="button" class="form-password__toggle" id="regPasswordToggle" aria-label="Show password"><i class="fas fa-eye"></i></button>
                         </div>
-                        <span class="form-text">At least 8 characters.</span>
+                        <ul class="password-requirements" id="regPasswordRequirements">
+                            <li data-rule="length"><i class="fas fa-circle"></i> At least 8 characters</li>
+                            <li data-rule="upper"><i class="fas fa-circle"></i> One uppercase letter</li>
+                            <li data-rule="lower"><i class="fas fa-circle"></i> One lowercase letter</li>
+                            <li data-rule="digit"><i class="fas fa-circle"></i> One number</li>
+                            <li data-rule="special"><i class="fas fa-circle"></i> One special character</li>
+                        </ul>
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="regConfirm">Confirm Password</label>
@@ -82,13 +88,30 @@
         const registerAlert = document.getElementById('registerAlert');
         const registerAlertText = document.getElementById('registerAlertText');
         const registerSubmit = document.getElementById('registerSubmit');
+        const regPasswordInput = document.getElementById('regPassword');
+        const requirementItems = document.querySelectorAll('#regPasswordRequirements li');
+
+        regPasswordInput.addEventListener('input', () => {
+            const status = SwasthAuth.checkPasswordStrength(regPasswordInput.value);
+            requirementItems.forEach((item) => {
+                item.classList.toggle('is-met', !!status[item.dataset.rule]);
+            });
+        });
 
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             registerAlert.style.display = 'none';
 
-            const password = document.getElementById('regPassword').value;
+            const password = regPasswordInput.value;
             const confirm = document.getElementById('regConfirm').value;
+
+            const strength = SwasthAuth.checkPasswordStrength(password);
+            if (!strength.valid) {
+                registerAlertText.textContent = 'Password must be 8-128 characters and include an uppercase letter, a lowercase letter, a number, and a special character.';
+                registerAlert.style.display = 'flex';
+                return;
+            }
+
             if (password !== confirm) {
                 registerAlertText.textContent = 'Passwords do not match.';
                 registerAlert.style.display = 'flex';

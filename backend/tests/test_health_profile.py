@@ -2,7 +2,7 @@ import pytest
 
 from conftest import unique_email
 
-VALID_PASSWORD = "correct-horse-battery-staple"
+VALID_PASSWORD = "Correct-Horse9-Battery"
 
 
 async def _register_and_get_token(client, email=None, name="Test User") -> str:

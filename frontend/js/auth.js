@@ -16,6 +16,20 @@ const SWASTHAI_API_BASE = (() => {
 const SWASTHAI_TOKEN_KEY = 'swasthai_token';
 const SWASTHAI_USER_KEY = 'swasthai_user';
 
+// FastAPI validation errors (422) send `detail` as a list of error objects
+// rather than a plain string, so a caller checking `err.message` needs it
+// flattened into readable text instead of "[object Object]".
+function swasthaiExtractErrorMessage(detail) {
+  if (typeof detail === 'string' && detail) return detail;
+  if (Array.isArray(detail)) {
+    const messages = detail
+      .map((item) => (item && typeof item.msg === 'string' ? item.msg.replace(/^Value error,\s*/, '') : null))
+      .filter(Boolean);
+    if (messages.length) return messages.join(' ');
+  }
+  return 'Something went wrong. Please try again.';
+}
+
 async function swasthaiApiRequest(path, options) {
   let res;
   try {
@@ -25,7 +39,7 @@ async function swasthaiApiRequest(path, options) {
   }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const error = new Error(data.detail || 'Something went wrong. Please try again.');
+    const error = new Error(swasthaiExtractErrorMessage(data.detail));
     error.status = res.status;
     throw error;
   }
@@ -201,6 +215,30 @@ function swasthaiLogout() {
   swasthaiClearSession();
   window.location.href = 'login.html';
 }
+
+// Mirrors the backend's password policy (app/models/user.py) so the
+// register form can give immediate, specific feedback instead of waiting
+// on a round trip to find out which rule failed.
+const SWASTHAI_PASSWORD_RULES = {
+  length: (password) => password.length >= 8 && password.length <= 128,
+  upper: (password) => /[A-Z]/.test(password),
+  lower: (password) => /[a-z]/.test(password),
+  digit: (password) => /\d/.test(password),
+  special: (password) => /[^A-Za-z0-9]/.test(password)
+};
+
+function swasthaiCheckPasswordStrength(password) {
+  const result = {};
+  let valid = true;
+  for (const [rule, test] of Object.entries(SWASTHAI_PASSWORD_RULES)) {
+    result[rule] = test(password);
+    if (!result[rule]) valid = false;
+  }
+  result.valid = valid;
+  return result;
+}
+
+window.SwasthAuth = Object.assign(window.SwasthAuth || {}, { checkPasswordStrength: swasthaiCheckPasswordStrength });
 
 window.SwasthAPI = SwasthAPI;
 window.swasthaiStoreSession = swasthaiStoreSession;

@@ -186,8 +186,34 @@ const SwasthAPI = {
         body: formData
       });
     }
+  },
+  doctors: {
+    specialties() {
+      return swasthaiApiRequest('/doctors/specialties');
+    },
+    // params: { specialty, q, city, page, page_size, consented_only }; empty values are dropped.
+    search(params = {}) {
+      const query = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') query.set(key, value);
+      });
+      return swasthaiAuthedRequest(`/doctors/search?${query.toString()}`);
+    },
+    get(id) {
+      return swasthaiAuthedRequest(`/doctors/${encodeURIComponent(id)}`);
+    }
   }
 };
+
+// For any API-supplied text placed into innerHTML.
+function swasthaiEscapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 function swasthaiStoreSession(data) {
   localStorage.setItem(SWASTHAI_TOKEN_KEY, data.access_token);
@@ -241,6 +267,7 @@ function swasthaiCheckPasswordStrength(password) {
 window.SwasthAuth = Object.assign(window.SwasthAuth || {}, { checkPasswordStrength: swasthaiCheckPasswordStrength });
 
 window.SwasthAPI = SwasthAPI;
+window.swasthaiEscapeHtml = swasthaiEscapeHtml;
 window.swasthaiStoreSession = swasthaiStoreSession;
 window.swasthaiClearSession = swasthaiClearSession;
 window.swasthaiGetToken = swasthaiGetToken;

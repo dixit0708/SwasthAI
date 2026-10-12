@@ -4,15 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="assets/images/logo.png">
-    <title>SwasthAI - Diet Lifestyle</title>
+    <title>SwasthAI - Diet & Lifestyle Guidance</title>
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/nav.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js for visualizations -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <script src="js/auth-guard.js"></script>
@@ -21,10 +19,80 @@
         <div class="main-content">
             <header id="header-container" class="top-header"></header>
             <main class="page-content">
-                <!-- PAGE CONTENT: diet-lifestyle -->
-                <div class="container">
-                    <h1>Diet Lifestyle</h1>
-                    <p>This is the Diet Lifestyle page prototype.</p>
+                <div class="container" style="max-width: 1100px; margin: 0 auto; padding-bottom: 3rem;">
+                    
+                    <!-- Page Header -->
+                    <div class="flex" style="justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h1 style="margin: 0 0 0.5rem 0; font-size: 2rem;"><i class="fas fa-apple-whole text-primary"></i> Diet & Lifestyle Guidance</h1>
+                            <p class="text-secondary" style="margin: 0;">Evidence-based nutritional rules and activity guidelines evaluated strictly from your personal health metrics.</p>
+                        </div>
+                        <div class="flex" style="gap: 0.75rem;">
+                            <a href="ai-assistant.html" class="btn btn-outline"><i class="fas fa-robot text-primary"></i> Ask AI Assistant</a>
+                            <a href="health-profile.html" class="btn btn-primary"><i class="fas fa-user-edit"></i> Edit Profile</a>
+                        </div>
+                    </div>
+
+                    <!-- Metrics Evaluated Bar -->
+                    <div class="card mb-4" style="background: white; border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
+                        <div class="card-header flex" style="justify-content: space-between; align-items: center;">
+                            <div><strong><i class="fas fa-heart-pulse text-primary"></i> Clinical Health Inputs Evaluated</strong></div>
+                            <span class="badge badge-primary" id="metricsStatusBadge">Loaded from records</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="grid" id="evaluatedMetricsGrid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                                <div style="background: var(--bg-surface-alt); padding: 1rem; border-radius: var(--radius-sm); border-left: 4px solid var(--primary);">
+                                    <div class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase;">Body Mass Index</div>
+                                    <div id="metricBmi" style="font-size: 1.25rem; font-weight: 700; margin-top: 0.25rem;">--</div>
+                                </div>
+                                <div style="background: var(--bg-surface-alt); padding: 1rem; border-radius: var(--radius-sm); border-left: 4px solid #e11d48;">
+                                    <div class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase;">Heart Disease Risk</div>
+                                    <div id="metricHeartRisk" style="font-size: 1.25rem; font-weight: 700; margin-top: 0.25rem;">--</div>
+                                </div>
+                                <div style="background: var(--bg-surface-alt); padding: 1rem; border-radius: var(--radius-sm); border-left: 4px solid #f59e0b;">
+                                    <div class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase;">Blood Pressure</div>
+                                    <div id="metricHighBp" style="font-size: 1.25rem; font-weight: 700; margin-top: 0.25rem;">--</div>
+                                </div>
+                                <div style="background: var(--bg-surface-alt); padding: 1rem; border-radius: var(--radius-sm); border-left: 4px solid #10b981;">
+                                    <div class="text-muted" style="font-size: var(--text-xs); text-transform: uppercase;">Fasting Glucose</div>
+                                    <div id="metricGlucose" style="font-size: 1.25rem; font-weight: 700; margin-top: 0.25rem;">--</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommended Dietary Protocols Badges -->
+                    <div class="mb-4">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 0.75rem;">Active Dietary Protocols Triggered:</h3>
+                        <div id="dietProtocolsTags" class="flex" style="gap: 0.5rem; flex-wrap: wrap;">
+                            <span class="badge badge-primary"><i class="fas fa-spinner fa-spin"></i> Evaluating...</span>
+                        </div>
+                    </div>
+
+                    <!-- Recommendations List -->
+                    <div id="recommendationsList" class="flex" style="flex-direction: column; gap: 1.5rem; margin-bottom: 2.5rem;">
+                        <div class="card" style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+                            <i class="fas fa-spinner fa-spin fa-2x text-primary" style="margin-bottom: 1rem;"></i>
+                            <p>Loading your clinical diet rules from the rule-based engine...</p>
+                        </div>
+                    </div>
+
+                    <!-- Lifestyle Guidance Card -->
+                    <div class="card mb-4" id="lifestyleCard" style="display: none; border-left: 4px solid #8b5cf6;">
+                        <div class="card-header">
+                            <strong><i class="fas fa-person-running text-primary"></i> Actionable Lifestyle & Physical Activity Guidance</strong>
+                        </div>
+                        <div class="card-body">
+                            <ul id="lifestyleList" style="margin: 0; padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; color: var(--text-primary);"></ul>
+                        </div>
+                    </div>
+
+                    <!-- Medical Disclaimer Banner -->
+                    <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: var(--radius-md); padding: 1rem 1.25rem; font-size: var(--text-xs); color: #64748b; line-height: 1.6;">
+                        <strong><i class="fas fa-shield-heart text-primary"></i> Medical Disclaimer:</strong>
+                        <span id="dietDisclaimerText">These dietary and lifestyle recommendations are generated using evidence-based clinical screening guidelines for general wellness and educational purposes only. They do not constitute medical nutrition therapy, diagnosis, or a prescription.</span>
+                    </div>
+
                 </div>
             </main>
         </div>

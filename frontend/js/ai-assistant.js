@@ -162,6 +162,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Expose handleSend alias for programmatic and external invocation
+    window.handleSend = sendMessage;
+
     if (chatForm) {
         chatForm.addEventListener('submit', (e) => {
             e.preventDefault();

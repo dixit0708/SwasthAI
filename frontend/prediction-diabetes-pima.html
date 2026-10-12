@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="assets/images/logo.png">
+    <title>SwasthAI - Diabetes Risk (Lab-Based)</title>
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/prediction-diabetes.css?v=2"> <!-- Reusing styles -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <script src="js/auth-guard.js"></script>
+    <div id="app-layout" class="app-layout">
+        <aside id="sidebar-container" class="sidebar"></aside>
+        <div class="main-content">
+            <header id="header-container" class="top-header"></header>
+            <main class="page-content">
+
+    <div class="db-page" id="dbPage">
+
+        <!-- ============ WELCOME ============ -->
+        <section class="db-panel db-welcome" id="dbWelcome" data-phase="welcome">
+            <div class="db-hero">
+                <div class="db-hero__marquee" aria-hidden="true">
+                    <div class="db-hero__row db-hero__row--a">
+                        <div class="db-hero__track">
+                            <img src="https://images.unsplash.com/photo-1683727186226-910f31a9da45?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1666887360680-9dc27a1d2753?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1758684051120-60735855c088?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1683727186226-910f31a9da45?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1666887360680-9dc27a1d2753?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1758684051120-60735855c088?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                        </div>
+                    </div>
+                    <div class="db-hero__row db-hero__row--b">
+                        <div class="db-hero__track">
+                            <img src="https://images.unsplash.com/photo-1658280388403-09f61d0eb311?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1758599880788-e49f6ee77bc7?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1543352632-5a4b24e4d2a6?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1658280388403-09f61d0eb311?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1758599880788-e49f6ee77bc7?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1543352632-5a4b24e4d2a6?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                        </div>
+                    </div>
+                </div>
+                <div class="db-hero__scrim"></div>
+                <div class="db-hero__content">
+                    <h1 class="db-welcome__title">Diabetes Risk Screening (Lab-Based)</h1>
+                    <p class="db-welcome__lede">This assessment uses your actual blood sugar, blood pressure, and a couple of body measurements for a more precise risk estimate than a lifestyle questionnaire alone.</p>
+                    <button type="button" class="btn btn-primary btn-lg" id="dbBeginBtn">Begin Assessment</button>
+                </div>
+            </div>
+            <div class="db-welcome__body">
+                <ul class="db-welcome__facts">
+                    <li><i class="fas fa-list-check" aria-hidden="true"></i> 1 short section, 6 questions</li>
+                    <li><i class="fas fa-vial" aria-hidden="true"></i> You'll need a recent blood sugar (glucose) test result</li>
+                    <li><i class="fas fa-flask" aria-hidden="true"></i> Trained on the Pima Indians Diabetes Database (NIDDK/UCI)</li>
+                    <li><i class="fas fa-circle-info" aria-hidden="true"></i> A screening estimate — never a diagnosis</li>
+                </ul>
+                <a href="prediction-diabetes-choose.html" class="db-welcome__back">Back to Diabetes Risk</a>
+            </div>
+        </section>
+
+        <!-- ============ ASSESSMENT ============ -->
+        <section class="db-panel db-assessment" id="dbAssessment" data-phase="assessment" hidden>
+            <div class="db-assessment__header">
+                <a href="prediction-diabetes-choose.html" class="db-assessment__back"><i class="fas fa-arrow-left" aria-hidden="true"></i> Diabetes Risk</a>
+                <div class="db-progress" id="dbProgress" role="group" aria-label="Assessment progress">
+                    <p class="db-progress__label" id="dbProgressLabel" aria-live="polite">Section 1 of 2 &middot; Your Numbers</p>
+                    <div class="db-progress__bar"><div class="db-progress__fill" id="dbProgressFill"></div></div>
+                </div>
+            </div>
+
+            <div id="diabetesFormAlert" class="db-alert" role="alert" hidden>
+                <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+                <span id="diabetesFormAlertText"></span>
+                <button type="button" class="db-alert__retry" id="dbRetryBtn" hidden>Try again</button>
+            </div>
+
+            <form id="diabetesForm" novalidate> <!-- Reusing form ID for script compatibility -->
+
+                <!-- ---- Section 0: Your Numbers ---- -->
+                <fieldset class="db-step" data-step="0">
+                    <legend class="db-step__legend">Your Numbers</legend>
+                    <p class="db-step__sub">Enter your most recent measurements — check a recent lab report or physical exam if you're not sure of a number. This model was trained on adult women — if that doesn't describe you, treat the result with extra caution.</p>
+
+                    <div class="db-field">
+                        <label class="db-question" for="dbPregnancies">How many times have you been pregnant?</label>
+                        <input type="number" id="dbPregnancies" class="db-input" min="0" max="20" step="1" placeholder="0" required>
+                        <p class="db-hint">Enter 0 if this doesn't apply to you.</p>
+                        <p class="db-field-error" id="pregnanciesError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="dbGlucosePima">What's your blood sugar (glucose) level?</label>
+                        <div class="db-input-unit">
+                            <input type="number" id="dbGlucosePima" inputmode="decimal" step="0.1" min="40" max="300" placeholder="120" required>
+                            <span class="db-input-unit__suffix">mg/dL</span>
+                        </div>
+                        <p class="db-hint">Use the reading from an oral glucose tolerance test (OGTT) if you have one — this is a blood sugar test taken 2 hours after drinking a sugary drink at a lab. Check your lab report for this number.</p>
+                        <p class="db-field-error" id="glucoseError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="dbBpPima">What's your blood pressure (the lower number)?</label>
+                        <div class="db-input-unit">
+                            <input type="number" id="dbBpPima" inputmode="decimal" step="0.1" min="20" max="200" placeholder="72" required>
+                            <span class="db-input-unit__suffix">mmHg</span>
+                        </div>
+                        <p class="db-hint">Blood pressure is usually written as two numbers, like 120/80 — enter the second, lower number (called diastolic pressure).</p>
+                        <p class="db-field-error" id="blood_pressureError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="dbSkinThickness">How thick is the skin on the back of your upper arm?</label>
+                        <div class="db-input-unit">
+                            <input type="number" id="dbSkinThickness" inputmode="decimal" step="0.1" min="5" max="100" placeholder="23" required>
+                            <span class="db-input-unit__suffix">mm</span>
+                        </div>
+                        <p class="db-hint">This is usually measured by gently pinching the skin (called a skinfold measurement) during a physical exam. Don't worry if you're not sure — a rough estimate is fine, since this matters less to your result than blood sugar or blood pressure.</p>
+                        <p class="db-field-error" id="skin_thicknessError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <p class="db-question">Height and weight</p>
+                        <div class="db-bmi-row">
+                            <div class="db-input-unit">
+                                <label class="db-input-unit__label" for="dbHeightPima">Height</label>
+                                <input type="number" id="dbHeightPima" inputmode="numeric" min="50" max="250" placeholder="165" required>
+                                <span class="db-input-unit__suffix">cm</span>
+                            </div>
+                            <div class="db-input-unit">
+                                <label class="db-input-unit__label" for="dbWeightPima">Weight</label>
+                                <input type="number" id="dbWeightPima" inputmode="decimal" step="0.1" min="10" max="300" placeholder="60" required>
+                                <span class="db-input-unit__suffix">kg</span>
+                            </div>
+                            <div class="db-bmi-result">
+                                <span class="db-input-unit__label">BMI</span>
+                                <span class="db-bmi-value" id="dbBmiValuePima" aria-live="polite">&mdash;</span>
+                            </div>
+                        </div>
+                        <p class="db-hint">We'll work out your Body Mass Index (BMI) automatically from these.</p>
+                        <p class="db-field-error" id="heightError" role="alert" hidden></p>
+                        <p class="db-field-error" id="weightError" role="alert" hidden></p>
+                        <p class="db-field-error" id="bmiError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="dbAgePima">How old are you?</label>
+                        <input type="number" id="dbAgePima" class="db-input" min="18" max="120" placeholder="35" required>
+                        <p class="db-field-error" id="ageError" role="alert" hidden></p>
+                    </div>
+                </fieldset>
+
+                <!-- ---- Section 1: Review ---- -->
+                <div class="db-step db-step--review" data-step="1" hidden>
+                    <h2 class="db-step__legend">Review your answers</h2>
+                    <p class="db-step__sub">Review your numbers before we calculate your estimated diabetes risk.</p>
+                    <div id="dbReviewList" class="db-review"></div>
+                </div>
+
+                <div class="db-nav">
+                    <button type="button" class="btn btn-outline" id="dbBackBtn" hidden>Back</button>
+                    <button type="button" class="btn btn-primary" id="dbNextBtn">Next</button>
+                    <button type="submit" class="btn btn-primary" id="dbSubmitBtn" hidden>Assess My Risk</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- ============ RESULT ============ -->
+        <section class="db-panel db-result" id="dbResultPanel" data-phase="result" hidden>
+            <div class="db-result__mark" id="dbResultMark" aria-hidden="true"></div>
+            <h1 class="db-result__title" id="resultRiskLevel"></h1>
+            <p class="db-result__probability" id="resultProbability"></p>
+            <p class="db-result__message" id="resultMessage"></p>
+            <p class="db-result__disclaimer" id="resultDisclaimer"></p>
+            <div class="db-result__actions">
+                <button type="button" class="btn btn-outline" id="dbReviewAgainBtn">Review My Answers</button>
+                <a href="dashboard.html" class="btn btn-primary">Return to Dashboard</a>
+            </div>
+        </section>
+
+        <p class="db-safety-note"><i class="fas fa-shield-heart" aria-hidden="true"></i> This tool provides an AI-generated risk indicator, not a medical diagnosis. It is trained on the Pima Indians Diabetes Database (adult women of Pima Indian heritage) — if that doesn't describe you, treat this result with extra caution. It is a separate model from our other diabetes assessments and its score is not directly comparable to them. Not a substitute for professional medical advice.</p>
+    </div>
+
+            </main>
+        </div>
+    </div>
+    <script src="js/auth.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/prediction-diabetes-pima.js"></script>
+    <script src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

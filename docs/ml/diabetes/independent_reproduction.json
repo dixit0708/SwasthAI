@@ -1,0 +1,44 @@
+{
+  "v2_diabetes_brfss_v2": {
+    "model_version": "diabetes-brfss-v2",
+    "n_test_rows": 45895,
+    "n_features": 14,
+    "threshold": 0.1,
+    "accuracy": 0.6438609870356248,
+    "precision": 0.28248903815654447,
+    "recall_sensitivity": 0.8628009687989742,
+    "specificity": 0.6043317213705114,
+    "f1": 0.4256246266296518,
+    "roc_auc": 0.8179799161539707,
+    "pr_auc": 0.44459696075989164,
+    "brier": 0.10530429309535114,
+    "confusion_matrix": {
+      "tp": 6056,
+      "tn": 23494,
+      "fp": 15382,
+      "fn": 963
+    },
+    "positive_rate_test_set": 0.15293604967861424
+  },
+  "v1_diabetes_brfss_v1_rollback": {
+    "model_version": "diabetes-brfss-v1",
+    "n_test_rows": 45895,
+    "n_features": 21,
+    "threshold": 0.1,
+    "accuracy": 0.6460180847586883,
+    "precision": 0.28450651595123544,
+    "recall_sensitivity": 0.8677874341074228,
+    "specificity": 0.6059779812737937,
+    "f1": 0.4285211763050514,
+    "roc_auc": 0.8199240204820274,
+    "pr_auc": 0.44773779310613354,
+    "brier": 0.10498526881098376,
+    "confusion_matrix": {
+      "tp": 6091,
+      "tn": 23558,
+      "fp": 15318,
+      "fn": 928
+    },
+    "positive_rate_test_set": 0.15293604967861424
+  }
+}

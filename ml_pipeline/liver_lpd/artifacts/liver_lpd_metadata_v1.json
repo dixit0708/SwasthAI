@@ -1,0 +1,73 @@
+{
+  "model_name": "liver_risk_model_lpd_lab",
+  "model_version": "liver-lpd-v1",
+  "model_algorithm": "random_forest",
+  "feature_order": [
+    "age_years",
+    "total_bilirubin_mg_dl",
+    "direct_bilirubin_mg_dl",
+    "alkaline_phosphatase_u_l",
+    "alanine_aminotransferase_u_l",
+    "aspartate_aminotransferase_u_l",
+    "total_proteins_g_dl",
+    "albumin_g_dl",
+    "albumin_globulin_ratio",
+    "gender"
+  ],
+  "target_column": "liver_disease_status",
+  "decision_threshold": 0.95,
+  "training_date": "2026-09-25T16:09:36.568501+00:00",
+  "cv_results": {
+    "logistic_regression": {
+      "roc_auc": 0.7621219352560972,
+      "f1": 0.6816215736027267,
+      "recall": 0.5429787234042553,
+      "accuracy": 0.6364123564559595
+    },
+    "random_forest": {
+      "roc_auc": 0.99955547112462,
+      "f1": 0.9995214037917204,
+      "recall": 0.9995744680851063,
+      "accuracy": 0.9993135302244738
+    },
+    "xgboost": {
+      "roc_auc": 0.9994621351149853,
+      "f1": 0.9997872905991606,
+      "recall": 0.9998936170212765,
+      "accuracy": 0.9996948893974066
+    }
+  },
+  "test_metrics": {
+    "accuracy": 0.9932885906040269,
+    "precision": 1.0,
+    "recall": 0.9906382978723405,
+    "f1": 0.9952971355280035,
+    "roc_auc": 1.0,
+    "confusion_matrix": {
+      "tp": 2328,
+      "tn": 928,
+      "fp": 0,
+      "fn": 22
+    },
+    "threshold": 0.95
+  },
+  "accuracy_maximizing_threshold_reference": {
+    "threshold": 0.07,
+    "validation_accuracy": 0.9993898718730934,
+    "note": "NOT the production threshold. Reported only for transparency about the accuracy/recall trade-off; see reports/evaluation.md."
+  },
+  "data_source": "User-provided 'Liver Patient Dataset (LPD)' CSV, ILPD-schema, 30,691 raw rows (11,323 exact duplicates dropped before any split \u2014 see data/raw/README.md)",
+  "target_definition": "Result: liver patient (1) vs not a liver patient (2), remapped to 1/0",
+  "split_methodology": "60/20/20 train/val/test (stratified); threshold chosen by recall-sweep on the val split only, final pipeline refit on train+val, test set evaluated exactly once",
+  "n_train": 9833,
+  "n_val": 3278,
+  "n_test": 3278,
+  "n_raw_rows": 30691,
+  "n_exact_duplicates_dropped": 11323,
+  "n_after_cleaning": 16389,
+  "positive_rate": 0.7169442919031057,
+  "library_versions": {
+    "scikit-learn": "1.9.0",
+    "pandas": "3.0.5"
+  }
+}

@@ -9,21 +9,21 @@
  *
  */
 const DASHBOARD_HERO_IMAGES = [
-  'assets/images/dashboard-hero/hero-1.jpg',
-  'assets/images/dashboard-hero/hero-2.jpg',
-  'assets/images/dashboard-hero/hero-3.jpg',
-  'assets/images/dashboard-hero/hero-4.jpg',
-  'assets/images/dashboard-hero/hero-5.jpg',
-  'assets/images/dashboard-hero/hero-6.jpg',
-  'assets/images/dashboard-hero/hero-7.jpg',
-  'assets/images/dashboard-hero/hero-8.jpg',
-  'assets/images/dashboard-hero/hero-9.jpg',
-  'assets/images/dashboard-hero/hero-10.jpg',
-  'assets/images/dashboard-hero/hero-11.jpg',
-  'assets/images/dashboard-hero/hero-12.jpg',
-  'assets/images/dashboard-hero/hero-13.jpg',
-  'assets/images/dashboard-hero/hero-14.jpg',
-  'assets/images/dashboard-hero/hero-15.jpg'
+  'assets/images/dashboard-hero/hero-1.webp',
+  'assets/images/dashboard-hero/hero-2.webp',
+  'assets/images/dashboard-hero/hero-3.webp',
+  'assets/images/dashboard-hero/hero-4.webp',
+  'assets/images/dashboard-hero/hero-5.webp',
+  'assets/images/dashboard-hero/hero-6.webp',
+  'assets/images/dashboard-hero/hero-7.webp',
+  'assets/images/dashboard-hero/hero-8.webp',
+  'assets/images/dashboard-hero/hero-9.webp',
+  'assets/images/dashboard-hero/hero-10.webp',
+  'assets/images/dashboard-hero/hero-11.webp',
+  'assets/images/dashboard-hero/hero-12.webp',
+  'assets/images/dashboard-hero/hero-13.webp',
+  'assets/images/dashboard-hero/hero-14.webp',
+  'assets/images/dashboard-hero/hero-15.webp'
 ];
 
 const DASHBOARD_HERO_GRID_CELLS = 15; // matches the 5x3 grid in css/dashboard.css — one tile per image, no repeats

@@ -1020,6 +1020,12 @@ For AI:
 * model loading failure
 * inference failure
 
+## Playwright usage policy
+
+Playwright must not be used for testing, browser automation, screenshots, visual verification, or UI inspection unless the user explicitly requests Playwright in the current task (e.g. "use Playwright to test this," "run the Playwright tests"). This applies even when Playwright would be the most convenient option for frontend/responsive/visual checks — use lightweight methods instead (code inspection, the existing `backend/tests/` pytest suite, and reasoning about the change), since the frontend is a static site with no build step to verify.
+
+`playwright.config.js` and `tests/e2e/` (the E2E test source and config) must be preserved — this policy governs when Playwright runs, not whether it exists in the project. `package.json`'s `test:e2e` script is already scoped so that no generic test command accidentally invokes Playwright; keep it that way. When Playwright is used because the user explicitly asked for it, clean up the generated artifacts (screenshots, videos, traces, `test-results/`, `playwright-report/`) afterward — they must not persist as unreviewed disk usage between tasks.
+
 ---
 
 # 33. LOGGING
@@ -1480,43 +1486,55 @@ This section exists so an agent doesn't assume a described component is already 
 * Auth endpoint: `backend/app/api/v1/endpoints/auth.py` (register/login, bcrypt + JWT).
 * Health profile endpoint: `backend/app/api/v1/endpoints/health_profile.py`.
 * Prediction endpoints: `backend/app/api/v1/endpoints/predict.py`
-  - `POST /predict/diabetes` — auth-protected, live, producing `RiskPredictionOut`
+  - `POST /predict/diabetes` — auth-protected, live (diabetes-brfss-v2, 14 features), producing `RiskPredictionOut`
+  - `POST /predict/diabetes-pima` — auth-protected, live, second independent diabetes model (diabetes-pima-v1, lab-based, Pima Indians Diabetes Database)
   - `POST /predict/heart` — auth-protected, live, producing `HeartRiskPredictionOut` (with clinical overlay fields)
+  - `POST /predict/heart/clinical` — auth-protected, live, lab-based heart model (`ml_pipeline/heart_clinical/`)
+  - `POST /predict/liver` — auth-protected, live (liver-nhanes-v1, lab-free, 11 features)
+  - `POST /predict/liver-ilpd` — auth-protected, live, second independent liver model (liver-ilpd-logistic-v1, lab-based, canonical UCI ILPD dataset). Locked artifact: `backend/app/ai/models/liver_ilpd_model.py` verifies its SHA-256 checksum before loading.
   - `POST /predict/pneumonia` — unauthenticated (no user record tied), live, OOD detection enabled
+  - `POST /predict/skin` — auth-protected route exists, but returns 503: no trained checkpoint (`skin_cnn.pt`) is present on disk yet (see ML pipeline note below)
+* Report analyzer: `backend/app/api/v1/endpoints/report_analysis.py` (`POST /report-analysis/analyze`, auth-required, accepts a PDF or a JPEG/PNG image). Extraction and classification are rule-based, not an LLM. Text extraction (`backend/app/ai/inference/report_parsing.py`) reads a text-based PDF directly via `pdfplumber`; a scanned PDF (no text layer) or a direct image upload is instead read via Gemini vision OCR (`backend/app/ai/inference/image_ocr.py`) — required for images (no rule-based fallback for pixels; fails the request closed if `GEMINI_API_KEY` is missing or the call fails), unlike the optional explanation step below. The extracted text is then matched two ways via `backend/app/ai/inference/lab_report_analysis.py`: numeric parameters against reference ranges (`extract_lab_values`/`classify_lab_values` — ~46 parameters across CBC, lipid, LFT, KFT, thyroid, glucose, iron studies, vitamins, plus vitals: pulse, respiratory rate, body temperature, and blood pressure via its own compound systolic/diastolic extractor — see `docs/report_analyzer/README.md` for the per-panel source list and the alias-collision guards this needed, e.g. Total T3/T4 vs. Free T3/T4), and qualitative infectious-disease screening tests (HIV, HBsAg, Syphilis/RPR-VDRL, Hepatitis C, Dengue NS1/IgM, Malaria Antigen, COVID-19) reported as Reactive/Non-Reactive rather than a number (`extract_qualitative_results` — Dengue IgG is deliberately excluded, see the docs, since it usually reflects past not current infection). Both feed a template-based summary/disclaimer (`backend/app/ai/safety/report_safety.py`), which gives a reactive/positive screening result distinctly more direct "contact your doctor promptly" wording than a numeric out-of-range value. On top of that, an optional LLM enhancement layer (`backend/app/ai/inference/report_explanation.py`, Google Gemini free tier — `GEMINI_API_KEY` in `backend/.env`) turns the already-extracted structured values into a plain-language explanation; it only ever sees those structured values, never the raw report text, and any failure (missing key, API error) fails open to `None` rather than breaking the request. Both the OCR and explanation calls are synchronous under the hood, so `report_analysis_service.py` runs them via `run_in_threadpool`. Persists only the structured result to `medical_reports` (never the raw file). See `docs/report_analyzer/README.md` for scope and limitations.
 * Core: `backend/app/core/config.py` (pydantic-settings), `backend/app/core/security.py` (hashing/JWT).
-* DB layer: `backend/app/db/mongodb.py` (connection), `backend/app/db/repository.py` (`BaseRepository`), `backend/app/db/collections.py` (all 14 collection repositories already scaffolded).
-* Models: `backend/app/models/user.py`, `backend/app/models/prediction.py` (`DiabetesPredictionInput`, `HeartPredictionInput`, `RiskPredictionOut`, `HeartRiskPredictionOut`).
-* Services layer: `backend/app/services/prediction_service.py` (diabetes + heart), `backend/app/services/health_profile_service.py`.
+* DB layer: `backend/app/db/mongodb.py` (connection), `backend/app/db/repository.py` (`BaseRepository`), `backend/app/db/collections.py` (all 14 collection repositories from Section 14 already scaffolded).
+* Models: `backend/app/models/user.py`, `backend/app/models/prediction.py` (`DiabetesPredictionInput`, `DiabetesPimaPredictionInput`, `HeartPredictionInput`, `HeartClinicalInput`, `HeartRiskPredictionOut`, `LiverPredictionInput`, `LiverIlpdPredictionInput`, `RiskPredictionOut`), `backend/app/models/report_analysis.py`.
+* Services layer: `backend/app/services/prediction_service.py` (diabetes, diabetes-pima, heart, heart-clinical, liver, liver-ilpd), `backend/app/services/health_profile_service.py`, `backend/app/services/report_analysis_service.py`.
 * AI — fully loaded and serving:
-  - `backend/app/ai/models/diabetes_model.py` (diabetes-brfss-v2 XGBoost pipeline)
+  - `backend/app/ai/models/diabetes_model.py` (diabetes-brfss-v2 XGBoost pipeline), `diabetes_pima_model.py` (diabetes-pima-v1)
   - `backend/app/ai/models/heart_model.py` (heart-cdc2022-v2-smote XGBoost pipeline, named-DataFrame fix applied)
+  - `backend/app/ai/models/liver_model.py` (liver-nhanes-v1), `liver_ilpd_model.py` (liver-ilpd-logistic-v1, locked/checksummed)
   - `backend/app/ai/models/pneumonia_cnn.py` (ResNet18, lazy-loaded on first request, OOD detection)
-  - `backend/app/ai/inference/image_processing.py`
+  - `backend/app/ai/inference/image_processing.py`, plus report-analyzer inference modules listed above
   - `backend/app/ai/safety/clinical_rules.py` — Tier 1 (60–75%) and Tier 2 (85–93%) clinical overlay for heart
   - `backend/app/ai/safety/response_filter.py` — `build_screening_response()` for all prediction endpoints
-* Tests: `backend/tests/test_ai_inference.py`, `backend/tests/test_security.py`.
+  - `backend/app/ai/safety/report_safety.py` — report analyzer summary/disclaimer
+* Tests: `backend/tests/test_ai_inference.py`, `backend/tests/test_security.py`, `backend/tests/test_diabetes_pima_inference.py`, `backend/tests/test_liver_inference.py`, `backend/tests/test_liver_ilpd_inference.py`, `backend/tests/test_report_analysis.py`.
 
 **Backend — not yet implemented:**
 * No endpoints yet for family members, medical records/reports, health metrics/goals, medications, notifications, doctors, appointments, AI conversations, or audit logs — repositories are scaffolded but have no routes.
-* Liver disease model (ml_pipeline/liver/) — ML pipeline not yet built.
-* Skin disease CNN — model training not yet done; `load_skin_model` called at startup with a `not found` guard.
+* Skin disease CNN — endpoint and inference code exist, but no trained checkpoint (`backend/app/ai/models/skin_cnn.pt`) is present on disk; the endpoint 503s until one is trained/placed.
 * Consent management (Section 45) and account-deletion cascade (Section 46) not implemented.
 * No CI pipeline exists yet (Section 52).
 
 **ML pipeline:**
-* `ml_pipeline/diabetes/` — fully built: preprocessing, train (v1 + v2), evaluate, artifacts. V2 is production.
+* `ml_pipeline/diabetes/` — fully built: preprocessing, train (v1 + v2), evaluate, artifacts. V2 is production. A v3 candidate (GenHlth feature removed) was trained and evaluated but rejected — see `reports/v3_*` and `ml_pipeline/liver/reports/v2_general_health_removal.md` for the cross-model reasoning; v2 remains production.
+* `ml_pipeline/diabetes_pima/` — fully built (Pima Indians Diabetes Database): preprocessing, train, evaluate, artifacts. Production, independent of the BRFSS model.
 * `ml_pipeline/heart/` — fully built: preprocessing, train (v2-smote), evaluate, artifacts. Production copy lives at `backend/app/ai/models/heart_disease_model.pkl`.
+* `ml_pipeline/heart_clinical/` — fully built lab-based heart model (`heart_clinical_model.pkl` + `scaler.pkl`).
+* `ml_pipeline/liver/` — two production-relevant models: `train_nhanes.py` (liver-nhanes-v1, lab-free, production) and `train_ilpd_logistic.py` (liver-ilpd-logistic-v1, lab-based, canonical UCI ILPD, production, locked/checksummed). A v2 NHANES candidate (general_health removed) was trained and evaluated but rejected — see `reports/v2_general_health_removal.md`. The original `train.py` (liver-ilpd-v1, retired) is kept untouched as historical baseline.
+* `ml_pipeline/liver_lpd/` — a larger (30,691-row) alternative liver lab-value dataset was investigated and **rejected**: its labels showed strong evidence of being synthetically/rule-generated (a single unpruned decision tree reached 100% test accuracy). Kept on disk as documented history; not used anywhere in production. See `reports/data_integrity_investigation.md`.
 * `ml_pipeline/pneumonia/` — CNN checkpoint at `backend/app/ai/models/pneumonia_cnn.pt`, OOD stats at `backend/app/ai/models/ood_stats.npz`.
-* `ml_pipeline/liver/`, `ml_pipeline/skin/` — placeholder directories, no training scripts or data yet.
+* `ml_pipeline/skin/` — placeholder directory; no training script, data, or checkpoint yet (`backend/app/ai/models/skin_cnn.pt` does not exist).
 
 **Frontend — implemented:**
-* Full static HTML page set exists (see original listing above).
-* Fully functional AI prediction pages:
-  - `prediction-diabetes.html` + `prediction-diabetes.js` — live API integration, auth-protected
-  - `prediction-heart.html` + `prediction-heart.js` — live API integration, auth-protected (uses `SwasthAPI.predictions.heart()` from `auth.js`)
-  - `prediction-pneumonia.html` + `prediction-pneumonia.js` — live API integration, unauthenticated
-* `frontend/js/auth.js` — centralized API client with `swasthaiAuthedRequest()`, `SwasthAPI.predictions.*` (diabetes, heart, pneumonia).
-* All other app pages are wired to real auth/session but most still show empty states because backend endpoints don't exist yet.
+* Full static HTML page set exists (see original listing above), plus a Medical Report Analyzer page (`report-analyzer.html` + `report-analyzer.js`).
+* Fully functional AI prediction pages, all using `frontend/js/auth.js`'s centralized `SwasthAPI.predictions.*` client (`swasthaiAuthedRequest()`):
+  - `prediction-diabetes.html` / `prediction-diabetes-pima.html`, reached via `prediction-diabetes-choose.html` — live, auth-protected
+  - `prediction-heart.html` — live, auth-protected
+  - `prediction-liver.html` / `prediction-liver-ilpd.html`, reached via `prediction-liver-choose.html` — live, auth-protected
+  - `prediction-pneumonia.html` — live, unauthenticated
+  - `prediction-skin.html` — wired to a live route that currently 503s (no checkpoint yet)
+* All other app pages are wired to real auth/session but most still show empty states because their backend endpoints don't exist yet.
 
 **Infra:**
 * `docker-compose.yml` exists at the repo root (verify its services before assuming what it runs).

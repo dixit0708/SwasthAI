@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/nav.css">
-    <link rel="stylesheet" href="css/prediction-diabetes.css">
+    <link rel="stylesheet" href="css/prediction-diabetes.css?v=2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -22,26 +22,90 @@
             <main class="page-content">
                 <!-- PAGE CONTENT: prediction-diabetes -->
 
-    <div class="db-page" id="dbPage">
+    <div class="db-page db-page--marquee-bg" id="dbPage">
+
+        <!-- Full-clarity photo marquee fixed behind the whole page (welcome,
+             assessment and result alike) — no scrim, no dimming, sits strictly
+             behind every panel so it never covers the form itself. -->
+        <div class="db-page-marquee-bg" aria-hidden="true">
+            <div class="db-page-marquee-bg__row db-page-marquee-bg__row--a">
+                <div class="db-page-marquee-bg__track">
+                    <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=440&h=320&fit=crop&auto=format&q=75&fm=jpg" alt="">
+                    <img src="https://images.unsplash.com/photo-1758684051120-60735855c088?w=440&h=320&fit=crop&auto=format&q=75&fm=jpg" alt="">
+                    <img src="https://images.unsplash.com/photo-1658280388403-09f61d0eb311?w=440&h=320&fit=crop&auto=format&q=75&fm=jpg" alt="">
+                    <img src="https://images.unsplash.com/photo-1758599880788-e49f6ee77bc7?w=440&h=320&fit=crop&auto=format&q=75&fm=jpg" alt="">
+                    <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=440&h=320&fit=crop&auto=format&q=75&fm=jpg" alt="">
+                    <img src="https://images.unsplash.com/photo-1758684051120-60735855c088?w=440&h=320&fit=crop&auto=format&q=75&fm=jpg" alt="">
+                    <img src="https://images.unsplash.com/photo-1658280388403-09f61d0eb311?w=440&h=320&fit=crop&auto=format&q=75&fm=jpg" alt="">
+                    <img src="https://images.unsplash.com/photo-1758599880788-e49f6ee77bc7?w=440&h=320&fit=crop&auto=format&q=75&fm=jpg" alt="">
+                </div>
+            </div>
+            <div class="db-page-marquee-bg__row db-page-marquee-bg__row--b">
+                <div class="db-page-marquee-bg__track">
+                    <img src="https://images.unsplash.com/photo-1543352632-5a4b24e4d2a6?w=440&h=320&fit=crop&auto=format&q=75&fm=jpg" alt="">
+                    <img src="https://images.unsplash.com/photo-1683727186226-910f31a9da45?w=440&h=320&fit=crop&auto=format&q=75&fm=jpg" alt="">
+                    <img src="https://images.unsplash.com/photo-1666887360680-9dc27a1d2753?w=440&h=320&fit=crop&auto=format&q=75&fm=jpg" alt="">
+                    <img src="https://images.unsplash.com/photo-1543352632-5a4b24e4d2a6?w=440&h=320&fit=crop&auto=format&q=75&fm=jpg" alt="">
+                    <img src="https://images.unsplash.com/photo-1683727186226-910f31a9da45?w=440&h=320&fit=crop&auto=format&q=75&fm=jpg" alt="">
+                    <img src="https://images.unsplash.com/photo-1666887360680-9dc27a1d2753?w=440&h=320&fit=crop&auto=format&q=75&fm=jpg" alt="">
+                </div>
+            </div>
+            <div class="db-page-marquee-bg__row db-page-marquee-bg__row--a">
+                <div class="db-page-marquee-bg__track">
+                    <img src="https://images.unsplash.com/photo-1758599880788-e49f6ee77bc7?w=440&h=320&fit=crop&auto=format&q=75&fm=jpg" alt="">
+                    <img src="https://images.unsplash.com/photo-1658280388403-09f61d0eb311?w=440&h=320&fit=crop&auto=format&q=75&fm=jpg" alt="">
+                    <img src="https://images.unsplash.com/photo-1758684051120-60735855c088?w=440&h=320&fit=crop&auto=format&q=75&fm=jpg" alt="">
+                    <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=440&h=320&fit=crop&auto=format&q=75&fm=jpg" alt="">
+                    <img src="https://images.unsplash.com/photo-1758599880788-e49f6ee77bc7?w=440&h=320&fit=crop&auto=format&q=75&fm=jpg" alt="">
+                    <img src="https://images.unsplash.com/photo-1658280388403-09f61d0eb311?w=440&h=320&fit=crop&auto=format&q=75&fm=jpg" alt="">
+                    <img src="https://images.unsplash.com/photo-1758684051120-60735855c088?w=440&h=320&fit=crop&auto=format&q=75&fm=jpg" alt="">
+                    <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=440&h=320&fit=crop&auto=format&q=75&fm=jpg" alt="">
+                </div>
+            </div>
+        </div>
 
         <!-- ============ WELCOME ============ -->
         <section class="db-panel db-welcome" id="dbWelcome" data-phase="welcome">
-            <div class="db-welcome__mark" aria-hidden="true">
-                <svg viewBox="0 0 96 96" width="72" height="72" fill="none">
-                    <circle cx="48" cy="48" r="40" stroke="var(--border)" stroke-width="2"/>
-                    <path id="dbWelcomeArc" d="M48 8 A40 40 0 0 1 83.6 65.5" stroke="var(--primary)" stroke-width="3" stroke-linecap="round" fill="none"/>
-                    <circle cx="48" cy="48" r="5" fill="var(--primary)"/>
-                </svg>
+            <div class="db-hero">
+                <div class="db-hero__marquee" aria-hidden="true">
+                    <div class="db-hero__row db-hero__row--a">
+                        <div class="db-hero__track">
+                            <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1758684051120-60735855c088?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1658280388403-09f61d0eb311?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1758599880788-e49f6ee77bc7?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1758684051120-60735855c088?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1658280388403-09f61d0eb311?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1758599880788-e49f6ee77bc7?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                        </div>
+                    </div>
+                    <div class="db-hero__row db-hero__row--b">
+                        <div class="db-hero__track">
+                            <img src="https://images.unsplash.com/photo-1543352632-5a4b24e4d2a6?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1683727186226-910f31a9da45?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1666887360680-9dc27a1d2753?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1543352632-5a4b24e4d2a6?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1683727186226-910f31a9da45?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                            <img src="https://images.unsplash.com/photo-1666887360680-9dc27a1d2753?w=300&h=220&fit=crop&auto=format&q=70&fm=jpg" width="148" height="108" alt="">
+                        </div>
+                    </div>
+                </div>
+                <div class="db-hero__scrim"></div>
+                <div class="db-hero__content">
+                    <h1 class="db-welcome__title">Diabetes Risk Screening</h1>
+                    <p class="db-welcome__lede">A short set of questions about your health, lifestyle, and history — answered in about three minutes — to produce an AI-generated diabetes risk screening estimate.</p>
+                    <button type="button" class="btn btn-primary btn-lg" id="dbBeginBtn">Begin Assessment</button>
+                </div>
             </div>
-            <h1 class="db-welcome__title">Diabetes Risk Screening</h1>
-            <p class="db-welcome__lede">A short set of questions about your health, lifestyle, and history — answered in about three minutes — to produce an AI-generated diabetes risk screening estimate.</p>
-            <ul class="db-welcome__facts">
-                <li><i class="fas fa-list-check" aria-hidden="true"></i> 3 short sections, 14 questions</li>
-                <li><i class="fas fa-lock" aria-hidden="true"></i> Your answers are private to your account</li>
-                <li><i class="fas fa-circle-info" aria-hidden="true"></i> A screening estimate — never a diagnosis</li>
-            </ul>
-            <button type="button" class="btn btn-primary btn-lg" id="dbBeginBtn">Begin Assessment</button>
-            <a href="predictions.html" class="db-welcome__back">Back to Predictions</a>
+            <div class="db-welcome__body">
+                <ul class="db-welcome__facts">
+                    <li><i class="fas fa-list-check" aria-hidden="true"></i> 3 short sections, 14 questions</li>
+                    <li><i class="fas fa-lock" aria-hidden="true"></i> Your answers are private to your account</li>
+                    <li><i class="fas fa-circle-info" aria-hidden="true"></i> A screening estimate — never a diagnosis</li>
+                </ul>
+                <a href="predictions.html" class="db-welcome__back">Back to Predictions</a>
+            </div>
         </section>
 
         <!-- ============ ASSESSMENT ============ -->
@@ -68,12 +132,12 @@
                     <p class="db-step__sub">A few basics to establish your baseline.</p>
 
                     <div class="db-field">
-                        <p class="db-question" id="q-sex">How do you identify your sex for this health assessment?</p>
+                        <p class="db-question" id="q-sex">How do you identify your gender for this health assessment?</p>
                         <div class="db-toggle" role="radiogroup" aria-labelledby="q-sex">
                             <label class="db-toggle__option"><input type="radio" name="sex" id="dbSex_0" value="0" class="db-toggle__input">Female</label>
                             <label class="db-toggle__option"><input type="radio" name="sex" id="dbSex_1" value="1" class="db-toggle__input">Male</label>
                         </div>
-                        <p class="db-hint">This assessment's underlying health survey recorded sex only as female or male.</p>
+                        <p class="db-hint">This assessment's underlying health survey recorded gender only as female or male.</p>
                         <p class="db-field-error" id="sexError" role="alert" hidden></p>
                     </div>
 

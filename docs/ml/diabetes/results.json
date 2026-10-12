@@ -1,0 +1,158 @@
+{
+  "model_name": "diabetes_risk_model_brfss",
+  "current_production": {
+    "model_version": "diabetes-brfss-v2",
+    "status": "current_production",
+    "task": "binary_classification_screening",
+    "algorithm": "XGBoost classifier (StandardScaler -> XGBClassifier -> CalibratedClassifierCV[sigmoid]), metadata-driven decision threshold",
+    "framework_versions": {
+      "scikit-learn": "1.9.0",
+      "xgboost": "3.4.1",
+      "pandas": "3.0.5",
+      "numpy": "2.5.2",
+      "python": "3.13.5"
+    },
+    "dataset": {
+      "name": "CDC BRFSS 2015 Diabetes Health Indicators",
+      "source_file": "ml_pipeline/diabetes/data/raw/brfss2015-diabetes-binary.csv",
+      "original_rows": 253680,
+      "duplicates_dropped": 24206,
+      "n_train": 183580,
+      "n_test": 45895,
+      "positive_rate_test": 0.15293604967861424,
+      "target_column": "Diabetes_binary",
+      "target_definition": "1 = diagnosed diabetes; 0 = no diabetes OR prediabetes-only"
+    },
+    "features": [
+      "sex", "age", "bmi", "high_bp", "high_chol", "chol_check",
+      "heart_disease_or_attack", "phys_activity", "fruits",
+      "hvy_alcohol_consump", "stroke", "gen_hlth", "diff_walk", "smoker"
+    ],
+    "n_features": 14,
+    "hyperparameters": {
+      "n_estimators": 400,
+      "max_depth": 3,
+      "learning_rate": 0.05,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "min_child_weight": 5,
+      "gamma": 1.0,
+      "reg_alpha": 0,
+      "reg_lambda": 5.0,
+      "scale_pos_weight": 5.5382
+    },
+    "calibration": {
+      "method": "sigmoid_platt_scaling",
+      "oof_raw_brier": 0.18278,
+      "oof_calibrated_brier": 0.10626,
+      "oof_improvement": 0.07652,
+      "test_brier": 0.10530429309535114,
+      "calibration_in_the_large": {
+        "mean_predicted_probability": 0.15451,
+        "observed_prevalence": 0.15294,
+        "absolute_gap": 0.00157
+      }
+    },
+    "threshold": {
+      "value": 0.1,
+      "source": "ml_pipeline/diabetes/artifacts/diabetes_metadata_v2.json:decision_threshold",
+      "selection_method": "highest grid value in {0.05,...,0.50} with training-OOF sensitivity >= 0.85"
+    },
+    "metrics": {
+      "accuracy": 0.6438609870356248,
+      "precision": 0.28248903815654447,
+      "recall_sensitivity": 0.8628009687989742,
+      "specificity": 0.6043317213705114,
+      "f1": 0.4256246266296518,
+      "roc_auc": 0.8179799161539707,
+      "pr_auc": 0.44459696075989164,
+      "brier": 0.10530429309535114
+    },
+    "confusion_matrix": {
+      "tp": 6056,
+      "tn": 23494,
+      "fp": 15382,
+      "fn": 963
+    },
+    "feature_importance_gain": {
+      "HighBP": 0.4857293963432312,
+      "GenHlth": 0.1452895700931549,
+      "HighChol": 0.09670255333185196,
+      "Age": 0.050479572266340256,
+      "BMI": 0.045296810567379,
+      "HeartDiseaseorAttack": 0.03944466635584831,
+      "CholCheck": 0.035273581743240356,
+      "DiffWalk": 0.033998340368270874,
+      "HvyAlcoholConsump": 0.03286699205636978,
+      "Sex": 0.016343172639608383,
+      "Stroke": 0.008304739370942116,
+      "Smoker": 0.0035467282868921757,
+      "PhysActivity": 0.003541709156706929,
+      "Fruits": 0.003182182088494301
+    },
+    "feature_importance_method": "XGBoost gain importance, averaged across CalibratedClassifierCV per-fold estimators, independently reproduced for this documentation (not present as a saved artifact before this task)",
+    "artifact": "ml_pipeline/diabetes/artifacts/diabetes_pipeline_v2.pkl",
+    "metadata": "ml_pipeline/diabetes/artifacts/diabetes_metadata_v2.json",
+    "training_date": "2026-09-09T17:17:58.524993+00:00",
+    "external_clinical_validation": null,
+    "demographic_slice_performance": null
+  },
+  "rollback_baseline": {
+    "model_version": "diabetes-brfss-v1",
+    "status": "rollback_historical_baseline",
+    "n_features": 21,
+    "artifact": "ml_pipeline/diabetes/artifacts/diabetes_pipeline.pkl",
+    "metadata": "ml_pipeline/diabetes/artifacts/metadata.json",
+    "training_date": "2026-09-08T16:31:16.438304+00:00",
+    "threshold": {
+      "value": 0.1
+    },
+    "metrics": {
+      "accuracy": 0.6460180847586883,
+      "precision": 0.28450651595123544,
+      "recall_sensitivity": 0.8677874341074228,
+      "specificity": 0.6059779812737937,
+      "f1": 0.4285211763050514,
+      "roc_auc": 0.8199240204820274,
+      "pr_auc": 0.44773779310613354,
+      "brier": 0.10498526881098376
+    },
+    "confusion_matrix": {
+      "tp": 6091,
+      "tn": 23558,
+      "fp": 15318,
+      "fn": 928
+    },
+    "external_clinical_validation": null
+  },
+  "evidence_sources": [
+    "ml_pipeline/diabetes/artifacts/diabetes_metadata_v2.json",
+    "ml_pipeline/diabetes/artifacts/metadata.json",
+    "ml_pipeline/diabetes/reports/evaluation.md",
+    "ml_pipeline/diabetes/reports/dataset_audit.md",
+    "ml_pipeline/diabetes/reports/v2_final_recommendation.md",
+    "ml_pipeline/diabetes/reports/v2_model_comparison.md",
+    "ml_pipeline/diabetes/reports/v2_calibration.md",
+    "ml_pipeline/diabetes/reports/v2_threshold_analysis.md",
+    "ml_pipeline/diabetes/reports/v2_test_evaluation.json",
+    "ml_pipeline/diabetes/reports/v2_threshold_sweep.json",
+    "ml_pipeline/diabetes/reports/v2_calibration_check.json",
+    "ml_pipeline/diabetes/reports/v2_calibration_in_the_large.json",
+    "ml_pipeline/diabetes/reports/family_history_investigation.md",
+    "backend/app/ai/models/diabetes_model.py",
+    "backend/app/models/prediction.py",
+    "backend/app/services/prediction_service.py",
+    "backend/app/api/v1/endpoints/predict.py",
+    "backend/app/ai/safety/response_filter.py",
+    "backend/app/ai/safety/medical_disclaimer.py",
+    "backend/tests/test_predictions.py",
+    "docs/ml/diabetes/independent_reproduction.json (generated for this documentation task)"
+  ],
+  "not_available_or_not_independently_verified": [
+    "external_clinical_validation",
+    "demographic_slice_performance (age/sex breakdown)",
+    "real_world_post_deployment_performance",
+    "training_time_wall_clock (not recorded in any evidence file for the diabetes pipeline)",
+    "inference_latency"
+  ]
+}

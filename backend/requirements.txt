@@ -25,6 +25,18 @@ bcrypt
 pyjwt
 opencv-python-headless
 numpy
+# Report analyzer: extracts text from uploaded lab-report PDFs in memory.
+# Pure Python (via pdfminer.six + pypdfium2 wheels), MIT-licensed, no
+# external OCR binary to install — the report analyzer only supports
+# text-based PDFs for now (see backend/app/ai/inference/report_parsing.py).
+pdfplumber
+# Report analyzer's plain-language explanation step. Google's Gemini API
+# has a genuinely free tier (no billing account required) via Google AI
+# Studio, unlike the Anthropic/OpenAI APIs — chosen specifically for that
+# reason. Optional at runtime: if GEMINI_API_KEY is unset, this step is
+# skipped and the rule-based summary is returned on its own (see
+# app/ai/inference/report_explanation.py).
+google-genai
 --extra-index-url https://download.pytorch.org/whl/cpu
 torch
 torchvision

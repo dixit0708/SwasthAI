@@ -1,0 +1,57 @@
+{
+  "purpose": "Phase 4 (Experiments A and B) evidence for the diabetes-brfss-v2 85%-accuracy investigation. These are NOT freshly re-run in this task -- they are the existing, already-saved outputs of ml_pipeline/diabetes/train_brfss_v2.py's own model-family comparison and hyperparameter search, produced with the identical 14-feature v2 dataset, identical StratifiedKFold(5, shuffle=True, random_state=42) protocol, and identical scale_pos_weight. Re-running them would be redundant (same seed, same data, same deterministic algorithms) -- they are cited here, not fabricated, and their source files are named explicitly below so they can be independently re-verified.",
+  "source_files": [
+    "ml_pipeline/diabetes/reports/v2_family_comparison.json",
+    "ml_pipeline/diabetes/reports/v2_tuned_results.json",
+    "ml_pipeline/diabetes/reports/v2_final_recommendation.md (v1-vs-v2, i.e. the 21-feature 'use every available BRFSS column' configuration)"
+  ],
+  "experiment_A_hyperparameter_tuning": {
+    "method": "RandomizedSearchCV, 20 candidate configurations, cv=3, scoring=roc_auc, training split only; winning configuration re-verified with a full 5-fold StratifiedKFold",
+    "default_xgboost_cv_roc_auc": 0.8130096213329997,
+    "tuned_xgboost_cv_roc_auc": 0.8136765150641345,
+    "improvement": 0.0006668937311368,
+    "tuned_cv_summary_at_default_0.5_threshold": {
+      "accuracy": 0.70450322728474,
+      "precision": 0.3135557246146841,
+      "recall_sensitivity": 0.7835314062607027,
+      "specificity": 0.6902335256431928,
+      "f1": 0.4478653361527359,
+      "roc_auc": 0.8136765150641345,
+      "pr_auc": 0.4308722967088114
+    },
+    "conclusion": "Hyperparameter tuning moved CV ROC-AUC by 0.0007 (0.8130 -> 0.8137) -- this is already the configuration deployed as diabetes-brfss-v2. A gain this small cannot plausibly bridge the ~0.20 accuracy gap needed to reach 85% at a sensitivity-preserving threshold; the OOF sweep in threshold_analysis.json (this same directory) already uses these exact tuned hyperparameters and still requires threshold>=0.45 (sensitivity 0.23) to cross 85%."
+  },
+  "experiment_B_model_family_comparison": {
+    "method": "5-fold StratifiedKFold CV, training split only, same 14-feature dataset, default/near-default hyperparameters per family",
+    "note_on_accuracy_column": "cross_validate's 'accuracy' scorer uses each model's default 0.5 decision threshold, NOT the tuned/calibrated 0.10 threshold used in production -- shown here specifically because it answers the 85%-accuracy question directly: even at the threshold each model would naturally choose, none approach 85%.",
+    "families": {
+      "logistic_regression": {
+        "cv_accuracy": 0.7164599428109776, "cv_roc_auc": 0.8056054367638111, "cv_pr_auc": 0.4025359913262111,
+        "cv_recall_sensitivity": 0.7534012540179058, "cv_specificity": 0.7097896476897022, "cv_f1": 0.44836578004593963
+      },
+      "random_forest": {
+        "cv_accuracy": 0.7383033778958618, "cv_roc_auc": 0.7962203961457149, "cv_pr_auc": 0.40065300110664664,
+        "cv_recall_sensitivity": 0.6843078546729482, "cv_specificity": 0.7480530798370746, "cv_f1": 0.4444177222169376
+      },
+      "xgboost_default": {
+        "cv_accuracy": 0.7050860726225008, "cv_roc_auc": 0.8130096213329997, "cv_pr_auc": 0.42980305259796464,
+        "cv_recall_sensitivity": 0.7814301398117072, "cv_specificity": 0.6913010297019017, "cv_f1": 0.44769172722926703
+      },
+      "hist_gradient_boosting": {
+        "cv_accuracy": 0.7050479594658847, "cv_roc_auc": 0.8130555868006135, "cv_pr_auc": 0.42940571185706017,
+        "cv_recall_sensitivity": 0.7811451063365579, "cv_specificity": 0.6913074814542104, "cv_f1": 0.44755629626104215
+      }
+    },
+    "highest_cv_accuracy_family": "random_forest (0.7383, still 11.2 points below the 85% target, at its own default threshold)",
+    "highest_cv_roc_auc_family": "hist_gradient_boosting (0.8131), statistically indistinguishable from xgboost_default (0.8130) -- within fold-to-fold noise",
+    "conclusion": "All four evaluated families cluster within a narrow band (CV ROC-AUC 0.796-0.813; CV accuracy at default threshold 0.705-0.738). None comes remotely close to 85% accuracy, and switching families would not change the fundamental accuracy/sensitivity tradeoff documented in threshold_analysis.json, since that tradeoff is driven by class imbalance (~15% positive prevalence) and the achievable ROC-AUC ceiling (~0.81), not by which family is used."
+  },
+  "experiment_C_feature_configuration": {
+    "method": "Not re-run as a new experiment -- diabetes-brfss-v1 (already trained, evaluated, and documented) IS the 'use every legitimate BRFSS column' configuration: all 21 original features, including the 7 removed for v2 (Income, Education, AnyHealthcare, NoDocbcCost, MentHlth, PhysHlth, Veggies).",
+    "v1_21_feature_test_roc_auc": 0.8199240204820274,
+    "v2_14_feature_test_roc_auc": 0.8179799161539707,
+    "difference": 0.0019441043280567,
+    "conclusion": "Using every available legitimate BRFSS feature (v1, 21 columns) raises test ROC-AUC by only 0.0019 over v2's 14-column set. No fabricated feature (family history, HbA1c, fasting glucose) was added, and none may legitimately be added -- BRFSS does not collect them (see docs/ml/diabetes/limitations.md and ml_pipeline/diabetes/reports/family_history_investigation.md). Feature configuration is not the lever that would close the gap to 85% accuracy."
+  },
+  "overall_conclusion": "Across every legitimate BRFSS-based lever already evidenced in this repository -- hyperparameter tuning (Experiment A), model family choice (Experiment B), and feature configuration (Experiment C, i.e. v1's full 21-feature set) -- achievable test-set ROC-AUC is bounded within approximately 0.796-0.820. At this discrimination ceiling and ~15% positive class prevalence, no legitimate threshold or model choice can reach 85% accuracy without sensitivity collapsing to roughly 15-25% (see threshold_analysis.json and final_comparison.json in this directory). This is a property of the available data and achievable discrimination, not of insufficient tuning effort."
+}

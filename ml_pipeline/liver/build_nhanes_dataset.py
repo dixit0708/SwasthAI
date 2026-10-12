@@ -37,13 +37,20 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 CYCLES = {"H": "2013-2014", "I": "2015-2016", "J": "2017-2018"}
 
 # Columns pulled from each source file (SEQN is the join key, always kept).
+#
+# BPQ080 (self-reported high cholesterol) and SMQ040 (current smoking
+# status, only asked of people who said "yes" to SMQ020) were added after
+# reviewing what the already-downloaded raw files actually contain beyond
+# the v1 feature set — both are lab-free, self-report, and require no new
+# data download. See reports/feature_experiment.md for whether they
+# actually improved the model before being adopted into production.
 COLUMNS = {
     "DEMO": ["SEQN", "RIAGENDR", "RIDAGEYR", "RIDRETH1"],
     "BMX": ["SEQN", "BMXBMI", "BMXWAIST"],
     "ALQ": ["SEQN", "ALQ151"],
-    "SMQ": ["SEQN", "SMQ020"],
+    "SMQ": ["SEQN", "SMQ020", "SMQ040"],
     "DIQ": ["SEQN", "DIQ010"],
-    "BPQ": ["SEQN", "BPQ020"],
+    "BPQ": ["SEQN", "BPQ020", "BPQ080"],
     "PAQ": ["SEQN", "PAQ665"],
     "HUQ": ["SEQN", "HUQ010"],
     "MCQ": ["SEQN", "MCQ160L"],
@@ -79,9 +86,19 @@ def main():
 
     # Predictors: drop Refused(7)/Don't know(9)/missing for each Yes-No item,
     # keep only unambiguous Yes(1)/No(2) answers, same rule as the target.
-    yes_no_cols = ["ALQ151", "SMQ020", "BPQ020", "PAQ665"]
+    yes_no_cols = ["ALQ151", "SMQ020", "BPQ020", "BPQ080", "PAQ665"]
     for col in yes_no_cols:
         pooled = pooled[pooled[col].isin([1.0, 2.0])]
+
+    # SMQ040 ("do you now smoke?") is only asked of people who said Yes to
+    # SMQ020 ("smoked >=100 cigarettes ever") — a genuine branching skip,
+    # not a missing answer, so a never-smoker's NaN here is expected and
+    # must NOT be dropped as if it were refused/unknown. Only rows where
+    # SMQ020==1 (ever smoked) need an unambiguous SMQ040 answer; rows where
+    # SMQ020==2 (never smoked) pass through regardless of SMQ040.
+    ever_smoked = pooled["SMQ020"] == 1.0
+    smq040_answered = pooled["SMQ040"].isin([1.0, 2.0, 3.0])
+    pooled = pooled[~ever_smoked | (ever_smoked & smq040_answered)]
 
     # DIQ010 has a third valid answer, Borderline(3) — kept as its own state
     # (not merged into Yes or No) since "borderline diabetes" is a real,
@@ -106,6 +123,23 @@ def main():
     }
     general_health_map = {1.0: "Excellent", 2.0: "Very good", 3.0: "Good", 4.0: "Fair", 5.0: "Poor"}
 
+    # smoking_status refines the old binary "ever smoked 100 cigarettes"
+    # flag into the three states someone can actually answer for
+    # themselves: Never (SMQ020=No), Current (ever=Yes, now smoke every
+    # day/some days), Former (ever=Yes, now don't smoke at all). Current
+    # smoking is the more directly relevant liver-risk-factor signal than
+    # a lifetime-ever flag; kept as a separate candidate feature (not yet
+    # swapped into the production `smoker` field) — see
+    # reports/feature_experiment.md for whether it actually helps before
+    # being adopted, per AGENTS.md Section 9 (never fabricate/assume
+    # metric improvements).
+    def smoking_status(row):
+        if row["SMQ020"] == 2.0:
+            return "Never"
+        if row["SMQ040"] in (1.0, 2.0):
+            return "Current"
+        return "Former"
+
     out = pd.DataFrame({
         "age_years": pooled["RIDAGEYR"].astype(int),
         "sex": pooled["RIAGENDR"].map({1.0: "Male", 2.0: "Female"}),
@@ -115,6 +149,8 @@ def main():
         "general_health": pooled["HUQ010"].map(general_health_map),
         "heavy_alcohol_use": pooled["ALQ151"].map({1.0: "Yes", 2.0: "No"}),
         "smoker": pooled["SMQ020"].map({1.0: "Yes", 2.0: "No"}),
+        "smoking_status": pooled.apply(smoking_status, axis=1),
+        "high_cholesterol": pooled["BPQ080"].map({1.0: "Yes", 2.0: "No"}),
         "diabetes_status": pooled["DIQ010"].map({1.0: "Yes", 2.0: "No", 3.0: "Borderline"}),
         "hypertension": pooled["BPQ020"].map({1.0: "Yes", 2.0: "No"}),
         "physical_activity": pooled["PAQ665"].map({1.0: "Yes", 2.0: "No"}),

@@ -18,6 +18,11 @@
  * AST, proteins, albumin) — a form only fillable by someone who already had
  * lab results, at which point the model added no triage value. See
  * ml_pipeline/liver/reports/evaluation_nhanes.md for the full rationale.
+ *
+ * A candidate v2 (general_health removed) was trained and evaluated — see
+ * ml_pipeline/liver/reports/v2_general_health_removal.md — but NOT
+ * adopted: a real, measured performance cost, and a much larger regression
+ * on the sibling diabetes model led to reverting the removal for both.
  */
 
 const STEPS = [

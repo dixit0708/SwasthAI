@@ -1,0 +1,119 @@
+{
+  "model_name": "liver_risk_model_ilpd_logistic",
+  "model_version": "liver-ilpd-logistic-v1",
+  "model_status": "candidate \u2014 not integrated into SwasthAI backend/frontend",
+  "description": "Liver-disease risk/assessment model for informational and educational purposes only. Not a medical diagnostic device, not a doctor replacement, and not claimed to be clinically proven or 100% accurate.",
+  "dataset_name": "ILPD (Indian Liver Patient Dataset)",
+  "dataset_source": "UCI Machine Learning Repository, dataset id 225. Ramana, B. & Venkateswarlu, N. (2022). https://doi.org/10.24432/C5D02C. License: CC BY 4.0.",
+  "dataset_rows_original": 583,
+  "dataset_rows_after_duplicate_removal": 570,
+  "duplicate_rows_removed": 13,
+  "missing_values_total": 4,
+  "feature_names": [
+    "age_years",
+    "total_bilirubin_mg_dl",
+    "direct_bilirubin_mg_dl",
+    "alkaline_phosphatase_u_l",
+    "alanine_aminotransferase_u_l",
+    "aspartate_aminotransferase_u_l",
+    "total_proteins_g_dl",
+    "albumin_g_dl",
+    "albumin_globulin_ratio",
+    "gender"
+  ],
+  "target_name": "liver_disease_status",
+  "target_definition": "Raw 'Selector' column: 1 = liver patient -> mapped to 1, 2 = not a liver patient -> mapped to 0",
+  "preprocessing_steps": [
+    "Drop exact duplicate rows (before any split/fold)",
+    "ColumnTransformer: numeric features -> SimpleImputer(strategy='median') -> StandardScaler; gender -> OneHotEncoder(drop='first', handle_unknown='ignore')",
+    "All imputer/scaler/encoder statistics fitted only on each fold's training portion during cross-validation; final pipeline fits once on the full cleaned dataset for the shipped artifact"
+  ],
+  "model_type": "LogisticRegression",
+  "hyperparameters": {
+    "solver": "lbfgs",
+    "penalty": "l2 (scikit-learn default; not passed explicitly to avoid a 1.8+ FutureWarning)",
+    "C": 1.0,
+    "class_weight": "balanced",
+    "max_iter": 1000,
+    "random_state": 42
+  },
+  "cross_validation_method": "StratifiedKFold, out-of-fold predictions",
+  "cv_folds": 5,
+  "cv_metrics_mean": {
+    "roc_auc": 0.7466902824541714,
+    "pr_auc": 0.891497436420741,
+    "accuracy": 0.6333333333333333,
+    "precision": 0.8804287002561277,
+    "recall": 0.5618789521228545,
+    "specificity": 0.8111742424242424,
+    "f1": 0.6838799625917857
+  },
+  "cv_metrics_std": {
+    "roc_auc": 0.028485970426395724,
+    "pr_auc": 0.015125181114487967,
+    "accuracy": 0.04203210017793311,
+    "precision": 0.01681243310287611,
+    "recall": 0.061921540353318635,
+    "specificity": 0.034403032438362256,
+    "f1": 0.05009497105971555
+  },
+  "out_of_fold_aggregate_metrics_at_0.5": {
+    "roc_auc": 0.7449687612639673,
+    "pr_auc": 0.8900554409158339,
+    "accuracy": 0.6333333333333333,
+    "precision": 0.8803088803088803,
+    "recall": 0.5615763546798029,
+    "specificity": 0.8109756097560976,
+    "f1": 0.6857142857142857,
+    "tp": 228,
+    "tn": 133,
+    "fp": 31,
+    "fn": 178
+  },
+  "roc_auc": 0.7466902824541714,
+  "pr_auc": 0.891497436420741,
+  "accuracy": 0.6333333333333333,
+  "precision": 0.8804287002561277,
+  "recall": 0.5618789521228545,
+  "specificity": 0.8111742424242424,
+  "f1": 0.6838799625917857,
+  "selected_threshold": 0.35,
+  "selected_threshold_metrics": {
+    "threshold": 0.35,
+    "roc_auc": 0.7449687612639673,
+    "pr_auc": 0.8900554409158339,
+    "accuracy": 0.7052631578947368,
+    "precision": 0.7793427230046949,
+    "recall": 0.8177339901477833,
+    "specificity": 0.4268292682926829,
+    "f1": 0.7980769230769231,
+    "tp": 332,
+    "tn": 70,
+    "fp": 94,
+    "fn": 74
+  },
+  "threshold_selection_rationale": "Lowest threshold (from a 0.10-0.90 sweep, step 0.01, on out-of-fold probabilities) that still clears 80% recall \u2014 a sensitivity-first choice appropriate for a screening tool, matching the convention already used by liver-nhanes-v1, diabetes-brfss-v2, and diabetes-pima-v1 in this project. NOT chosen to maximize accuracy (the accuracy-maximizing threshold in this sweep was 0.27, with recall only 0.9458 \u2014 rejected as too insensitive for a screening use case).",
+  "threshold_sweep_range": {
+    "min": 0.1,
+    "max": 0.9,
+    "step": 0.01
+  },
+  "training_date": "2026-09-25T16:44:58.541364+00:00",
+  "random_state": 42,
+  "library_versions": {
+    "scikit-learn": "1.9.0",
+    "pandas": "3.0.5",
+    "numpy": "2.5.2"
+  },
+  "limitations": [
+    "Small dataset (570 usable rows after cleaning) \u2014 confidence intervals on these metrics are wide; a single-digit change in fold composition can shift results noticeably.",
+    "Single-region population (Northeast Andhra Pradesh, India; 441 male / 142 female in the raw file) \u2014 not necessarily generalizable to other populations.",
+    "No external clinical validation.",
+    "Not a diagnosis: outputs an AI-generated risk indicator only, per AGENTS.md Section 11."
+  ],
+  "not_integrated": true,
+  "excludes_liver_lpd_dataset": true,
+  "independent_of": [
+    "liver-nhanes-v1 (ml_pipeline/liver/train_nhanes.py, untouched)"
+  ]
+}

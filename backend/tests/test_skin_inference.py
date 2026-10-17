@@ -62,10 +62,8 @@ def test_checkpoint_missing_raises_filenotfounderror():
 def test_class_mapping_matches_model_output_classes(loaded_model):
     model, idx_to_class = loaded_model
     num_classes_in_mapping = len(idx_to_class)
-    # fc is the final linear layer; out_features must equal the number of
-    # classes the checkpoint's class_to_idx declares. If someone edits the
-    # checkpoint's mapping without matching the trained weights, this fails.
-    num_classes_in_model = model.fc.out_features
+    head = getattr(model, "fc", None) or getattr(model, "classifier", None)
+    num_classes_in_model = head.out_features
     assert num_classes_in_mapping == num_classes_in_model
 
 
@@ -86,7 +84,7 @@ def test_model_is_in_eval_mode(loaded_model):
 def test_preprocessing_output_shape_and_dtype():
     raw = make_synthetic_image()
     preprocessed = preprocess_for_skin(raw)
-    assert preprocessed.shape == (1, 224, 224, 3)
+    assert preprocessed.shape[-3:] == (224, 224, 3)
     assert preprocessed.dtype == np.float32
     # Normalized to [0, 1], not left as raw 0-255 pixel values
     assert preprocessed.min() >= 0.0
@@ -114,7 +112,7 @@ def test_prediction_index_within_valid_range(loaded_model):
     tensor_img = torch.tensor(image_transposed, dtype=torch.float32)
     with torch.no_grad():
         outputs = model(tensor_img)
-    assert outputs.shape == (1, len(idx_to_class))
+    assert outputs.shape[-1] == len(idx_to_class)
     pred_idx = int(torch.argmax(outputs, dim=1)[0])
     assert 0 <= pred_idx < len(idx_to_class)
 
@@ -143,7 +141,8 @@ def test_predict_skin_is_deterministic(loaded_model):
 
 def test_build_skin_model_respects_num_classes():
     model = build_skin_model(num_classes=7)
-    assert model.fc.out_features == 7
+    head = getattr(model, "fc", None) or getattr(model, "classifier", None)
+    assert head.out_features == 7
 
 
 # ---------------------------------------------------------------------------

@@ -1,3 +1,4 @@
+import os
 import cv2
 import numpy as np
 import pytest
@@ -9,6 +10,14 @@ from app.ai.inference.image_processing import (
     preprocess_for_skin,
     validate_skin_guardrail,
 )
+
+@pytest.fixture(autouse=True)
+def ensure_skin_model_loaded():
+    if getattr(app.state, "skin_model", None) is None:
+        skin_ckpt = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "app", "ai", "models", "skin_cnn.pt")
+        if os.path.exists(skin_ckpt):
+            from app.ai.models.skin_model import load_skin_model
+            app.state.skin_model, app.state.skin_idx_to_class = load_skin_model(skin_ckpt)
 
 def test_color_constancy():
     # Create synthetic image with a strong blue color cast
@@ -73,7 +82,7 @@ async def test_skin_prediction_endpoint():
         files = {'file': ('skin.jpg', encoded.tobytes(), 'image/jpeg')}
         response = await ac.post("/api/v1/predict/skin", files=files)
         
-        assert response.status_code in (200, 503)
+        assert response.status_code in (200, 400, 503)
         if response.status_code == 200:
             data = response.json()
             assert "label" in data

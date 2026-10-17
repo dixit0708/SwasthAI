@@ -4,9 +4,12 @@ from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, Request
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
+from datetime import datetime, timezone
+
 from app.ai.inference.image_processing import validate_and_decode_image, preprocess_for_cnn
 from app.ai.models.pneumonia_cnn import load_pneumonia_model, predict_pneumonia
-from app.api.v1.deps import get_current_user
+from app.api.v1.deps import get_current_user, get_optional_current_user
+from app.db.collections import prediction_repo
 from app.models.prediction import (
     DiabetesPimaPredictionInput, DiabetesPredictionInput, LiverIlpdPredictionInput,
     LiverPredictionInput, RiskPredictionOut,
@@ -248,36 +251,39 @@ async def predict_liver_ilpd_endpoint(
 
 
 @router.post("/skin", summary="Predict Skin Disease from Image")
-async def predict_skin_endpoint(request: Request, file: UploadFile = File(...)):
+async def predict_skin_endpoint(
+    request: Request, 
+    file: UploadFile = File(...),
+    current_user: UserOut | None = Depends(get_optional_current_user)
+):
     try:
         # Read file contents
         contents = await file.read()
 
-        # 1. Validate and decode into OpenCV numpy array
+        # 1. Fetch the eagerly loaded model from app state (return 503 early if unavailable)
+        model = getattr(request.app.state, "skin_model", None)
+        idx_to_class = getattr(request.app.state, "skin_idx_to_class", None)
+        if model is None or idx_to_class is None:
+            logger.error("Skin Disease model is not loaded in app state.")
+            raise HTTPException(status_code=503, detail="Skin Disease model is currently unavailable")
+
+        # 2. Validate and decode into OpenCV numpy array
         image_np = validate_and_decode_image(contents, file.content_type)
 
-        # 2. Guardrail: Validate that image contains human skin before CNN inference
+        # 3. Guardrail: Validate that image contains human skin before CNN inference
         from app.ai.inference.image_processing import validate_skin_guardrail
         is_valid, reason, meta = validate_skin_guardrail(image_np)
         if not is_valid:
             logger.warning(f"Skin image rejected by guardrail: {meta.get('rejection_type')} - {reason}")
             raise HTTPException(status_code=400, detail=reason)
 
-        # 3. Preprocess specifically for the Skin Disease CNN
+        # 4. Preprocess specifically for the Skin Disease CNN
         from app.ai.inference.image_processing import preprocess_for_skin
         preprocessed_img = preprocess_for_skin(image_np)
 
-        # 4. Fetch the eagerly loaded model from app state
-        model = getattr(request.app.state, "skin_model", None)
-        idx_to_class = getattr(request.app.state, "skin_idx_to_class", None)
-        
-        if model is None or idx_to_class is None:
-            logger.error("Skin Disease model is not loaded in app state.")
-            raise HTTPException(status_code=503, detail="Skin Disease model is currently unavailable")
-
-        # 5. Run inference
+        # 5. Run inference with Grad-CAM visual heatmap generation
         from app.ai.models.skin_model import predict_skin
-        result = predict_skin(model, idx_to_class, preprocessed_img)
+        result = predict_skin(model, idx_to_class, preprocessed_img, original_image_bgr=image_np)
 
         # 6. Secondary gating for ambiguous borderline cases
         skin_cov = meta.get("skin_coverage", 100.0)
@@ -303,6 +309,25 @@ async def predict_skin_endpoint(request: Request, file: UploadFile = File(...)):
             )
 
         result["skin_coverage"] = skin_cov
+
+        # 7. Persist to patient health records if user is authenticated
+        if current_user:
+            try:
+                await prediction_repo.create({
+                    "user_id": current_user.id,
+                    "condition": "skin",
+                    "model_version": "skin-densenet121-v1",
+                    "result": {
+                        "label": result["label"],
+                        "confidence": result["confidence"],
+                        "differential_diagnosis": result.get("differential_diagnosis", []),
+                        "skin_coverage": skin_cov,
+                    },
+                    "created_at": datetime.now(timezone.utc),
+                })
+            except Exception as e:
+                logger.warning(f"Could not persist skin prediction for user {current_user.id}: {e}")
+
         return JSONResponse(status_code=200, content=result)
 
     except HTTPException:

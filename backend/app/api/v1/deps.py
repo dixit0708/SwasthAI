@@ -22,3 +22,17 @@ async def get_current_user(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 
     return UserOut(id=str(user["_id"]), name=user["name"], email=user["email"])
+
+
+async def get_optional_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+) -> UserOut | None:
+    if credentials is None:
+        return None
+    user_id = decode_access_token(credentials.credentials)
+    if not user_id:
+        return None
+    user = await user_repo.get_by_id(user_id)
+    if not user:
+        return None
+    return UserOut(id=str(user["_id"]), name=user["name"], email=user["email"])

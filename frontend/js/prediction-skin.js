@@ -32,9 +32,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const clinicalCorrelationNote = document.getElementById('clinicalCorrelationNote');
     const resetBtn = document.getElementById('resetBtn');
 
+    const camControlArea = document.getElementById('camControlArea');
+    const showOriginalBtn = document.getElementById('showOriginalBtn');
+    const showHeatmapBtn = document.getElementById('showHeatmapBtn');
+
     let cropper = null;
     let currentFile = null;
     let originalDataUrl = null;
+    let currentHeatmapUrl = null;
+    let currentOriginalUrl = null;
     let isDifferentialOpen = false;
 
     // --- Clean Label Mapping ---
@@ -244,6 +250,24 @@ document.addEventListener('DOMContentLoaded', () => {
         originalDataUrl = null;
     });
 
+    // Grad-CAM Heatmap Toggle Listeners
+    if (showOriginalBtn && showHeatmapBtn) {
+        showOriginalBtn.addEventListener('click', () => {
+            if (currentOriginalUrl) {
+                previewImg.src = currentOriginalUrl;
+                showOriginalBtn.className = 'btn btn-sm btn-primary';
+                showHeatmapBtn.className = 'btn btn-sm btn-outline';
+            }
+        });
+        showHeatmapBtn.addEventListener('click', () => {
+            if (currentHeatmapUrl) {
+                previewImg.src = currentHeatmapUrl;
+                showHeatmapBtn.className = 'btn btn-sm btn-primary';
+                showOriginalBtn.className = 'btn btn-sm btn-outline';
+            }
+        });
+    }
+
     // Reset UI
     resetBtn.addEventListener('click', () => {
         destroyCropper();
@@ -255,6 +279,9 @@ document.addEventListener('DOMContentLoaded', () => {
         fileInput.value = '';
         currentFile = null;
         originalDataUrl = null;
+        currentHeatmapUrl = null;
+        currentOriginalUrl = null;
+        if (camControlArea) camControlArea.style.display = 'none';
         resultBar.style.width = '0%';
         if (clinicalCorrelationNote) clinicalCorrelationNote.style.display = 'none';
         isDifferentialOpen = false;
@@ -390,8 +417,21 @@ document.addEventListener('DOMContentLoaded', () => {
         resultArea.style.display = 'block';
         resultArea.classList.add('result-skin');
         
-        if (displayDataUrl) {
-            previewImg.src = displayDataUrl;
+        currentOriginalUrl = displayDataUrl || originalDataUrl;
+        currentHeatmapUrl = data.heatmap_overlay || null;
+
+        if (currentOriginalUrl) {
+            previewImg.src = currentOriginalUrl;
+        }
+
+        if (camControlArea) {
+            if (currentHeatmapUrl) {
+                camControlArea.style.display = 'block';
+                if (showOriginalBtn) showOriginalBtn.className = 'btn btn-sm btn-primary';
+                if (showHeatmapBtn) showHeatmapBtn.className = 'btn btn-sm btn-outline';
+            } else {
+                camControlArea.style.display = 'none';
+            }
         }
 
         const primaryRaw = data.label || "Unknown Condition";

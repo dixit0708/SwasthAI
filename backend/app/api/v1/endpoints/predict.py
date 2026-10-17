@@ -256,12 +256,18 @@ async def predict_skin_endpoint(request: Request, file: UploadFile = File(...)):
         # 1. Validate and decode into OpenCV numpy array
         image_np = validate_and_decode_image(contents, file.content_type)
 
-        # 2. Preprocess specifically for the Skin Disease CNN
-        # Note: image_processing.py needs to import cv2 and np, which it already does.
+        # 2. Guardrail: Validate that image contains human skin before CNN inference
+        from app.ai.inference.image_processing import validate_skin_guardrail
+        is_valid, reason, meta = validate_skin_guardrail(image_np)
+        if not is_valid:
+            logger.warning(f"Skin image rejected by guardrail: {meta.get('rejection_type')} - {reason}")
+            raise HTTPException(status_code=400, detail=reason)
+
+        # 3. Preprocess specifically for the Skin Disease CNN
         from app.ai.inference.image_processing import preprocess_for_skin
         preprocessed_img = preprocess_for_skin(image_np)
 
-        # 3. Fetch the eagerly loaded model from app state
+        # 4. Fetch the eagerly loaded model from app state
         model = getattr(request.app.state, "skin_model", None)
         idx_to_class = getattr(request.app.state, "skin_idx_to_class", None)
         
@@ -269,13 +275,34 @@ async def predict_skin_endpoint(request: Request, file: UploadFile = File(...)):
             logger.error("Skin Disease model is not loaded in app state.")
             raise HTTPException(status_code=503, detail="Skin Disease model is currently unavailable")
 
-        # 4. Run inference
+        # 5. Run inference
         from app.ai.models.skin_model import predict_skin
         result = predict_skin(model, idx_to_class, preprocessed_img)
-        
-        if result.get("prediction") == "OOD":
-            raise ValueError(result.get("message"))
 
+        # 6. Secondary gating for ambiguous borderline cases
+        skin_cov = meta.get("skin_coverage", 100.0)
+        conf = result.get("confidence", 0.0)
+        label = result.get("label", "")
+
+        # Catch default-class confusion (DenseNet-121 defaults to Pigmentation when confused on non-medical photos)
+        if "pigmentation" in label.lower() and conf < 0.65 and skin_cov < 60.0:
+            raise HTTPException(
+                status_code=400,
+                detail="Unable to identify clear skin patterns. Please upload a closer, well-lit photo focused on the affected skin lesion."
+            )
+        if skin_cov < 35.0 and conf < 0.50:
+            raise HTTPException(
+                status_code=400,
+                detail="Unable to identify clear skin patterns. Please upload a closer, well-lit photo focused on the affected skin lesion."
+            )
+        # Low-confidence / healthy skin check
+        if conf < 0.42:
+            raise HTTPException(
+                status_code=400,
+                detail=f"No distinct dermatological condition identified (AI confidence: {conf*100:.1f}%). The image does not show clear clinical disease patterns. Please upload a clear, focused photo of the affected area."
+            )
+
+        result["skin_coverage"] = skin_cov
         return JSONResponse(status_code=200, content=result)
 
     except HTTPException:

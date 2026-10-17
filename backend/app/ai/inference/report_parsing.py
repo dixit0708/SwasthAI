@@ -95,3 +95,5 @@ def _ocr_scanned_pdf(pdf) -> str:
     if not text and last_error:
         raise last_error
     return text
+
+

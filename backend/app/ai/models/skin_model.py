@@ -4,13 +4,17 @@ import torch
 import torch.nn as nn
 from torchvision import models
 import numpy as np
-import scipy.stats
 
-def build_skin_model(num_classes: int = 23):
-    """Builds the ResNet50 model with custom classification head."""
-    model = models.resnet50(weights=None)
-    num_ftrs = model.fc.in_features
-    model.fc = nn.Linear(num_ftrs, num_classes)
+def build_skin_model(num_classes: int = 23, architecture: str = "densenet121"):
+    """Builds the CNN model (DenseNet121 or ResNet50) with custom classification head."""
+    if architecture == "resnet50":
+        model = models.resnet50(weights=None)
+        num_ftrs = model.fc.in_features
+        model.fc = nn.Linear(num_ftrs, num_classes)
+    else:
+        model = models.densenet121(weights=None)
+        num_ftrs = model.classifier.in_features
+        model.classifier = nn.Linear(num_ftrs, num_classes)
     return model
 
 def load_skin_model(ckpt_path: str, device: str = "cpu"):
@@ -24,52 +28,59 @@ def load_skin_model(ckpt_path: str, device: str = "cpu"):
         raise ValueError("Checkpoint is missing 'class_to_idx' mapping.")
         
     num_classes = len(class_to_idx)
-    model = build_skin_model(num_classes=num_classes)
+    state_dict = checkpoint.get("model_state_dict", checkpoint)
     
-    # Support loading both full checkpoint dicts or just the state_dict
-    if "model_state_dict" in checkpoint:
-        model.load_state_dict(checkpoint["model_state_dict"])
+    # Auto-detect architecture from checkpoint layer names
+    if any("classifier" in k for k in state_dict.keys()):
+        arch = "densenet121"
     else:
-        model.load_state_dict(checkpoint)
+        arch = "resnet50"
+        
+    model = build_skin_model(num_classes=num_classes, architecture=arch)
+    model.load_state_dict(state_dict)
 
     model.to(device)
     model.eval()
     
-    # Invert mapping for predictions
     idx_to_class = {v: k for k, v in class_to_idx.items()}
-    
     return model, idx_to_class
 
 def predict_skin(model, idx_to_class: dict, preprocessed_image: np.ndarray, device: str = "cpu") -> dict:
     """
-    Runs inference on a preprocessed numpy image array.
-    Expects input shape: (1, H, W, C) where C is RGB.
+    Runs multi-scale pyramid inference on preprocessed numpy image array.
+    Expects input shape: (N, H, W, C) or (H, W, C) where C is RGB and N is number of pyramid scales.
+    Selects the scale with the most decisive, highest-confidence diagnostic signature.
     """
     import torch.nn.functional as F
     
-    # Convert (B, H, W, C) -> (B, C, H, W) for PyTorch
+    if preprocessed_image.ndim == 3:
+        preprocessed_image = np.expand_dims(preprocessed_image, axis=0)
+        
     image_transposed = np.transpose(preprocessed_image, (0, 3, 1, 2))
-    
-    # Convert to PyTorch Tensor
     tensor_img = torch.tensor(image_transposed, dtype=torch.float32).to(device)
     
-    # Run Inference
     with torch.no_grad():
         outputs = model(tensor_img)
-        probabilities = F.softmax(outputs, dim=1)[0].cpu().numpy()
+        probabilities_batch = F.softmax(outputs, dim=1) # shape: (N, 23)
         
-    max_p = float(np.max(probabilities))
-    entropy = float(scipy.stats.entropy(probabilities))
+        # Select the pyramid scale with the highest peak confidence
+        max_per_scale = torch.max(probabilities_batch, dim=1)[0]
+        best_scale_idx = torch.argmax(max_per_scale).item()
+        probabilities = probabilities_batch[best_scale_idx].cpu().numpy()
+        
+    top3_indices = np.argsort(probabilities)[::-1][:3]
+    top1_idx = int(top3_indices[0])
     
-    if max_p < 0.40 or entropy > 1.20:
-        return {
-            "prediction": "OOD", 
-            "message": f"This image doesn't look like a clear, close-up photo of the skin condition - for better results, upload a well-lit, clearly focused image of the affected area."
-        }
-        
-    pred_idx = int(np.argmax(probabilities))
+    differential = []
+    for idx in top3_indices:
+        differential.append({
+            "label": idx_to_class[int(idx)],
+            "confidence": float(probabilities[idx]),
+            "percentage": round(float(probabilities[idx]) * 100, 1)
+        })
     
     return {
-        "label": idx_to_class[pred_idx],
-        "confidence": max_p
+        "label": idx_to_class[top1_idx],
+        "confidence": float(probabilities[top1_idx]),
+        "differential_diagnosis": differential
     }

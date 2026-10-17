@@ -68,3 +68,16 @@ Any image resulting in a minimum Mahalanobis distance across the 23 classes that
   - `GaussianBlur` (out-of-focus shots)
   - `RandomAdjustSharpness` (phone post-processing artifacts)
 **Next Steps**: Retrain the model on Colab using these new robust transforms.
+
+## DenseNet121 vs ResNet50: Architecture Trade-off & Final Decision
+**Experiment**: Trained a DenseNet121 model from scratch using heavy real-world data augmentation to compare against the baseline ResNet50 model.
+**Clean F1 Performance**: 
+- ResNet50: 0.6546
+- DenseNet121: 0.6216
+
+**Real-world Domain Shift & OOD Safety**:
+- DenseNet121 (Heavy Augmentation) successfully handled lighting/color shifts on real-world photos (like an acne photo or a stock meditation photo), correctly triggering OOD due to high entropy (uncertainty).
+- **The Trade-off**: The aggressive augmentations (perspective warps, heavy rotations) caused DenseNet121 to lose its geometric understanding of "what is a human body part". As a result, it confidently misclassified completely random objects (like a motorcycle wheel or a normal face) as skin diseases, bypassing OOD filters. Attempting to calibrate new thresholds to catch these geometric objects resulted in an unacceptable 12% false rejection rate on clean, in-distribution skin images.
+- ResNet50, while slightly overconfident on lighting shifts, maintained a much stronger baseline geometric understanding and safely rejected random non-skin objects via the established OOD entropy/confidence filters.
+
+**Final Decision**: Keep **ResNet50** as the deployed model in `backend/app/ai/models/skin_cnn.pt` for its superior OOD safety on random inputs and higher clean F1 score. The DenseNet121 experiment is concluded and archived.

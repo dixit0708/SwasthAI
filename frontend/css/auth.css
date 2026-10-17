@@ -136,6 +136,36 @@
 }
 .auth-success.is-visible { display: flex; }
 
+/* Password strength checklist */
+.password-requirements {
+    list-style: none;
+    margin: var(--sp-2) 0 0;
+    padding: 0;
+    display: grid;
+    gap: var(--sp-1);
+}
+.password-requirements li {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    transition: color var(--transition-fast);
+}
+.password-requirements li i {
+    font-size: 6px;
+    color: var(--text-muted);
+}
+.password-requirements li.is-met {
+    color: var(--success);
+}
+.password-requirements li.is-met i {
+    color: var(--success);
+}
+.password-requirements li.is-met i::before {
+    content: "\f00c"; /* fa-check */
+}
+
 /* Password visibility toggle */
 .form-password {
     position: relative;

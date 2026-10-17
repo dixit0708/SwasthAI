@@ -51,6 +51,10 @@ storage/medical_images/*
 storage/prescriptions/*
 !storage/prescriptions/.gitkeep
 
+# Filled-in consented-doctor sheets contain personal phone numbers
+backend/scripts/*.csv
+!backend/scripts/consented_doctors_template.csv
+
 # Temporary files
 *.tmp
 *.temp

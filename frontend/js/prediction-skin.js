@@ -1,6 +1,6 @@
 /**
  * SwasthAI - Skin Disease Detection UI Logic
- * Includes Cropper.js lesion isolation and Top-3 Differential Diagnosis rendering.
+ * Fully Automated Multi-Scale Lesion Analysis, Grad-CAM Saliency, & Top-3 Differential Diagnosis.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -8,12 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
     const browseBtn = document.getElementById('browseBtn');
-    
-    const cropArea = document.getElementById('cropArea');
-    const cropImage = document.getElementById('cropImage');
-    const analyzeCropBtn = document.getElementById('analyzeCropBtn');
-    const cancelCropBtn = document.getElementById('cancelCropBtn');
-    const skipCropBtn = document.getElementById('skipCropBtn');
 
     const processingArea = document.getElementById('processingArea');
     const resultArea = document.getElementById('resultArea');
@@ -36,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const showOriginalBtn = document.getElementById('showOriginalBtn');
     const showHeatmapBtn = document.getElementById('showHeatmapBtn');
 
-    let cropper = null;
     let currentFile = null;
     let originalDataUrl = null;
     let currentHeatmapUrl = null;
@@ -199,57 +192,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Crop Actions ---
-
-    analyzeCropBtn.addEventListener('click', () => {
-        if (!cropper) {
-            if (currentFile) uploadForPrediction(currentFile, originalDataUrl);
-            return;
-        }
-
-        const canvas = cropper.getCroppedCanvas({
-            maxWidth: 1024,
-            maxHeight: 1024,
-            fillColor: '#ffffff',
-            imageSmoothingEnabled: true,
-            imageSmoothingQuality: 'high'
-        });
-
-        if (!canvas) {
-            showError("Unable to extract cropped area. Please try again.");
-            return;
-        }
-
-        const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.95);
-        canvas.toBlob((blob) => {
-            if (!blob) {
-                showError("Failed to process cropped image.");
-                return;
-            }
-            uploadForPrediction(blob, croppedDataUrl);
-        }, 'image/jpeg', 0.95);
-    });
-
-    skipCropBtn.addEventListener('click', () => {
-        if (cropper) {
-            cropper.destroy();
-            cropper = null;
-        }
-        if (currentFile) {
-            uploadForPrediction(currentFile, originalDataUrl);
-        }
-    });
-
-    cancelCropBtn.addEventListener('click', () => {
-        destroyCropper();
-        cropArea.style.display = 'none';
-        uploadArea.style.display = 'block';
-        errorMsg.style.display = 'none';
-        fileInput.value = '';
-        currentFile = null;
-        originalDataUrl = null;
-    });
-
     // Grad-CAM Heatmap Toggle Listeners
     if (showOriginalBtn && showHeatmapBtn) {
         showOriginalBtn.addEventListener('click', () => {
@@ -270,9 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Reset UI
     resetBtn.addEventListener('click', () => {
-        destroyCropper();
         resultArea.style.display = 'none';
-        cropArea.style.display = 'none';
         processingArea.style.display = 'none';
         errorMsg.style.display = 'none';
         uploadArea.style.display = 'block';
@@ -291,14 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (differentialList) differentialList.innerHTML = '';
     });
 
-    function destroyCropper() {
-        if (cropper) {
-            cropper.destroy();
-            cropper = null;
-        }
-    }
-
-    // --- Main Logic ---
+    // --- Main Logic (Fully Automated) ---
 
     function handleFile(file) {
         // Clear previous errors
@@ -319,53 +252,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
         currentFile = file;
 
-        // Read file into image for cropping
+        // Read file into image preview
         const reader = new FileReader();
         reader.onload = (e) => {
             originalDataUrl = e.target.result;
-            initCropper(originalDataUrl);
+            previewImg.src = originalDataUrl;
         };
         reader.readAsDataURL(file);
+
+        // Instantly run automated multi-scale prediction
+        uploadForPrediction(file);
     }
 
-    function initCropper(imageSrc) {
+    async function uploadForPrediction(file) {
+        // UI State: Automated Processing
         uploadArea.style.display = 'none';
-        processingArea.style.display = 'none';
         resultArea.style.display = 'none';
-        cropArea.style.display = 'block';
-
-        destroyCropper();
-
-        cropImage.src = imageSrc;
-
-        // Initialize Cropper.js after the image loads
-        cropImage.onload = () => {
-            cropper = new Cropper(cropImage, {
-                viewMode: 1,
-                dragMode: 'move',
-                autoCropArea: 0.65,
-                restore: false,
-                guides: true,
-                center: true,
-                highlight: true,
-                cropBoxMovable: true,
-                cropBoxResizable: true,
-                toggleDragModeOnDblclick: false,
-                responsive: true
-            });
-        };
-    }
-
-    async function uploadForPrediction(imageBlobOrFile, displayDataUrl) {
-        // UI State: Processing
-        cropArea.style.display = 'none';
-        uploadArea.style.display = 'none';
         processingArea.style.display = 'block';
         errorMsg.style.display = 'none';
         
         const formData = new FormData();
-        const filename = imageBlobOrFile.name || 'cropped_lesion.jpg';
-        formData.append('file', imageBlobOrFile, filename);
+        const filename = file.name || 'skin_image.jpg';
+        formData.append('file', file, filename);
         
         try {
             const token = localStorage.getItem(typeof SWASTHAI_TOKEN_KEY !== 'undefined' ? SWASTHAI_TOKEN_KEY : 'swasthai_token'); 
@@ -385,35 +293,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.detail || `Server error: ${response.status}`);
             }
             
-            showResult(data, displayDataUrl || originalDataUrl);
+            showResult(data, originalDataUrl);
             
         } catch (err) {
             console.error('Prediction failed:', err);
             processingArea.style.display = 'none';
-            
-            const lower = (err.message || '').toLowerCase();
-            const isOod = lower.includes('radiographic') || lower.includes('x-ray') || 
-                          lower.includes('document') || lower.includes('dark') || 
-                          lower.includes('overexposed') || lower.includes('no human skin') || 
-                          lower.includes('skin patterns') || lower.includes('animal') ||
-                          lower.includes('non-human') || lower.includes('object') ||
-                          lower.includes('clothing') || lower.includes('apparel') ||
-                          lower.includes('portrait') || lower.includes('distinct dermatological condition') ||
-                          lower.includes('clear clinical disease');
-            if (isOod) {
-                destroyCropper();
-                cropArea.style.display = 'none';
-                uploadArea.style.display = 'block';
-            } else {
-                cropArea.style.display = 'block';
-            }
+            uploadArea.style.display = 'block';
             showError(err.message || 'An unexpected error occurred during prediction.');
         }
     }
 
     function showResult(data, displayDataUrl) {
         processingArea.style.display = 'none';
-        cropArea.style.display = 'none';
         resultArea.style.display = 'block';
         resultArea.classList.add('result-skin');
         

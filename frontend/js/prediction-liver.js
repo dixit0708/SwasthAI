@@ -1,23 +1,73 @@
-const STEPS = [
+
+let assessmentPath = 'clinical'; // 'clinical' or 'lifestyle'
+let STEPS = [];
+let TOTAL_STEPS = 0;
+let FIELD_CONFIG = [];
+
+const CLINICAL_STEPS = [
   { key: 'about-you', title: 'About You' },
   { key: 'bilirubin-proteins', title: 'Bilirubin & Proteins' },
   { key: 'enzymes', title: 'Enzymes' },
   { key: 'review', title: 'Review' },
 ];
-const TOTAL_STEPS = STEPS.length;
 
-const FIELD_CONFIG = [
-  { apiField: 'gender', step: 0, kind: 'radio', name: 'gender', questionId: 'q-gender' },
-  { apiField: 'age_years', step: 0, kind: 'input', elId: 'dbAge', min: 1, max: 120, unit: 'years' },
-  { apiField: 'total_bilirubin_mg_dl', step: 1, kind: 'input', elId: 'dbTotalBilirubin', min: 0.1, max: 100.0, unit: 'mg/dL' },
-  { apiField: 'direct_bilirubin_mg_dl', step: 1, kind: 'input', elId: 'dbDirectBilirubin', min: 0.0, max: 50.0, unit: 'mg/dL' },
-  { apiField: 'total_proteins_g_dl', step: 1, kind: 'input', elId: 'dbTotalProteins', min: 1.0, max: 12.0, unit: 'g/dL' },
-  { apiField: 'albumin_g_dl', step: 1, kind: 'input', elId: 'dbAlbumin', min: 0.5, max: 6.0, unit: 'g/dL' },
-  { apiField: 'albumin_globulin_ratio', step: 1, kind: 'input', elId: 'dbAlbuminGlobulinRatio', min: 0.1, max: 10.0, unit: '' },
-  { apiField: 'alkaline_phosphatase_u_l', step: 2, kind: 'input', elId: 'dbAlkalinePhosphatase', min: 10, max: 5000, unit: 'U/L' },
-  { apiField: 'alanine_aminotransferase_u_l', step: 2, kind: 'input', elId: 'dbSGPT', min: 1, max: 10000, unit: 'U/L' },
-  { apiField: 'aspartate_aminotransferase_u_l', step: 2, kind: 'input', elId: 'dbSGOT', min: 1, max: 10000, unit: 'U/L' },
+const LIFESTYLE_STEPS = [
+  { key: 'about-you', title: 'About You' },
+  { key: 'lifestyle', title: 'Lifestyle Factors' },
+  { key: 'medical', title: 'Medical History' },
+  { key: 'review', title: 'Review' },
 ];
+
+const CLINICAL_CONFIG = [
+  { apiField: 'gender', stepKey: 'about-you', kind: 'radio', name: 'gender', questionId: 'q-gender' },
+  { apiField: 'age_years', stepKey: 'about-you', kind: 'input', elId: 'dbAge', min: 1, max: 120, unit: 'years' },
+  { apiField: 'total_bilirubin_mg_dl', stepKey: 'bilirubin-proteins', kind: 'input', elId: 'dbTotalBilirubin', min: 0.1, max: 100.0, unit: 'mg/dL' },
+  { apiField: 'direct_bilirubin_mg_dl', stepKey: 'bilirubin-proteins', kind: 'input', elId: 'dbDirectBilirubin', min: 0.0, max: 50.0, unit: 'mg/dL' },
+  { apiField: 'total_proteins_g_dl', stepKey: 'bilirubin-proteins', kind: 'input', elId: 'dbTotalProteins', min: 1.0, max: 12.0, unit: 'g/dL' },
+  { apiField: 'albumin_g_dl', stepKey: 'bilirubin-proteins', kind: 'input', elId: 'dbAlbumin', min: 0.5, max: 6.0, unit: 'g/dL' },
+  { apiField: 'albumin_globulin_ratio', stepKey: 'bilirubin-proteins', kind: 'input', elId: 'dbAlbuminGlobulinRatio', min: 0.1, max: 10.0, unit: '' },
+  { apiField: 'alkaline_phosphatase_u_l', stepKey: 'enzymes', kind: 'input', elId: 'dbAlkalinePhosphatase', min: 10, max: 5000, unit: 'U/L' },
+  { apiField: 'alanine_aminotransferase_u_l', stepKey: 'enzymes', kind: 'input', elId: 'dbSGPT', min: 1, max: 10000, unit: 'U/L' },
+  { apiField: 'aspartate_aminotransferase_u_l', stepKey: 'enzymes', kind: 'input', elId: 'dbSGOT', min: 1, max: 10000, unit: 'U/L' },
+];
+
+const LIFESTYLE_CONFIG = [
+  { apiField: 'gender', stepKey: 'about-you', kind: 'radio', name: 'gender', questionId: 'q-gender' },
+  { apiField: 'age', stepKey: 'about-you', kind: 'input', elId: 'dbAge', min: 1, max: 120, unit: 'years' },
+  { apiField: 'height', stepKey: 'lifestyle', kind: 'input', elId: 'dbHeight', min: 50, max: 300, unit: 'cm' },
+  { apiField: 'weight', stepKey: 'lifestyle', kind: 'input', elId: 'dbWeight', min: 10, max: 300, unit: 'kg' },
+  { apiField: 'waist_circumference', stepKey: 'lifestyle', kind: 'input', elId: 'dbWaist', min: 30, max: 250, unit: 'cm' },
+  { apiField: 'alcohol_drinks_per_day', stepKey: 'lifestyle', kind: 'input', elId: 'dbAlcoholDrinks', min: 0, max: 50, unit: 'drinks' },
+  { apiField: 'smoking', stepKey: 'lifestyle', kind: 'radio', name: 'smoking', questionId: 'q-smoking' },
+  { apiField: 'vigorous_activity', stepKey: 'lifestyle', kind: 'radio', name: 'vigorous_activity', questionId: 'q-vigorous' },
+  { apiField: 'diabetes', stepKey: 'medical', kind: 'radio', name: 'diabetes', questionId: 'q-diabetes' },
+  { apiField: 'hypertension', stepKey: 'medical', kind: 'radio', name: 'hypertension', questionId: 'q-hypertension' },
+  { apiField: 'high_cholesterol', stepKey: 'medical', kind: 'radio', name: 'high_cholesterol', questionId: 'q-cholesterol' },
+];
+
+function setupPath(path) {
+  assessmentPath = path;
+  if (path === 'clinical') {
+    STEPS = CLINICAL_STEPS;
+    FIELD_CONFIG = CLINICAL_CONFIG.map(c => ({...c, step: STEPS.findIndex(s => s.key === c.stepKey)}));
+  } else {
+    STEPS = LIFESTYLE_STEPS;
+    FIELD_CONFIG = LIFESTYLE_CONFIG.map(c => ({...c, step: STEPS.findIndex(s => s.key === c.stepKey)}));
+  }
+  TOTAL_STEPS = STEPS.length;
+  currentStep = null;
+  
+  // Set data-step attribute correctly based on current path's STEPS
+  document.querySelectorAll('.db-step').forEach(el => {
+    const key = el.getAttribute('data-step-key');
+    const idx = STEPS.findIndex(s => s.key === key);
+    if (idx !== -1) {
+      el.setAttribute('data-step', idx);
+    } else {
+      el.removeAttribute('data-step');
+    }
+  });
+}
 
 let currentStep = null;
 let isTransitioning = false;
@@ -56,7 +106,11 @@ function getFieldQuestionText(cfg) {
 }
 
 function getFieldErrorEl(cfg) {
-  return document.getElementById(`${cfg.apiField}Error`);
+  let el = document.getElementById(`${cfg.apiField}Error`);
+  if (!el && cfg.apiField === 'age') {
+    el = document.getElementById('age_yearsError');
+  }
+  return el;
 }
 
 function getFieldInvalidTarget(cfg) {
@@ -237,6 +291,23 @@ function renderReview() {
 
     list.appendChild(section);
   }
+  
+  // Inject calculated BMI into Review for lifestyle path
+  if (assessmentPath === 'lifestyle') {
+      const height = Number(document.getElementById('dbHeight').value);
+      const weight = Number(document.getElementById('dbWeight').value);
+      if (height > 0 && weight > 0) {
+          const heightM = height / 100;
+          let bmi = weight / (heightM * heightM);
+          bmi = Math.round(bmi * 10) / 10;
+          
+          const bmiSection = document.createElement('div');
+          bmiSection.className = 'db-review__section';
+          bmiSection.style.paddingTop = '0';
+          bmiSection.appendChild(reviewRow('Calculated BMI', bmi.toString()));
+          list.appendChild(bmiSection);
+      }
+  }
 }
 
 function reviewRow(question, answer) {
@@ -262,6 +333,15 @@ function mapFormToApiPayload() {
         payload[cfg.apiField] = Number(getFieldValue(cfg));
     }
   });
+  
+  if (assessmentPath === 'lifestyle' && payload.height && payload.weight) {
+      const heightInMeters = payload.height / 100;
+      payload.bmi = payload.weight / (heightInMeters * heightInMeters);
+      payload.bmi = Math.round(payload.bmi * 10) / 10; // round to 1 decimal
+      delete payload.height;
+      delete payload.weight;
+  }
+  
   return payload;
 }
 
@@ -356,7 +436,13 @@ function setLoadingState(isLoading) {
 }
 
 async function submitLiverPrediction(payload) {
-  return SwasthAPI.predictions.liver(payload);
+  
+  if (assessmentPath === 'lifestyle') {
+      return SwasthAPI.predictions.liverLifestyle(payload);
+  } else {
+      return SwasthAPI.predictions.liver(payload);
+  }
+
 }
 
 let lastPayload = null;
@@ -417,15 +503,54 @@ async function retrySubmission() {
   }
 }
 
+
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('diabetesForm');
   if (!form) return;
 
   document.getElementById('dbBeginBtn').addEventListener('click', () => {
     document.getElementById('dbWelcome').hidden = true;
+    document.getElementById('dbPathSelection').hidden = false;
+  });
+
+  document.getElementById('dbPathReportBtn').addEventListener('click', () => {
+    setupPath('clinical');
+    document.getElementById('dbPathSelection').hidden = true;
     document.getElementById('dbAssessment').hidden = false;
     goToStep(0);
   });
+
+  document.getElementById('dbPathLifestyleBtn').addEventListener('click', () => {
+    setupPath('lifestyle');
+    document.getElementById('dbPathSelection').hidden = true;
+    document.getElementById('dbAssessment').hidden = false;
+    goToStep(0);
+  });
+
+  const updateLiveBMI = () => {
+    const heightEl = document.getElementById('dbHeight');
+    const weightEl = document.getElementById('dbWeight');
+    const displayContainer = document.getElementById('bmiDisplayContainer');
+    const displayValue = document.getElementById('bmiDisplayValue');
+    
+    if (assessmentPath === 'lifestyle') {
+      const height = Number(heightEl.value);
+      const weight = Number(weightEl.value);
+      if (height > 0 && weight > 0) {
+        const heightM = height / 100;
+        let bmi = weight / (heightM * heightM);
+        bmi = Math.round(bmi * 10) / 10;
+        displayValue.textContent = bmi;
+        displayContainer.hidden = false;
+      } else {
+        displayContainer.hidden = true;
+      }
+    }
+  };
+
+  document.getElementById('dbHeight').addEventListener('input', updateLiveBMI);
+  document.getElementById('dbWeight').addEventListener('input', updateLiveBMI);
+
 
   document.getElementById('dbNextBtn').addEventListener('click', goToNextStep);
   document.getElementById('dbBackBtn').addEventListener('click', goToPreviousStep);

@@ -7,7 +7,7 @@ from starlette.concurrency import run_in_threadpool
 from app.ai.inference.image_processing import validate_and_decode_image, preprocess_for_cnn
 from app.ai.models.pneumonia_cnn import load_pneumonia_model, predict_pneumonia
 from app.api.v1.deps import get_current_user
-from app.models.prediction import DiabetesPredictionInput, LiverPredictionInput, RiskPredictionOut
+from app.models.prediction import DiabetesPredictionInput, LiverPredictionInput, LiverLifestylePredictionInput, RiskPredictionOut
 from app.models.user import UserOut
 from app.services import prediction_service
 
@@ -119,5 +119,18 @@ async def predict_liver_endpoint(
         return await prediction_service.predict_liver_risk(current_user.id, payload, model, metadata)
     except Exception as e:
         logger.error(f"Liver disease prediction failed: {e}")
+        raise HTTPException(status_code=500, detail="Prediction failed. Please try again later.")
+
+
+@router.post("/liver-lifestyle", summary="Predict Liver Disease Risk from Lifestyle", response_model=RiskPredictionOut)
+async def predict_liver_lifestyle_endpoint(
+    payload: LiverLifestylePredictionInput,
+    request: Request,
+    current_user: UserOut = Depends(get_current_user),
+):
+    try:
+        return await prediction_service.predict_liver_lifestyle_risk(current_user.id, payload)
+    except Exception as e:
+        logger.error(f"Liver lifestyle prediction failed: {e}")
         raise HTTPException(status_code=500, detail="Prediction failed. Please try again later.")
 

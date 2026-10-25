@@ -2,9 +2,10 @@ from datetime import datetime, timezone
 
 from app.ai.models.diabetes_model import predict_diabetes
 from app.ai.models.liver_model import predict_liver
+from app.ai.models.liver_lifestyle_model import liver_lifestyle_model
 from app.ai.safety.response_filter import build_screening_response
 from app.db.collections import prediction_repo
-from app.models.prediction import DiabetesPredictionInput, LiverPredictionInput
+from app.models.prediction import DiabetesPredictionInput, LiverPredictionInput, LiverLifestylePredictionInput
 
 # Used only if metadata.json is somehow missing a model_version (load_diabetes_model
 # already rejects that at startup) — kept as a last-resort label, never the
@@ -89,4 +90,37 @@ async def predict_liver_risk(user_id: str, payload: LiverPredictionInput, model,
     })
 
     return response
+
+
+async def predict_liver_lifestyle_risk(user_id: str, payload: LiverLifestylePredictionInput) -> dict:
+    """Runs inference using the saved liver lifestyle pipeline and stores the result."""
+    features = {
+        "age": payload.age,
+        "gender": payload.gender,
+        "bmi": payload.bmi,
+        "waist_circumference": payload.waist_circumference,
+        "alcohol_drinks_per_day": payload.alcohol_drinks_per_day,
+        "smoking": payload.smoking,
+        "vigorous_activity": payload.vigorous_activity,
+        "diabetes": payload.diabetes,
+        "hypertension": payload.hypertension,
+        "high_cholesterol": payload.high_cholesterol,
+    }
+
+    result = liver_lifestyle_model.predict(payload)
+    response = build_screening_response(
+        "liver disease", result["risk_probability"], result["threshold"], result["model_version"],
+    )
+
+    await prediction_repo.create({
+        "user_id": user_id,
+        "condition": "liver_disease_lifestyle",
+        "model_version": result["model_version"],
+        "input_snapshot": features,
+        "result": response,
+        "created_at": datetime.now(timezone.utc),
+    })
+
+    return response
+
 

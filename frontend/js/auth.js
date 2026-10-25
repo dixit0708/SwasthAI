@@ -113,6 +113,13 @@ const SwasthAPI = {
         body: JSON.stringify(payload)
       });
     },
+    liverLifestyle(payload) {
+      return swasthaiAuthedRequest('/predict/liver-lifestyle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    },
     // No Content-Type header here on purpose: the browser sets
     // multipart/form-data with the correct boundary itself when the body
     // is a FormData instance. The pneumonia endpoint doesn't require auth
@@ -125,6 +132,150 @@ const SwasthAPI = {
         method: 'POST',
         body: formData
       });
+    }
+  },
+  family: {
+    getOverview() {
+      return swasthaiAuthedRequest('/family/overview');
+    },
+    listMembers(includeArchived = false) {
+      return swasthaiAuthedRequest(`/family/members?include_archived=${includeArchived}`);
+    },
+    getMember(id) {
+      return swasthaiAuthedRequest(`/family/members/${encodeURIComponent(id)}`);
+    },
+    createMember(payload) {
+      return swasthaiAuthedRequest('/family/members', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    },
+    updateMember(id, payload) {
+      return swasthaiAuthedRequest(`/family/members/${encodeURIComponent(id)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    },
+    deleteMember(id, cascade = true) {
+      return swasthaiAuthedRequest(`/family/members/${encodeURIComponent(id)}?cascade=${cascade}`, {
+        method: 'DELETE'
+      });
+    },
+    addHistory(memberId, payload) {
+      return swasthaiAuthedRequest(`/family/members/${encodeURIComponent(memberId)}/history`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    },
+    updateHistory(memberId, itemId, payload) {
+      return swasthaiAuthedRequest(`/family/members/${encodeURIComponent(memberId)}/history/${encodeURIComponent(itemId)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    },
+    deleteHistory(memberId, itemId) {
+      return swasthaiAuthedRequest(`/family/members/${encodeURIComponent(memberId)}/history/${encodeURIComponent(itemId)}`, {
+        method: 'DELETE'
+      });
+    },
+    listRecords(params = {}) {
+      const qs = new URLSearchParams();
+      if (params.memberId) qs.append('member_id', params.memberId);
+      if (params.category) qs.append('category', params.category);
+      if (params.search) qs.append('search', params.search);
+      if (params.startDate) qs.append('start_date', params.startDate);
+      if (params.endDate) qs.append('end_date', params.endDate);
+      if (params.sort) qs.append('sort', params.sort);
+      const query = qs.toString() ? `?${qs.toString()}` : '';
+      return swasthaiAuthedRequest(`/family/records${query}`);
+    },
+    createRecord(formData) {
+      const token = swasthaiGetToken();
+      return swasthaiApiRequest('/family/records', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData
+      });
+    },
+    getRecord(id) {
+      return swasthaiAuthedRequest(`/family/records/${encodeURIComponent(id)}`);
+    },
+    updateRecord(id, payload) {
+      return swasthaiAuthedRequest(`/family/records/${encodeURIComponent(id)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    },
+    deleteRecord(id) {
+      return swasthaiAuthedRequest(`/family/records/${encodeURIComponent(id)}`, {
+        method: 'DELETE'
+      });
+    },
+    getDocumentDownloadUrl(recordId, download = false) {
+      const token = swasthaiGetToken();
+      return `${SWASTHAI_API_BASE}/family/records/${encodeURIComponent(recordId)}/document${download ? '?download=true' : ''}`;
+    },
+    async fetchDocumentBlob(recordId) {
+      const token = swasthaiGetToken();
+      const res = await fetch(`${SWASTHAI_API_BASE}/family/records/${encodeURIComponent(recordId)}/document`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to load document');
+      return await res.blob();
+    },
+    listMedications(params = {}) {
+      const qs = new URLSearchParams();
+      if (params.memberId) qs.append('member_id', params.memberId);
+      if (params.status) qs.append('status', params.status);
+      const query = qs.toString() ? `?${qs.toString()}` : '';
+      return swasthaiAuthedRequest(`/family/medications${query}`);
+    },
+    createMedication(payload) {
+      return swasthaiAuthedRequest('/family/medications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    },
+    updateMedication(id, payload) {
+      return swasthaiAuthedRequest(`/family/medications/${encodeURIComponent(id)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    },
+    deleteMedication(id) {
+      return swasthaiAuthedRequest(`/family/medications/${encodeURIComponent(id)}`, {
+        method: 'DELETE'
+      });
+    },
+    listMeasurements(params = {}) {
+      const qs = new URLSearchParams();
+      if (params.memberId) qs.append('member_id', params.memberId);
+      if (params.metricType) qs.append('metric_type', params.metricType);
+      const query = qs.toString() ? `?${qs.toString()}` : '';
+      return swasthaiAuthedRequest(`/family/measurements${query}`);
+    },
+    createMeasurement(payload) {
+      return swasthaiAuthedRequest('/family/measurements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    },
+    deleteMeasurement(id) {
+      return swasthaiAuthedRequest(`/family/measurements/${encodeURIComponent(id)}`, {
+        method: 'DELETE'
+      });
+    },
+    getTimeline(memberId = null) {
+      const query = memberId ? `?member_id=${encodeURIComponent(memberId)}` : '';
+      return swasthaiAuthedRequest(`/family/timeline${query}`);
     }
   }
 };

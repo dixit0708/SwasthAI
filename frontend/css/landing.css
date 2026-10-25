@@ -1,6 +1,7 @@
 /* landing.css */
 .hero {
     min-height: 100dvh; /* Viewport stability */
+    margin-top: 0;
     padding-top: calc(72px + var(--sp-12));
     display: flex;
     align-items: flex-start;

@@ -103,3 +103,23 @@ class LiverPredictionInput(BaseModel):
         description="Albumin/Globulin ratio (normal: 1.0–2.5)"
     )
 
+
+class LiverLifestylePredictionInput(BaseModel):
+    """7-feature contract for liver-lifestyle-v1 based on a synthetic lifestyle dataset.
+    
+    Features: age, gender, bmi, alcohol_status, smoking_status, diabetes_type_2, hypertension.
+    extra="forbid" rejects unexpected fields.
+    """
+    model_config = ConfigDict(extra="forbid")
+
+    age: int = Field(ge=1, le=120, description="Patient age in years")
+    gender: Literal["Male", "Female"] = Field(description="Patient gender")
+    bmi: float = Field(ge=10.0, le=100.0, description="Body Mass Index")
+    waist_circumference: float = Field(ge=30.0, le=250.0, description="Waist circumference in cm")
+    diabetes: Literal[0, 1] = Field(description="1 if diagnosed with diabetes, else 0")
+    hypertension: Literal[0, 1] = Field(description="1 if diagnosed with hypertension, else 0")
+    smoking: Literal[0, 1] = Field(description="1 if currently smoking, else 0")
+    high_cholesterol: Literal[0, 1] = Field(description="1 if ever told had high cholesterol, else 0")
+    vigorous_activity: Literal[0, 1] = Field(description="1 if does vigorous activity, else 0")
+    alcohol_drinks_per_day: int = Field(ge=0, le=50, description="Average number of alcoholic drinks per day")
+

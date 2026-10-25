@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     # empty, that step is skipped and the rule-based summary is still
     # returned on its own (see app/ai/inference/report_explanation.py).
     GEMINI_API_KEY: str = ""
+    # Machine Learning / AI model versions
+    SKIN_MODEL_VERSION: str = "skin-densenet121-v1"
 
     class Config:
         env_file = ".env"

@@ -1,4 +1,4 @@
-"""Skin Disease CNN (ResNet50) loading and inference."""
+"""Skin Disease CNN loading and inference."""
 import os
 import torch
 import torch.nn as nn

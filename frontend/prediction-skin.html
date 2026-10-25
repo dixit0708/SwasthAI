@@ -94,6 +94,60 @@
             color: var(--primary);
             font-size: 0.92rem;
         }
+        .conf-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .conf-badge-high {
+            background: color-mix(in srgb, #10b981 15%, transparent);
+            color: #10b981;
+            border: 1px solid color-mix(in srgb, #10b981 30%, transparent);
+        }
+        .conf-badge-medium {
+            background: color-mix(in srgb, #3b82f6 15%, transparent);
+            color: #3b82f6;
+            border: 1px solid color-mix(in srgb, #3b82f6 30%, transparent);
+        }
+        .conf-badge-low {
+            background: color-mix(in srgb, #f59e0b 15%, transparent);
+            color: #f59e0b;
+            border: 1px solid color-mix(in srgb, #f59e0b 30%, transparent);
+        }
+        .upload-tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 0.75rem;
+            margin-top: 1.25rem;
+            text-align: left;
+        }
+        .upload-tip-item {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 0.65rem 0.85rem;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: flex-start;
+            gap: 0.55rem;
+        }
+        .upload-tip-item strong {
+            color: var(--text);
+            display: block;
+            margin-bottom: 0.15rem;
+        }
+        .about-tool-details summary {
+            list-style: none;
+            padding: 0.25rem 0;
+        }
+        .about-tool-details summary::-webkit-details-marker {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -107,7 +161,7 @@
                 <div class="mb-4">
                     <a href="predictions.html" class="text-secondary"><i class="fas fa-arrow-left"></i> Back to AI Insights</a>
                     <h1 class="mt-2">Skin Disease Assessment</h1>
-                    <p class="text-muted">Upload an image of a skin condition to receive an AI-powered risk assessment across 23 dermatological categories. This is not a medical diagnosis.</p>
+                    <p class="text-muted">Upload an image of a skin condition to receive an AI-powered visual pattern assessment across 23 dermatological categories. This is an informational screening tool, not a medical diagnosis.</p>
                 </div>
 
                 <div class="card">
@@ -119,22 +173,60 @@
                             <i class="fas fa-camera text-primary mb-3" style="font-size: 3rem;"></i>
                             <div class="mb-3">
                                 <span style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.85rem; border-radius: 9999px; background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary); font-size: 0.82rem; font-weight: 600;">
-                                    <i class="fas fa-wand-magic-sparkles"></i> Automated Lesion Detection &amp; Analysis
+                                    <i class="fas fa-wand-magic-sparkles"></i> Automated Lesion Pattern Detection
                                 </span>
                             </div>
                             <h3>Drag &amp; Drop Skin Image</h3>
                             <p class="text-muted mb-2">Supported formats: JPEG, PNG &mdash; Max 10MB</p>
-                            <p class="text-muted mb-4" style="font-size: 0.85rem;"><i class="fas fa-info-circle"></i> Upload any photo of the skin lesion or rash &mdash; our AI automatically identifies the lesion area and analyzes multi-scale features.</p>
+                            <p class="text-muted mb-4" style="font-size: 0.85rem;"><i class="fas fa-info-circle"></i> Upload a clear, focused photograph of the affected skin area &mdash; our AI automatically identifies the lesion area and evaluates pattern similarities.</p>
                             <button id="browseBtn" class="btn btn-primary" type="button"><i class="fas fa-folder-open"></i> Browse Files</button>
                             <input id="fileInput" type="file" accept="image/jpeg,image/png,image/jpg"
                                    style="display:none" aria-label="Select skin image file">
+
+                            <!-- Short Photo Tips -->
+                            <div class="upload-tips-grid" onclick="event.stopPropagation();">
+                                <div class="upload-tip-item">
+                                    <i class="fas fa-sun text-warning" style="font-size: 1.1rem; margin-top: 0.15rem;"></i>
+                                    <div>
+                                        <strong>Good Lighting</strong>
+                                        <span>Use bright, natural daylight or clear, even illumination without harsh glare.</span>
+                                    </div>
+                                </div>
+                                <div class="upload-tip-item">
+                                    <i class="fas fa-crop-simple text-primary" style="font-size: 1.1rem; margin-top: 0.15rem;"></i>
+                                    <div>
+                                        <strong>Close-up Framing</strong>
+                                        <span>Frame closely around the rash, lesion, or wheals rather than taking a full-body portrait.</span>
+                                    </div>
+                                </div>
+                                <div class="upload-tip-item">
+                                    <i class="fas fa-wand-magic text-secondary" style="font-size: 1.1rem; margin-top: 0.15rem;"></i>
+                                    <div>
+                                        <strong>No Filters or Edits</strong>
+                                        <span>Avoid beauty filters, dramatic saturation, or digital retouching that alters skin tone.</span>
+                                    </div>
+                                </div>
+                                <div class="upload-tip-item">
+                                    <i class="fas fa-bullseye text-info" style="font-size: 1.1rem; margin-top: 0.15rem;"></i>
+                                    <div>
+                                        <strong>One Condition per Photo</strong>
+                                        <span>Focus on a single affected area per image for the most consistent pattern evaluation.</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Image Privacy Statement -->
+                            <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px dashed var(--border); font-size: 0.82rem; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; gap: 0.5rem;" onclick="event.stopPropagation();">
+                                <i class="fas fa-shield-halved text-success"></i>
+                                <span><strong>Your privacy is protected:</strong> Photos are processed securely in memory and discarded immediately after pattern analysis. Uploaded images are never saved or stored on our servers.</span>
+                            </div>
                         </div>
 
                         <!-- Loading -->
                         <div id="processingArea" style="display:none; text-align:center; padding: var(--sp-8);">
                             <i class="fas fa-circle-notch fa-spin text-primary" style="font-size: 3rem; margin-bottom: 1rem;"></i>
                             <h3>Analyzing your skin image&hellip;</h3>
-                            <p class="text-muted">Automatically localizing lesion features and running multi-scale deep CNN analysis across 23 dermatological categories. This takes just a few seconds.</p>
+                            <p class="text-muted">Automatically localizing lesion features and evaluating pattern similarities across 23 dermatological categories. This takes just a few seconds.</p>
                         </div>
 
                         <!-- Result -->
@@ -154,47 +246,86 @@
                                             </button>
                                         </div>
                                         <p id="heatmapCaption" class="text-muted text-center mt-1" style="font-size: 0.76rem; margin-bottom: 0;">
-                                            <i class="fas fa-info-circle"></i> Grad-CAM highlights lesion areas the AI focused on.
+                                            <i class="fas fa-info-circle"></i> Areas the AI paid attention to. This may not match the actual affected area.
                                         </p>
                                     </div>
                                 </div>
                                 <div style="flex:1; min-width:240px;">
-                                    <p class="text-muted mb-1" style="font-size:0.85rem; text-transform:uppercase; letter-spacing:.05em;">Primary Assessment</p>
-                                    <h2 id="resultLabel" style="margin:0 0 0.25rem; font-size: 1.8rem;"></h2>
-                                    <p id="resultConfidenceText" class="text-muted" style="font-size:0.9rem; margin-bottom: 0.25rem;"></p>
-                                    <div class="result-confidence-bar">
-                                        <div id="resultBar" class="result-confidence-bar-fill" style="width:0%"></div>
+                                    <p class="text-muted mb-1" style="font-size:0.85rem; text-transform:uppercase; letter-spacing:.05em;">Most similar pattern</p>
+                                    <h2 id="resultLabel" style="margin:0 0 0.35rem; font-size: 1.75rem;"></h2>
+
+                                    <!-- Extra calm note for malignant/cancer categories -->
+                                    <div id="malignantCalmNote" style="display:none; margin-bottom: 0.85rem; padding: 0.75rem 1rem; border-radius: var(--radius-sm); background: color-mix(in srgb, #f59e0b 12%, var(--bg-surface-alt)); border: 1px solid color-mix(in srgb, #f59e0b 35%, transparent); border-left: 4px solid #f59e0b; font-size: 0.88rem; color: var(--text);">
+                                        <i class="fas fa-circle-info text-warning" style="margin-right: 0.4rem;"></i>
+                                        <span>This is a broad category group, not a diagnosis. Please get it checked by a dermatologist.</span>
                                     </div>
 
-                                    <!-- Clinical Correlation Insight Note -->
+                                    <!-- Confidence Indicator (High / Medium / Low) -->
+                                    <div id="confidenceArea" style="margin-bottom: 0.85rem;">
+                                        <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+                                            <span id="confidenceLevelBadge" class="conf-badge"></span>
+                                            <span id="rawScoreText" class="text-muted" style="font-size: 0.8rem;"></span>
+                                        </div>
+                                        <p class="text-muted" style="font-size: 0.76rem; margin: 0.25rem 0 0;">Softmax similarity score is statistical model confidence, not clinical accuracy.</p>
+                                        
+                                        <!-- Low confidence notice -->
+                                        <div id="uncertainResultAlert" style="display: none; margin-top: 0.5rem; padding: 0.65rem 0.9rem; background: var(--bg-surface-alt); border: 1px solid var(--border); border-left: 3px solid #f59e0b; border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--text);">
+                                            <i class="fas fa-triangle-exclamation text-warning" style="margin-right: 0.35rem;"></i>
+                                            <strong>Uncertain result.</strong> Try a clearer, well-lit, close-up photo.
+                                        </div>
+                                    </div>
+
+                                    <!-- Specific Category Educational Insight Box -->
                                     <div id="clinicalCorrelationNote" style="display:none; margin-top: 1rem;"></div>
                                     
-                                    <!-- Differential Diagnosis Section (Collapsible Accordion) -->
+                                    <!-- Differential Diagnosis Section (Always shows Top 3) -->
                                     <div id="differentialSection" class="mt-4 pt-3" style="display:none; border-top: 1px solid var(--border);">
                                         <button id="toggleDifferentialBtn" type="button" class="btn btn-outline" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0.65rem 1rem; font-size: 0.88rem; border-radius: var(--radius-md);">
-                                            <span><i class="fas fa-layer-group text-primary" style="margin-right: 0.4rem;"></i> <span id="toggleDifferentialText">View other possibilities considered by AI</span></span>
+                                            <span><i class="fas fa-layer-group text-primary" style="margin-right: 0.4rem;"></i> <span id="toggleDifferentialText">View other possibilities considered by AI (Top 3)</span></span>
                                             <i id="toggleDifferentialIcon" class="fas fa-chevron-down" style="transition: transform 0.25s ease;"></i>
                                         </button>
                                         <div id="differentialContent" style="display: none; margin-top: 0.85rem;">
                                             <p class="text-muted" style="font-size: 0.82rem; margin-bottom: 0.75rem;">
-                                                Skin conditions can share overlapping visual patterns. The AI evaluated these secondary possibilities:
+                                                Dermatological conditions share overlapping visual patterns. The AI evaluated these top three candidate patterns:
                                             </p>
                                             <div id="differentialList" style="display: flex; flex-direction: column; gap: 0.65rem;"></div>
                                         </div>
                                     </div>
 
-                                    <p class="text-muted mt-4" style="font-size:0.82rem; line-height:1.5;">
+                                    <!-- Project Integration: Save to Health Record -->
+                                    <div id="saveRecordContainer" style="margin-top: 1.25rem; padding: 0.9rem 1rem; background: var(--bg-surface-alt); border: 1px solid var(--border); border-radius: var(--radius-md);">
+                                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+                                            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                                                <label for="familyProfileSelect" style="font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); margin: 0;">
+                                                    <i class="fas fa-user text-primary"></i> Save for:
+                                                </label>
+                                                <select id="familyProfileSelect" style="padding: 0.35rem 0.65rem; font-size: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-surface); color: var(--text); min-width: 170px;">
+                                                    <option value="self">Myself (Personal Profile)</option>
+                                                </select>
+                                            </div>
+                                            <button id="saveRecordBtn" type="button" class="btn btn-sm btn-outline" style="display: inline-flex; align-items: center; gap: 0.4rem;">
+                                                <i class="fas fa-bookmark text-primary"></i>
+                                                <span>Save to Health Record</span>
+                                            </button>
+                                        </div>
+                                        <p id="saveRecordStatus" style="display: none; margin: 0.5rem 0 0; font-size: 0.82rem;"></p>
+                                    </div>
+
+                                    <p class="text-muted mt-3" style="font-size:0.82rem; line-height:1.5;">
                                         <i class="fas fa-info-circle"></i>
-                                        This is an AI-assisted risk assessment tool, not a medical diagnosis.
+                                        This is an AI-assisted pattern matching tool, not a medical diagnosis.
                                         Always consult a board-certified dermatologist for definitive clinical evaluations.
                                     </p>
-                                    <button class="btn btn-outline mt-2" id="resetBtn" type="button" style="display: inline-flex; align-items: center; gap: 0.5rem;">
-                                        <i class="fas fa-redo" aria-hidden="true"></i>
-                                        <span>Assess Another Image</span>
-                                    </button>
-                                    <a href="doctors.html?specialty=dermatology&amp;from=skin" class="btn btn-primary mt-2">
-                                        <i class="fas fa-user-doctor"></i> Find a Dermatologist
-                                    </a>
+                                    
+                                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem;">
+                                        <button class="btn btn-outline" id="resetBtn" type="button" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                                            <i class="fas fa-redo" aria-hidden="true"></i>
+                                            <span>Assess Another Image</span>
+                                        </button>
+                                        <a id="findDermatologistBtn" href="doctors.html?specialty=dermatology&amp;from=skin" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                                            <i class="fas fa-user-doctor"></i> Find a Dermatologist
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -205,13 +336,48 @@
                     </div>
                 </div>
 
+                <!-- Limitations Note: About this tool expandable section -->
+                <div class="card mt-4">
+                    <div class="card-body" style="padding: 1.25rem 1.5rem;">
+                        <details class="about-tool-details">
+                            <summary style="cursor: pointer; font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; justify-content: space-between; user-select: none;">
+                                <span><i class="fas fa-circle-question text-primary" style="margin-right: 0.5rem;"></i> About this tool &amp; Limitations</span>
+                                <i class="fas fa-chevron-down text-muted" style="font-size: 0.85rem; transition: transform 0.2s ease;"></i>
+                            </summary>
+                            <div style="margin-top: 1rem; font-size: 0.85rem; line-height: 1.6; color: var(--text-secondary); border-top: 1px solid var(--border); padding-top: 0.85rem;">
+                                <p style="margin-bottom: 0.65rem;">
+                                    <strong><i class="fas fa-database text-primary"></i> Reference Dataset:</strong>
+                                    Trained on clinical dermatology reference photographs from the DermNet dataset across 23 dermatological category groups.
+                                </p>
+                                <p style="margin-bottom: 0.65rem;">
+                                    <strong><i class="fas fa-camera text-primary"></i> Optimal Image Conditions:</strong>
+                                    Calibrated for clear, well-focused, clinical-style close-up photographs under adequate, natural lighting.
+                                </p>
+                                <p style="margin-bottom: 0.65rem;">
+                                    <strong><i class="fas fa-triangle-exclamation text-warning"></i> Demographic &amp; Quality Limitations:</strong>
+                                    Public dermatology benchmark datasets historically exhibit lower representation of darker skin tones (Fitzpatrick skin types IV&ndash;VI). Pattern matching may consequently be less accurate on darker skin tones, as well as on heavily compressed phone photos, motion-blurred captures, or internet images.
+                                </p>
+                                <p style="margin-bottom: 0.65rem;">
+                                    <strong><i class="fas fa-shield text-info"></i> No &ldquo;Healthy Skin&rdquo; Class:</strong>
+                                    The model is trained strictly on disease category groups and does not include a separate normal/healthy skin category. It identifies the most visually similar pattern among the 23 classes; non-skin images or ambiguous healthy skin may be filtered by input checks.
+                                </p>
+                                <p style="margin-bottom: 0;">
+                                    <strong><i class="fas fa-stethoscope text-success"></i> Decision Support Only:</strong>
+                                    This tool provides educational pattern information to facilitate informed discussions with a physician or board-certified dermatologist, and must never be used as a substitute for in-person medical examination, dermatoscope evaluation, or biopsy.
+                                </p>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+
             </main>
         </div>
     </div>
-    <script src="js/auth.js?v=2.4"></script>
-    <script src="js/components.js?v=2.4"></script>
-    <script src="js/prediction-skin.js?v=2.4"></script>
+    <script src="js/auth.js?v=2.5"></script>
+    <script src="js/components.js?v=2.5"></script>
+    <script src="js/skin-clinical-insights.js?v=2.5"></script>
+    <script src="js/prediction-skin.js?v=2.5"></script>
     <script src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>
-    <script src="js/main.js?v=2.4"></script>
+    <script src="js/main.js?v=2.5"></script>
 </body>
 </html>

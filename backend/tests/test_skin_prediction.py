@@ -118,4 +118,83 @@ def test_skin_guardrail_rejects_animal():
         assert meta["rejection_type"] == "ANIMAL"
 
 
+@pytest.mark.asyncio
+async def test_skin_save_requires_auth():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        payload = {
+            "label": "Acne and Rosacea",
+            "confidence": 0.85,
+            "confidence_level": "High",
+            "differential_diagnosis": [
+                {"label": "Acne and Rosacea", "confidence": 0.85, "percentage": 85.0}
+            ]
+        }
+        res = await ac.post("/api/v1/predict/skin/save", json=payload)
+        assert res.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_family_profiles_requires_auth():
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        res = await ac.get("/api/v1/predict/family-profiles")
+        assert res.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_authenticated_save_and_family_profiles(client):
+    from app.api.v1.deps import get_current_user
+    from app.models.user import UserOut
+
+    fake_user = UserOut(
+        id="mock_user_12345",
+        email="test_user@example.com",
+        name="Test Patient",
+        is_active=True,
+    )
+
+    app.dependency_overrides[get_current_user] = lambda: fake_user
+    try:
+        # 1. Test family profiles returns personal profile
+        prof_res = await client.get("/api/v1/predict/family-profiles")
+        assert prof_res.status_code == 200
+        profiles = prof_res.json().get("profiles", [])
+        assert len(profiles) >= 1
+        assert profiles[0]["id"] == "self"
+
+        # 2. Test saving skin prediction to health records (self)
+        payload = {
+            "label": "Eczema Photos",
+            "confidence": 0.78,
+            "confidence_level": "High",
+            "differential_diagnosis": [
+                {"label": "Eczema Photos", "confidence": 0.78, "percentage": 78.0},
+                {"label": "Atopic Dermatitis Photos", "confidence": 0.15, "percentage": 15.0},
+                {"label": "Contact Dermatitis", "confidence": 0.07, "percentage": 7.0}
+            ],
+            "family_member_id": "self"
+        }
+        save_res = await client.post("/api/v1/predict/skin/save", json=payload)
+        assert save_res.status_code == 200
+        assert save_res.json().get("status") == "saved"
+        assert "id" in save_res.json()
+
+        # 3. Test saving with unauthorized / non-belonging family_member_id returns 403
+        unauthorized_payload = dict(payload)
+        unauthorized_payload["family_member_id"] = "507f1f77bcf86cd799439011"  # valid ObjectId, but not user's
+        unauth_res = await client.post("/api/v1/predict/skin/save", json=unauthorized_payload)
+        assert unauth_res.status_code == 403
+        assert "Forbidden" in unauth_res.json().get("detail", "")
+
+        # 4. Test saving with invalid family_member_id format returns 403
+        invalid_payload = dict(payload)
+        invalid_payload["family_member_id"] = "invalid_id_format"
+        invalid_res = await client.post("/api/v1/predict/skin/save", json=invalid_payload)
+        assert invalid_res.status_code == 403
+    finally:
+        app.dependency_overrides.pop(get_current_user, None)
+
+
+
+
+
 

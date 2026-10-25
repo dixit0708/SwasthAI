@@ -1,6 +1,6 @@
 /**
  * SwasthAI - Skin Disease Detection UI Logic
- * Fully Automated Multi-Scale Lesion Analysis, Grad-CAM Saliency, & Top-3 Differential Diagnosis.
+ * Automated Multi-Scale Lesion Analysis, Grad-CAM Saliency, & Top-3 Differential Assessment.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -15,8 +15,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const previewImg = document.getElementById('previewImg');
     const resultLabel = document.getElementById('resultLabel');
-    const resultConfidenceText = document.getElementById('resultConfidenceText');
-    const resultBar = document.getElementById('resultBar');
+    const malignantCalmNote = document.getElementById('malignantCalmNote');
+    const confidenceLevelBadge = document.getElementById('confidenceLevelBadge');
+    const rawScoreText = document.getElementById('rawScoreText');
+    const uncertainResultAlert = document.getElementById('uncertainResultAlert');
+
     const differentialSection = document.getElementById('differentialSection');
     const differentialList = document.getElementById('differentialList');
     const toggleDifferentialBtn = document.getElementById('toggleDifferentialBtn');
@@ -30,11 +33,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const showOriginalBtn = document.getElementById('showOriginalBtn');
     const showHeatmapBtn = document.getElementById('showHeatmapBtn');
 
+    const familyProfileSelect = document.getElementById('familyProfileSelect');
+    const saveRecordBtn = document.getElementById('saveRecordBtn');
+    const saveRecordStatus = document.getElementById('saveRecordStatus');
+
     let currentFile = null;
     let originalDataUrl = null;
     let currentHeatmapUrl = null;
     let currentOriginalUrl = null;
     let isDifferentialOpen = false;
+    let currentResultData = null;
 
     // --- Clean Label Mapping ---
     const CLINICAL_LABEL_MAP = {
@@ -73,67 +81,13 @@ document.addEventListener('DOMContentLoaded', () => {
             .trim();
     }
 
-    // --- Comprehensive Clinical Family Cross-Reference ---
-    function getClinicalFamilyInsight(primaryRaw, differential) {
-        const allLabels = [primaryRaw, ...(differential || []).map(d => d.label)];
-        const has = (cls) => allLabels.includes(cls);
-
-        if (has('Tinea Ringworm Candidiasis and other Fungal Infections') && has('Light Diseases and Disorders of Pigmentation')) {
-            return {
-                title: 'Clinical Insight: Hypopigmentation (Vitiligo vs. Pityriasis Versicolor)',
-                text: 'Chalky-white depigmented macules or patches (leukoderma) are classic shared clinical hallmarks between <strong>Vitiligo (Disorders of Pigmentation)</strong> and <strong>Pityriasis (Tinea) Versicolor</strong>. Fungal pityriasis versicolor causes superficial melanocyte inhibition via azelaic acid, whereas vitiligo involves autoimmune pigment depletion. Dermatologists standardly use a <em>Wood’s lamp</em> or KOH preparation to distinguish between the two.'
-            };
+    function isMalignantOrCancerCategory(rawLabel) {
+        if (!rawLabel) return false;
+        if (typeof getSkinClinicalInsight === 'function') {
+            const ins = getSkinClinicalInsight(rawLabel);
+            if (ins && ins.isMalignantCategory) return true;
         }
-
-        if (has('Urticaria Hives') || has('Exanthems and Drug Eruptions')) {
-            return {
-                title: 'Clinical Insight: Acute Allergic & Urticarial Reactions',
-                text: 'In clinical dermatology, <strong>Urticaria (Hives)</strong> and <strong>Allergic Exanthems</strong> represent acute cutaneous hypersensitivity reactions. Wide-area body images often match generalized allergic eruptions, while close-up raised wheals match classic urticaria.'
-            };
-        }
-        if (has('Eczema Photos') || has('Atopic Dermatitis Photos') || has('Poison Ivy Photos and other Contact Dermatitis')) {
-            return {
-                title: 'Clinical Insight: Eczematous Dermatitis Spectrum',
-                text: '<strong>Atopic Dermatitis</strong>, <strong>Contact Dermatitis</strong>, and <strong>Eczema</strong> represent closely related inflammatory skin conditions sharing epidermal barrier compromise, scaling, and pruritus. Clinical distinction depends on contact triggers and chronicity.'
-            };
-        }
-        if (has('Tinea Ringworm Candidiasis and other Fungal Infections') || has('Nail Fungus and other Nail Disease')) {
-            return {
-                title: 'Clinical Insight: Superficial Fungal & Nail Dermatophytosis',
-                text: 'Fungal dermatophytes (such as <em>Trichophyton</em>) manifest as circular annular ringworm (tinea) on smooth skin or as onychomycosis in the nail plate. Both respond to targeted antimycotic management.'
-            };
-        }
-        if (has('Actinic Keratosis Basal Cell Carcinoma and other Malignant Lesions') || has('Melanoma Skin Cancer Nevi and Moles') || has('Seborrheic Keratoses and other Benign Tumors')) {
-            return {
-                title: 'Clinical Insight: Pigmented & Keratinocytic Lesions',
-                text: 'Differentiating benign seborrheic keratoses and melanocytic nevi from premalignant actinic keratosis or carcinoma requires formal dermatoscopic ABCDE evaluation. Annual full-body checks by a dermatologist are strongly advised.'
-            };
-        }
-        if (has('Warts Molluscum and other Viral Infections') || has('Herpes HPV and other STDs Photos')) {
-            return {
-                title: 'Clinical Insight: Viral Epidermal Lesions',
-                text: 'Viral skin conditions (including human papillomavirus warts, molluscum contagiosum, and herpesviridae) produce characteristic verrucous or vesicular lesions with distinct focal morphology.'
-            };
-        }
-        if (has('Acne and Rosacea Photos')) {
-            return {
-                title: 'Clinical Insight: Pilosebaceous & Rosacea Conditions',
-                text: 'Characterized by follicular inflammation, comedones, or facial telangiectasia. The AI evaluates both inflammatory papules/pustules and macroscopic facial vascular patterns.'
-            };
-        }
-        if (has('Hair Loss Photos Alopecia and other Hair Diseases')) {
-            return {
-                title: 'Clinical Insight: Alopecia & Scalp Disorders',
-                text: 'Encompasses autoimmune focal alopecia areata, androgenetic thinning, and inflammatory scalp dermatoses. Scalp trichoscopy helps confirm follicular viability.'
-            };
-        }
-        if (has('Vasculitis Photos') || has('Systemic Disease') || has('Lupus and other Connective Tissue diseases')) {
-            return {
-                title: 'Clinical Insight: Autoimmune & Systemic Vascular Reactions',
-                text: 'Cutaneous vascular erythema, purpura, or malar patterns can be clinical indicators of underlying systemic or connective tissue immunity.'
-            };
-        }
-        return null;
+        return /malignant|melanoma|cancer|carcinoma|actinic keratosis/i.test(rawLabel);
     }
 
     // --- Collapsible Differential Toggle ---
@@ -143,20 +97,43 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isDifferentialOpen) {
                 if (differentialContent) differentialContent.style.display = 'block';
                 if (toggleDifferentialIcon) toggleDifferentialIcon.style.transform = 'rotate(180deg)';
-                // Trigger mini-bar animations
-                setTimeout(() => {
-                    const fills = differentialList.querySelectorAll('.result-confidence-bar-fill');
-                    fills.forEach(fill => {
-                        const target = fill.getAttribute('data-pct');
-                        fill.style.width = `${target}%`;
-                    });
-                }, 50);
             } else {
                 if (differentialContent) differentialContent.style.display = 'none';
                 if (toggleDifferentialIcon) toggleDifferentialIcon.style.transform = 'rotate(0deg)';
             }
         });
     }
+
+    // --- Load Family Profiles for Save Option ---
+    async function loadFamilyProfiles() {
+        if (!familyProfileSelect) return;
+        const token = localStorage.getItem(typeof SWASTHAI_TOKEN_KEY !== 'undefined' ? SWASTHAI_TOKEN_KEY : 'swasthai_token');
+        if (!token) return;
+
+        const apiBase = typeof SWASTHAI_API_BASE !== 'undefined' ? SWASTHAI_API_BASE : 'http://127.0.0.1:8000/api/v1';
+        try {
+            const response = await fetch(`${apiBase}/predict/family-profiles`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) return;
+            const data = await response.json();
+            const profiles = data.profiles || [];
+            if (profiles.length > 0) {
+                familyProfileSelect.innerHTML = '';
+                profiles.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.textContent = p.name + (p.relationship && p.relationship !== 'Self' ? ` (${p.relationship})` : ' (Personal Profile)');
+                    familyProfileSelect.appendChild(opt);
+                });
+            }
+        } catch (err) {
+            console.warn('Could not load family profiles for skin record save:', err);
+        }
+    }
+
+    // Call early if logged in
+    loadFamilyProfiles();
 
     // --- File Selection Handlers ---
 
@@ -221,15 +198,93 @@ document.addEventListener('DOMContentLoaded', () => {
         originalDataUrl = null;
         currentHeatmapUrl = null;
         currentOriginalUrl = null;
+        currentResultData = null;
         if (camControlArea) camControlArea.style.display = 'none';
-        resultBar.style.width = '0%';
+        if (malignantCalmNote) malignantCalmNote.style.display = 'none';
+        if (uncertainResultAlert) uncertainResultAlert.style.display = 'none';
         if (clinicalCorrelationNote) clinicalCorrelationNote.style.display = 'none';
+        if (saveRecordStatus) {
+            saveRecordStatus.style.display = 'none';
+            saveRecordStatus.textContent = '';
+        }
+        if (saveRecordBtn) {
+            saveRecordBtn.disabled = false;
+            saveRecordBtn.innerHTML = '<i class="fas fa-bookmark text-primary"></i> <span>Save to Health Record</span>';
+        }
         isDifferentialOpen = false;
         if (differentialContent) differentialContent.style.display = 'none';
         if (toggleDifferentialIcon) toggleDifferentialIcon.style.transform = 'rotate(0deg)';
         if (differentialSection) differentialSection.style.display = 'none';
         if (differentialList) differentialList.innerHTML = '';
     });
+
+    // --- Save to Health Record Handler ---
+    if (saveRecordBtn) {
+        saveRecordBtn.addEventListener('click', async () => {
+            if (!currentResultData) return;
+            const token = localStorage.getItem(typeof SWASTHAI_TOKEN_KEY !== 'undefined' ? SWASTHAI_TOKEN_KEY : 'swasthai_token');
+            if (!token) {
+                if (saveRecordStatus) {
+                    saveRecordStatus.innerHTML = '<span class="text-warning"><i class="fas fa-exclamation-circle"></i> Please <a href="login.html" style="text-decoration: underline; color: inherit; font-weight: 600;">log in</a> to save assessments to your health record.</span>';
+                    saveRecordStatus.style.display = 'block';
+                }
+                return;
+            }
+
+            saveRecordBtn.disabled = true;
+            saveRecordBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
+            if (saveRecordStatus) saveRecordStatus.style.display = 'none';
+
+            const selectedProfileId = familyProfileSelect ? familyProfileSelect.value : 'self';
+            const selectedProfileName = (familyProfileSelect && familyProfileSelect.options[familyProfileSelect.selectedIndex])
+                ? familyProfileSelect.options[familyProfileSelect.selectedIndex].text
+                : 'Self';
+
+            const payload = {
+                label: currentResultData.primaryRaw,
+                clinical_label: currentResultData.primaryLabel,
+                confidence_level: currentResultData.confLevel,
+                confidence: currentResultData.primaryConfidence,
+                top_3: (currentResultData.differential || []).slice(0, 3).map(d => ({
+                    label: d.label,
+                    clinical_label: formatClinicalLabel(d.label),
+                    confidence: d.confidence != null ? d.confidence : (d.percentage != null ? d.percentage / 100 : 0),
+                    percentage: d.percentage != null ? d.percentage : Math.round((d.confidence || 0) * 100)
+                })),
+                family_member_id: (selectedProfileId && selectedProfileId !== 'self') ? selectedProfileId : null,
+                family_member_name: selectedProfileName
+            };
+
+            const apiBase = typeof SWASTHAI_API_BASE !== 'undefined' ? SWASTHAI_API_BASE : 'http://127.0.0.1:8000/api/v1';
+            try {
+                const res = await fetch(`${apiBase}/predict/skin/save`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const resData = await res.json();
+                if (!res.ok) {
+                    throw new Error(resData.detail || 'Failed to save record');
+                }
+                saveRecordBtn.innerHTML = '<i class="fas fa-check text-success"></i> <span>Saved</span>';
+                if (saveRecordStatus) {
+                    saveRecordStatus.innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> Assessment saved to health record. View anytime in Digital Records.</span>';
+                    saveRecordStatus.style.display = 'block';
+                }
+            } catch (err) {
+                console.error('Error saving record:', err);
+                saveRecordBtn.disabled = false;
+                saveRecordBtn.innerHTML = '<i class="fas fa-bookmark text-primary"></i> <span>Save to Health Record</span>';
+                if (saveRecordStatus) {
+                    saveRecordStatus.innerHTML = `<span class="text-danger"><i class="fas fa-exclamation-circle"></i> ${err.message || 'Error saving to records'}</span>`;
+                    saveRecordStatus.style.display = 'block';
+                }
+            }
+        });
+    }
 
     // --- Main Logic (Fully Automated) ---
 
@@ -327,25 +382,76 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const primaryRaw = data.label || "Unknown Condition";
         const primaryLabel = formatClinicalLabel(primaryRaw);
-        const primaryPct = Math.round((data.confidence || 0) * 100);
-        
-        resultLabel.textContent = primaryLabel;
-        resultConfidenceText.textContent = `Primary Assessment Confidence: ${primaryPct}%`;
-        
-        // Trigger primary confidence bar animation
-        setTimeout(() => {
-            resultBar.style.width = `${primaryPct}%`;
-        }, 100);
-
-        // Dynamic Clinical Family Insight Note
+        const primaryConfidence = typeof data.confidence === 'number' ? data.confidence : 0;
+        const primaryPct = Math.round(primaryConfidence * 100);
         const differential = data.differential_diagnosis || [];
+
+        // 1. Result Label: Pattern similarity representation (never diagnosis)
+        if (resultLabel) {
+            resultLabel.textContent = primaryLabel;
+        }
+
+        // 2. Extra calm note for categories containing malignant or cancer terms
+        if (malignantCalmNote) {
+            if (isMalignantOrCancerCategory(primaryRaw)) {
+                malignantCalmNote.style.display = 'block';
+            } else {
+                malignantCalmNote.style.display = 'none';
+            }
+        }
+
+        // 3. Confidence Level categorization (High >= 70%, Medium 40-70%, Low < 40%)
+        let confLevel = "Medium";
+        let badgeClass = "conf-badge conf-medium";
+        let badgeIcon = "fa-circle-half-stroke";
+        let badgeText = "Medium similarity";
+
+        if (primaryPct >= 70) {
+            confLevel = "High";
+            badgeClass = "conf-badge conf-high";
+            badgeIcon = "fa-circle-check";
+            badgeText = "High similarity";
+        } else if (primaryPct < 40) {
+            confLevel = "Low";
+            badgeClass = "conf-badge conf-low";
+            badgeIcon = "fa-circle-exclamation";
+            badgeText = "Low similarity";
+        }
+
+        if (confidenceLevelBadge) {
+            confidenceLevelBadge.className = badgeClass;
+            confidenceLevelBadge.innerHTML = `<i class="fas ${badgeIcon}"></i> ${badgeText}`;
+        }
+
+        if (rawScoreText) {
+            rawScoreText.textContent = `(${primaryPct}% model similarity score)`;
+        }
+
+        // Uncertain result notice if confidence is Low
+        if (uncertainResultAlert) {
+            uncertainResultAlert.style.display = (primaryPct < 40) ? 'block' : 'none';
+        }
+
+        // 4. Clinical Insight Box: Category-specific educational overview (from skin-clinical-insights.js)
         if (clinicalCorrelationNote) {
-            const familyInsight = getClinicalFamilyInsight(primaryRaw, differential);
-            if (familyInsight) {
+            const insight = (typeof getSkinClinicalInsight === 'function')
+                ? getSkinClinicalInsight(primaryRaw)
+                : null;
+
+            if (insight) {
                 clinicalCorrelationNote.innerHTML = `
-                    <div style="padding: 0.85rem 1rem; background: color-mix(in srgb, var(--primary) 10%, transparent); border-left: 3px solid var(--primary); border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
-                        <strong style="color: var(--text); display: block; margin-bottom: 0.25rem;"><i class="fas fa-stethoscope text-primary"></i> ${familyInsight.title}</strong>
-                        ${familyInsight.text}
+                    <div style="padding: 0.95rem 1.15rem; background: var(--bg-surface-alt); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: var(--radius-sm); font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55;">
+                        <strong style="color: var(--text); display: flex; align-items: center; gap: 0.45rem; margin-bottom: 0.5rem; font-size: 0.92rem;">
+                            <i class="fas fa-stethoscope text-primary"></i> Category Overview: ${insight.title}
+                        </strong>
+                        <div style="margin-bottom: 0.5rem;">
+                            <strong style="color: var(--text);">What this pattern represents:</strong>
+                            <p style="margin: 0.2rem 0 0; color: var(--text-secondary);">${insight.whatItIs}</p>
+                        </div>
+                        <div>
+                            <strong style="color: var(--text);">When to consult a healthcare provider:</strong>
+                            <p style="margin: 0.2rem 0 0; color: var(--text-secondary);">${insight.whenToSeeDoctor}</p>
+                        </div>
                     </div>
                 `;
                 clinicalCorrelationNote.style.display = 'block';
@@ -354,11 +460,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Filter and Render Secondary Possibilities (Only show items >= 5% probability)
-        const secondaryPossibilities = differential.slice(1).filter(item => {
-            const pct = item.percentage != null ? item.percentage : (item.confidence || 0) * 100;
-            return Math.round(pct) >= 5;
-        });
+        // 5. Differential Possibilities: ALWAYS show Top 3 (all candidates, no cutoff)
+        const secondaryPossibilities = differential.slice(1);
 
         if (differentialSection) {
             if (secondaryPossibilities.length > 0) {
@@ -368,7 +471,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (toggleDifferentialIcon) toggleDifferentialIcon.style.transform = 'rotate(0deg)';
                 
                 if (toggleDifferentialText) {
-                    toggleDifferentialText.textContent = `View ${secondaryPossibilities.length} other ${secondaryPossibilities.length === 1 ? 'possibility' : 'possibilities'} considered by AI`;
+                    toggleDifferentialText.textContent = `View other possibilities considered by AI (${secondaryPossibilities.length})`;
                 }
 
                 if (differentialList) {
@@ -380,25 +483,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         const card = document.createElement('div');
                         card.className = 'diff-item';
+                        card.style.cssText = 'padding: 0.75rem 1rem; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm);';
                         card.innerHTML = `
-                            <div class="diff-header">
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.88rem;">
                                 <div>
-                                    <span class="diff-rank">#${rank}</span>
-                                    <span style="font-weight: 500;">${cleanName}</span>
+                                    <span style="font-weight: 700; color: var(--primary); margin-right: 0.5rem;">#${rank}</span>
+                                    <span style="font-weight: 500; color: var(--text);">${cleanName}</span>
                                 </div>
-                                <span class="diff-pct">${pct}%</span>
-                            </div>
-                            <div class="result-confidence-bar" style="margin: 0.25rem 0 0; height: 6px; background: var(--border);">
-                                <div class="result-confidence-bar-fill" style="width: 0%;" data-pct="${pct}"></div>
+                                <span style="font-size: 0.82rem; color: var(--text-secondary);">${pct}% similarity</span>
                             </div>
                         `;
                         differentialList.appendChild(card);
                     });
                 }
             } else {
-                // If primary confidence is decisive and no secondary item reaches 5%, keep UI completely clean
                 differentialSection.style.display = 'none';
             }
+        }
+
+        // Store active result state for Health Record persistence
+        currentResultData = {
+            primaryRaw,
+            primaryLabel,
+            confLevel,
+            primaryConfidence,
+            primaryPct,
+            differential
+        };
+
+        // Reset save button state
+        if (saveRecordBtn) {
+            saveRecordBtn.disabled = false;
+            saveRecordBtn.innerHTML = '<i class="fas fa-bookmark text-primary"></i> <span>Save to Health Record</span>';
+        }
+        if (saveRecordStatus) {
+            saveRecordStatus.style.display = 'none';
+            saveRecordStatus.textContent = '';
         }
     }
 

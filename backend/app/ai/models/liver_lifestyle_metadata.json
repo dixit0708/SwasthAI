@@ -1,0 +1,18 @@
+{
+    "model_name": "liver-lifestyle-v1",
+    "version": "1.0.0",
+    "features": [
+        "age",
+        "gender",
+        "bmi",
+        "alcohol_status",
+        "smoking_status",
+        "diabetes_type_2",
+        "hypertension"
+    ],
+    "target": "liver_disease (binary)",
+    "metrics": {
+        "accuracy": 0.811,
+        "roc_auc": 0.8830127127368441
+    }
+}

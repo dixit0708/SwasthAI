@@ -27,7 +27,7 @@ from app.ai.models.skin_model import build_skin_model, load_skin_model, predict_
 from app.main import app
 
 CKPT_PATH = Path(__file__).parent.parent / "app" / "ai" / "models" / "skin_cnn.pt"
-CKPT_AVAILABLE = CKPT_PATH.exists()
+CKPT_AVAILABLE = CKPT_PATH.exists() and CKPT_PATH.stat().st_size > 1000
 
 pytestmark = pytest.mark.skipif(
     not CKPT_AVAILABLE,

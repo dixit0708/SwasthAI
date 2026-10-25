@@ -13,10 +13,15 @@ from app.ai.models.pneumonia_cnn import load_pneumonia_model, predict_pneumonia
 from app.api.v1.deps import get_current_user, get_optional_current_user
 from app.db.collections import prediction_repo
 from app.models.prediction import (
-    DiabetesPimaPredictionInput, DiabetesPredictionInput, LiverIlpdPredictionInput,
-    LiverPredictionInput, RiskPredictionOut,
-    HeartPredictionInput, HeartRiskPredictionOut,
+    DiabetesPimaPredictionInput,
+    DiabetesPredictionInput,
     HeartClinicalInput,
+    HeartPredictionInput,
+    HeartRiskPredictionOut,
+    LiverIlpdPredictionInput,
+    LiverLifestylePredictionInput,
+    LiverPredictionInput,
+    RiskPredictionOut,
 )
 from app.core.config import settings
 from app.models.user import UserOut
@@ -423,4 +428,16 @@ async def get_family_profiles_endpoint(
     return {"profiles": profiles}
 
 
+
+@router.post("/liver-lifestyle", summary="Predict Liver Disease Risk from Lifestyle", response_model=RiskPredictionOut)
+async def predict_liver_lifestyle_endpoint(
+    payload: LiverLifestylePredictionInput,
+    request: Request,
+    current_user: UserOut = Depends(get_current_user),
+):
+    try:
+        return await prediction_service.predict_liver_lifestyle_risk(current_user.id, payload)
+    except Exception as e:
+        logger.error(f"Liver lifestyle prediction failed: {e}")
+        raise HTTPException(status_code=500, detail="Prediction failed. Please try again later.")
 

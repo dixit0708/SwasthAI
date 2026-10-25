@@ -43,13 +43,25 @@ ml-services/*/checkpoints/
 ml_pipeline/*/data/
 ml_pipeline/*/models/
 
-# Local Storage (Medical images, reports, prescriptions)
+# Local Storage (Medical images, reports, prescriptions, documents)
 storage/reports/*
 !storage/reports/.gitkeep
 storage/medical_images/*
 !storage/medical_images/.gitkeep
 storage/prescriptions/*
 !storage/prescriptions/.gitkeep
+storage/documents/*
+!storage/documents/.gitkeep
+
+# Filled-in consented-doctor sheets contain personal phone numbers
+backend/scripts/*.csv
+!backend/scripts/consented_doctors_template.csv
+
+# Raw datasets and temporary scratch files
+*.XPT
+*.xpt
+nhanes_liver_raw.csv
+scratch/
 
 # Filled-in consented-doctor sheets contain personal phone numbers
 backend/scripts/*.csv

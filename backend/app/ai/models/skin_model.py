@@ -22,8 +22,10 @@ def load_skin_model(ckpt_path: str, device: str = "cpu"):
     """Loads the pre-trained model weights from the given checkpoint."""
     if not os.path.exists(ckpt_path):
         raise FileNotFoundError(f"Model checkpoint not found at {ckpt_path}")
+    if os.path.getsize(ckpt_path) < 1000:
+        raise FileNotFoundError(f"Model checkpoint at {ckpt_path} is an unpulled Git LFS pointer")
 
-    checkpoint = torch.load(ckpt_path, map_location=device)
+    checkpoint = torch.load(ckpt_path, map_location=device, weights_only=False)
     class_to_idx = checkpoint.get("class_to_idx")
     if not class_to_idx:
         raise ValueError("Checkpoint is missing 'class_to_idx' mapping.")

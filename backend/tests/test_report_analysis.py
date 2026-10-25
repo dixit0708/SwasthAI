@@ -106,13 +106,14 @@ def test_extract_text_happy_path():
 
 def test_extract_text_falls_back_to_ocr_for_scanned_pdf_with_no_text_layer():
     pdf_bytes = _build_minimal_pdf([])  # valid PDF, zero lines of text -> no text layer
-    with patch(
-        "app.ai.inference.report_parsing.extract_text_from_image",
-        return_value="Hemoglobin 10.5 g/dL",
-    ) as mock_ocr:
-        text = validate_and_extract_text(pdf_bytes, "application/pdf")
-    assert text == "Hemoglobin 10.5 g/dL"
-    mock_ocr.assert_called_once()
+    with patch.object(settings, "GEMINI_API_KEY", "test-key-for-ocr"):
+        with patch(
+            "app.ai.inference.report_parsing.extract_text_from_image",
+            return_value="Hemoglobin 10.5 g/dL",
+        ) as mock_ocr:
+            text = validate_and_extract_text(pdf_bytes, "application/pdf")
+        assert text == "Hemoglobin 10.5 g/dL"
+        mock_ocr.assert_called_once()
 
 
 def test_extract_text_scanned_pdf_without_gemini_key_raises_clear_error():

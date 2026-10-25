@@ -44,6 +44,21 @@
             <a href="predictions.html" class="db-welcome__back">Back to Predictions</a>
         </section>
 
+        
+        <!-- ============ PATH SELECTION ============ -->
+        <section class="db-panel db-welcome" id="dbPathSelection" data-phase="path-selection" hidden>
+            <div class="db-welcome__mark" aria-hidden="true">
+                <i class="fas fa-file-medical" style="font-size: 3rem; color: var(--primary);"></i>
+            </div>
+            <h1 class="db-welcome__title">Do you have recent liver/blood test reports?</h1>
+            <p class="db-welcome__lede">We offer two different risk assessment models depending on the information you have available.</p>
+            <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
+                <button type="button" class="btn btn-primary btn-lg" id="dbPathReportBtn">YES, I HAVE REPORTS</button>
+                <button type="button" class="btn btn-outline btn-lg" id="dbPathLifestyleBtn">NO, I DON'T HAVE REPORTS</button>
+            </div>
+            <a href="predictions.html" class="db-welcome__back" style="margin-top: 2rem;">Cancel</a>
+        </section>
+
         <!-- ============ ASSESSMENT ============ -->
         <section class="db-panel db-assessment" id="dbAssessment" data-phase="assessment" hidden>
             <div class="db-assessment__header">
@@ -63,7 +78,7 @@
             <form id="diabetesForm" novalidate> <!-- Reusing form ID for script compatibility -->
 
                 <!-- ---- Section 0: About You ---- -->
-                <fieldset class="db-step" data-step="0">
+                <fieldset class="db-step" data-step-key="about-you">
                     <legend class="db-step__legend">About You</legend>
                     <p class="db-step__sub">A few basics to establish your baseline.</p>
 
@@ -206,8 +221,95 @@
                     </div>
                 </fieldset>
 
+                
+                <!-- ---- Section L1: Lifestyle ---- -->
+                <fieldset class="db-step path-lifestyle" data-step-key="lifestyle" hidden>
+                    <legend class="db-step__legend">Lifestyle Factors</legend>
+                    <p class="db-step__sub">Information about your lifestyle habits.</p>
+
+                    <div class="db-field">
+                        <label class="db-question" for="dbHeight">Height (cm)</label>
+                        <input type="number" id="dbHeight" class="db-input" min="50" max="300" step="1" placeholder="e.g. 175" required>
+                        <p class="db-field-error" id="heightError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="dbWeight">Weight (kg)</label>
+                        <input type="number" id="dbWeight" class="db-input" min="10" max="300" step="0.1" placeholder="e.g. 70" required>
+                        <p class="db-field-error" id="weightError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field" id="bmiDisplayContainer" hidden>
+                        <p class="db-question" style="margin-bottom: 0.25rem;">Calculated Body Mass Index (BMI)</p>
+                        <p class="db-hint" style="font-size: 1.5rem; color: var(--primary); font-weight: bold; margin-bottom: 0;" id="bmiDisplayValue">--</p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="dbWaist">Waist Circumference (cm)</label>
+                        <input type="number" id="dbWaist" class="db-input" min="30" max="250" step="0.1" placeholder="e.g. 85" required>
+                        <p class="db-field-error" id="waist_circumferenceError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <label class="db-question" for="dbAlcoholDrinks">Average alcoholic drinks per day</label>
+                        <input type="number" id="dbAlcoholDrinks" class="db-input" min="0" max="50" step="1" placeholder="e.g. 0" required>
+                        <p class="db-field-error" id="alcohol_drinks_per_dayError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <p class="db-question" id="q-smoking">Do you currently smoke cigarettes?</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-smoking">
+                            <label class="db-toggle__option"><input type="radio" name="smoking" value="0" class="db-toggle__input">No</label>
+                            <label class="db-toggle__option"><input type="radio" name="smoking" value="1" class="db-toggle__input">Yes</label>
+                        </div>
+                        <p class="db-field-error" id="smokingError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <p class="db-question" id="q-vigorous">Do you regularly do physical activities or workouts?</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-vigorous">
+                            <label class="db-toggle__option"><input type="radio" name="vigorous_activity" value="0" class="db-toggle__input">No</label>
+                            <label class="db-toggle__option"><input type="radio" name="vigorous_activity" value="1" class="db-toggle__input">Yes</label>
+                        </div>
+                        <p class="db-field-error" id="vigorous_activityError" role="alert" hidden></p>
+                    </div>
+                </fieldset>
+
+                <!-- ---- Section L2: Medical History ---- -->
+                <fieldset class="db-step path-lifestyle" data-step-key="medical" hidden>
+                    <legend class="db-step__legend">Medical History</legend>
+                    <p class="db-step__sub">Information about pre-existing conditions.</p>
+
+                    <div class="db-field">
+                        <p class="db-question" id="q-diabetes">Have you ever been told you have Diabetes?</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-diabetes">
+                            <label class="db-toggle__option"><input type="radio" name="diabetes" value="0" class="db-toggle__input">No</label>
+                            <label class="db-toggle__option"><input type="radio" name="diabetes" value="1" class="db-toggle__input">Yes</label>
+                        </div>
+                        <p class="db-field-error" id="diabetesError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <p class="db-question" id="q-hypertension">Have you ever been told you have High Blood Pressure?</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-hypertension">
+                            <label class="db-toggle__option"><input type="radio" name="hypertension" value="0" class="db-toggle__input">No</label>
+                            <label class="db-toggle__option"><input type="radio" name="hypertension" value="1" class="db-toggle__input">Yes</label>
+                        </div>
+                        <p class="db-field-error" id="hypertensionError" role="alert" hidden></p>
+                    </div>
+
+                    <div class="db-field">
+                        <p class="db-question" id="q-cholesterol">Have you ever been told you have High Cholesterol?</p>
+                        <div class="db-toggle" role="radiogroup" aria-labelledby="q-cholesterol">
+                            <label class="db-toggle__option"><input type="radio" name="high_cholesterol" value="0" class="db-toggle__input">No</label>
+                            <label class="db-toggle__option"><input type="radio" name="high_cholesterol" value="1" class="db-toggle__input">Yes</label>
+                        </div>
+                        <p class="db-field-error" id="high_cholesterolError" role="alert" hidden></p>
+                    </div>
+                </fieldset>
+
                 <!-- ---- Section 3: Review ---- -->
-                <div class="db-step db-step--review" data-step="3" hidden>
+                <div class="db-step db-step--review" data-step-key="review" hidden>
                     <h2 class="db-step__legend">Review your answers</h2>
                     <p class="db-step__sub">You've completed your assessment. Review your answers before we calculate your estimated liver disease risk.</p>
                     <div id="dbReviewList" class="db-review"></div>

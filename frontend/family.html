@@ -4,14 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="assets/images/logo.png">
-    <title>SwasthAI - Family</title>
+    <title>SwasthAI - Family Records</title>
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/family.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js for visualizations -->
+    <!-- Chart.js for health metrics and progress visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -21,26 +22,865 @@
         <div class="main-content">
             <header id="header-container" class="top-header"></header>
             <main class="page-content">
-                <!-- PAGE CONTENT: family -->
-                
-    <div class="flex-between mb-4">
-        <div>
-            <h1 style="margin:0;">Family Health</h1>
-            <p class="text-secondary">Manage and monitor health records for your dependents.</p>
-        </div>
-        <button class="btn btn-primary"><i class="fas fa-user-plus"></i> Add Member</button>
-    </div>
-    <div class="card">
-        <div class="card-body text-center" style="padding: 3rem 1.5rem;">
-            <i class="fas fa-user-friends" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
-            <h3 style="margin-bottom: 0.5rem;">No family members added yet</h3>
-            <p class="text-muted">Add a spouse, child or dependent to manage their health records alongside your own.</p>
-        </div>
-    </div>
+
+                <!-- Alert container for notifications -->
+                <div id="familyGlobalAlert" class="alert mb-4" hidden>
+                    <span id="familyGlobalAlertMsg"></span>
+                </div>
+
+                <!-- ==========================================================================
+                     VIEW 1: FAMILY RECORDS OVERVIEW & DASHBOARD
+                     ========================================================================== -->
+                <div id="familyOverviewView">
+                    <div class="flex-between mb-4 flex-wrap" style="gap: 1rem;">
+                        <div>
+                            <h1 style="margin:0; font-size: 2rem; color: var(--text-primary);">Family Records</h1>
+                            <p class="text-secondary" style="margin-top: 0.25rem;">Manage your family's medical history, health documents, prescriptions, and health progress in one secure place.</p>
+                        </div>
+                        <div class="flex-wrap" style="display: flex; gap: 0.75rem;">
+                            <button class="btn btn-outline" id="btnOpenAddRecordDirect">
+                                <i class="fas fa-file-medical"></i> Add Health Record
+                            </button>
+                            <button class="btn btn-primary" id="btnOpenAddMember">
+                                <i class="fas fa-user-plus"></i> Add Family Member
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Overview Stats -->
+                    <div class="family-stats-grid">
+                        <div class="family-stat-card">
+                            <div class="family-stat-icon primary">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div>
+                                <div class="family-stat-val" id="statTotalMembers">0</div>
+                                <div class="family-stat-label">Total Family Members</div>
+                            </div>
+                        </div>
+
+                        <div class="family-stat-card">
+                            <div class="family-stat-icon info">
+                                <i class="fas fa-folder-open"></i>
+                            </div>
+                            <div>
+                                <div class="family-stat-val" id="statMembersWithRecords">0</div>
+                                <div class="family-stat-label">Members with Records</div>
+                            </div>
+                        </div>
+
+                        <div class="family-stat-card">
+                            <div class="family-stat-icon success">
+                                <i class="fas fa-file-medical-alt"></i>
+                            </div>
+                            <div>
+                                <div class="family-stat-val" id="statTotalRecords">0</div>
+                                <div class="family-stat-label">Total Saved Records</div>
+                            </div>
+                        </div>
+
+                        <div class="family-stat-card">
+                            <div class="family-stat-icon warning">
+                                <i class="fas fa-pills"></i>
+                            </div>
+                            <div>
+                                <div class="family-stat-val" id="statActiveMeds">0</div>
+                                <div class="family-stat-label">Active Medications</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Members Section -->
+                    <div class="flex-between mb-3">
+                        <h2 style="font-size: 1.3rem; margin: 0; color: var(--text-primary);">Family Members</h2>
+                        <span id="membersCountBadge" class="text-muted" style="font-size: 0.9rem;">0 members</span>
+                    </div>
+
+                    <!-- Members Grid -->
+                    <div id="familyMembersGrid" class="family-members-grid"></div>
+
+                    <!-- Empty State for Members -->
+                    <div id="familyEmptyState" class="card text-center" style="padding: 3.5rem 1.5rem;" hidden>
+                        <i class="fas fa-user-friends" style="font-size: 2.75rem; color: var(--primary); margin-bottom: 1.25rem;"></i>
+                        <h3 style="margin-bottom: 0.5rem; font-size: 1.3rem;">No family members added yet</h3>
+                        <p class="text-muted" style="max-width: 500px; margin: 0 auto 1.5rem auto;">
+                            Add your spouse, children, parents, or dependents to securely track their health records, prescriptions, and lab reports in one centralized place.
+                        </p>
+                        <button class="btn btn-primary" id="btnEmptyAddMember" style="margin: 0 auto;">
+                            <i class="fas fa-plus"></i> Add Your First Family Member
+                        </button>
+                    </div>
+
+                    <!-- Recent Records Section -->
+                    <div class="mt-4" id="recentRecordsSection" hidden>
+                        <div class="flex-between mb-3">
+                            <h2 style="font-size: 1.25rem; margin: 0; color: var(--text-primary);">Recently Added Health Records</h2>
+                        </div>
+                        <div id="overviewRecentRecordsGrid" class="records-grid"></div>
+                    </div>
+                </div>
+
+                <!-- ==========================================================================
+                     VIEW 2: INDIVIDUAL FAMILY MEMBER PROFILE
+                     ========================================================================== -->
+                <div id="memberProfileView" class="member-profile-view">
+                    <!-- Breadcrumb -->
+                    <div class="profile-breadcrumb">
+                        <a id="profileBackToOverview"><i class="fas fa-arrow-left"></i> Family Records</a>
+                        <span>/</span>
+                        <span id="profileBreadcrumbName">Member Profile</span>
+                    </div>
+
+                    <!-- Header Summary Card -->
+                    <div class="profile-header-card">
+                        <div class="profile-header-left">
+                            <div class="profile-large-avatar" id="profileHeaderAvatar">A</div>
+                            <div class="profile-header-meta">
+                                <h2 id="profileHeaderName">Full Name</h2>
+                                <div class="profile-header-badges">
+                                    <span class="member-badge relation" id="profileHeaderRelation">Relation</span>
+                                    <span class="member-badge blood" id="profileHeaderBlood">Blood Group: --</span>
+                                    <span class="member-badge" id="profileHeaderAge">Age: --</span>
+                                </div>
+                                <div class="profile-header-details">
+                                    <span id="profileHeaderDobSpan"><i class="far fa-calendar"></i> <span id="profileHeaderDob">--</span></span>
+                                    <span id="profileHeaderGenderSpan"><i class="fas fa-venus-mars"></i> <span id="profileHeaderGender">--</span></span>
+                                    <span id="profileHeaderPhoneSpan"><i class="fas fa-phone"></i> <span id="profileHeaderPhone">--</span></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="profile-header-actions">
+                            <button class="btn btn-primary" id="btnProfileUploadRecord">
+                                <i class="fas fa-file-upload"></i> Upload Record
+                            </button>
+                            <button class="btn btn-outline" id="btnProfileAddHistory">
+                                <i class="fas fa-notes-medical"></i> Add Condition
+                            </button>
+                            <button class="btn btn-outline" id="btnProfileAddMed">
+                                <i class="fas fa-pills"></i> Add Medication
+                            </button>
+                            <button class="btn btn-outline" id="btnProfileLogVital">
+                                <i class="fas fa-heartbeat"></i> Log Vital
+                            </button>
+                            <button class="btn btn-outline" id="btnProfileEditMember" title="Edit Member Information">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-outline text-danger" id="btnProfileDeleteMember" title="Delete Member">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Tabs -->
+                    <div class="profile-tabs" role="tablist">
+                        <button class="profile-tab-btn active" data-tab="tab-overview" role="tab" aria-selected="true">
+                            <i class="fas fa-id-card"></i> Overview
+                        </button>
+                        <button class="profile-tab-btn" data-tab="tab-history" role="tab" aria-selected="false">
+                            <i class="fas fa-notes-medical"></i> Medical History (<span id="countProfileHistory">0</span>)
+                        </button>
+                        <button class="profile-tab-btn" data-tab="tab-records" role="tab" aria-selected="false">
+                            <i class="fas fa-folder-open"></i> Health Records (<span id="countProfileRecords">0</span>)
+                        </button>
+                        <button class="profile-tab-btn" data-tab="tab-medications" role="tab" aria-selected="false">
+                            <i class="fas fa-pills"></i> Prescriptions & Meds (<span id="countProfileMeds">0</span>)
+                        </button>
+                        <button class="profile-tab-btn" data-tab="tab-progress" role="tab" aria-selected="false">
+                            <i class="fas fa-chart-line"></i> Health Progress
+                        </button>
+                        <button class="profile-tab-btn" data-tab="tab-timeline" role="tab" aria-selected="false">
+                            <i class="fas fa-stream"></i> Health Timeline
+                        </button>
+                    </div>
+
+                    <!-- TAB 1: OVERVIEW -->
+                    <div id="tab-overview" class="profile-tab-content active">
+                        <div class="grid mb-4" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                            <!-- Notes & Emergency Card -->
+                            <div class="card">
+                                <div class="card-header font-weight-bold"><i class="fas fa-info-circle text-primary"></i> Personal & Emergency Notes</div>
+                                <div class="card-body">
+                                    <p class="text-muted" style="margin-bottom: 0.5rem; font-size: 0.85rem;">EMERGENCY CONTACT</p>
+                                    <p id="overviewEmergencyText" style="font-weight: 600; margin-bottom: 1rem;">None provided</p>
+                                    <p class="text-muted" style="margin-bottom: 0.5rem; font-size: 0.85rem;">ADDITIONAL NOTES</p>
+                                    <p id="overviewNotesText" class="text-secondary" style="font-size: 0.9rem; margin: 0;">No personal notes saved.</p>
+                                </div>
+                            </div>
+
+                            <!-- Active Meds Quick Card -->
+                            <div class="card">
+                                <div class="card-header font-weight-bold flex-between">
+                                    <span><i class="fas fa-pills text-primary"></i> Current Medications</span>
+                                    <a class="text-primary" style="font-size: 0.8rem; cursor: pointer;" onclick="document.querySelector('[data-tab=\'tab-medications\']').click()">View All</a>
+                                </div>
+                                <div class="card-body" id="overviewMedsList">
+                                    <p class="text-muted text-center" style="padding: 1.5rem 0;">No active medications.</p>
+                                </div>
+                            </div>
+
+                            <!-- Recent Medical History Card -->
+                            <div class="card">
+                                <div class="card-header font-weight-bold flex-between">
+                                    <span><i class="fas fa-notes-medical text-primary"></i> Medical Conditions</span>
+                                    <a class="text-primary" style="font-size: 0.8rem; cursor: pointer;" onclick="document.querySelector('[data-tab=\'tab-history\']').click()">Manage</a>
+                                </div>
+                                <div class="card-body" id="overviewHistoryList">
+                                    <p class="text-muted text-center" style="padding: 1.5rem 0;">No medical conditions recorded.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Records on Member Overview -->
+                        <div class="card">
+                            <div class="card-header font-weight-bold flex-between">
+                                <span><i class="fas fa-folder text-primary"></i> Recent Health Documents</span>
+                                <a class="text-primary" style="font-size: 0.8rem; cursor: pointer;" onclick="document.querySelector('[data-tab=\'tab-records\']').click()">View All Documents</a>
+                            </div>
+                            <div class="card-body">
+                                <div id="overviewMemberRecordsGrid" class="records-grid"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: MEDICAL HISTORY -->
+                    <div id="tab-history" class="profile-tab-content">
+                        <div class="section-toolbar">
+                            <div>
+                                <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-primary);">Documented Medical History</h3>
+                                <p class="text-muted" style="margin: 0.2rem 0 0 0; font-size: 0.85rem;">Pre-existing conditions, allergies, surgeries, and family medical background.</p>
+                            </div>
+                            <button class="btn btn-primary" id="btnTabAddHistory">
+                                <i class="fas fa-plus"></i> Add History Item
+                            </button>
+                        </div>
+
+                        <div id="profileHistoryContainer" class="history-list"></div>
+                        <div id="historyEmptyState" class="card text-center" style="padding: 3rem 1rem;" hidden>
+                            <i class="fas fa-clipboard-list" style="font-size: 2.2rem; color: var(--text-muted); margin-bottom: 0.75rem;"></i>
+                            <h4 style="margin: 0 0 0.4rem 0;">No medical history entries yet</h4>
+                            <p class="text-muted" style="margin-bottom: 1rem; font-size: 0.9rem;">Record known medical conditions, drug/food allergies, or past surgical procedures.</p>
+                            <button class="btn btn-outline" onclick="document.getElementById('btnTabAddHistory').click()">Add First Entry</button>
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: HEALTH RECORDS & DOCUMENTS -->
+                    <div id="tab-records" class="profile-tab-content">
+                        <div class="section-toolbar">
+                            <div class="toolbar-filters">
+                                <select id="filterRecordCategory" class="filter-select">
+                                    <option value="All">All Categories</option>
+                                    <option value="Lab Report">Laboratory Reports</option>
+                                    <option value="Imaging Report">Imaging (X-Ray, MRI, CT, USG)</option>
+                                    <option value="Prescription">Prescriptions</option>
+                                    <option value="Discharge Summary">Discharge Summaries</option>
+                                    <option value="Doctor Consultation">Doctor Consultation Notes</option>
+                                    <option value="Vaccination">Vaccination Records</option>
+                                    <option value="Other">Other Documents</option>
+                                </select>
+                                <input type="text" id="searchRecordInput" class="search-input" placeholder="Search by title or provider...">
+                            </div>
+                            <button class="btn btn-primary" id="btnTabUploadRecord">
+                                <i class="fas fa-file-upload"></i> Upload Document
+                            </button>
+                        </div>
+
+                        <div id="profileRecordsContainer" class="records-grid"></div>
+                        <div id="recordsEmptyState" class="card text-center" style="padding: 3rem 1rem;" hidden>
+                            <i class="fas fa-folder-open" style="font-size: 2.2rem; color: var(--text-muted); margin-bottom: 0.75rem;"></i>
+                            <h4 style="margin: 0 0 0.4rem 0;">No health records found</h4>
+                            <p class="text-muted" style="margin-bottom: 1rem; font-size: 0.9rem;">Upload medical PDFs, scan reports, or enter lab consultation notes for this member.</p>
+                            <button class="btn btn-outline" onclick="document.getElementById('btnTabUploadRecord').click()">Upload First Record</button>
+                        </div>
+                    </div>
+
+                    <!-- TAB 4: PRESCRIPTIONS & MEDICATIONS -->
+                    <div id="tab-medications" class="profile-tab-content">
+                        <div class="section-toolbar">
+                            <div class="toolbar-filters">
+                                <select id="filterMedStatus" class="filter-select">
+                                    <option value="All">All Medications</option>
+                                    <option value="active" selected>Active Only</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="paused">Paused / Discontinued</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" id="btnTabAddMed">
+                                <i class="fas fa-plus"></i> Add Medication
+                            </button>
+                        </div>
+
+                        <div id="profileMedsContainer" class="meds-grid"></div>
+                        <div id="medsEmptyState" class="card text-center" style="padding: 3rem 1rem;" hidden>
+                            <i class="fas fa-pills" style="font-size: 2.2rem; color: var(--text-muted); margin-bottom: 0.75rem;"></i>
+                            <h4 style="margin: 0 0 0.4rem 0;">No medication records found</h4>
+                            <p class="text-muted" style="margin-bottom: 1rem; font-size: 0.9rem;">Keep track of active prescriptions, dosages, schedules, and prescribing doctors.</p>
+                            <button class="btn btn-outline" onclick="document.getElementById('btnTabAddMed').click()">Add First Medication</button>
+                        </div>
+                    </div>
+
+                    <!-- TAB 5: HEALTH PROGRESS & VITALS -->
+                    <div id="tab-progress" class="profile-tab-content">
+                        <div class="section-toolbar">
+                            <div>
+                                <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-primary);">Health Vitals & Laboratory Trends</h3>
+                                <p class="text-muted" style="margin: 0.2rem 0 0 0; font-size: 0.85rem;">Compare actual recorded measurements over time without automated diagnostic speculation.</p>
+                            </div>
+                            <button class="btn btn-primary" id="btnTabLogVital">
+                                <i class="fas fa-plus"></i> Log Measurement
+                            </button>
+                        </div>
+
+                        <!-- Metric Selector Cards -->
+                        <div class="vitals-summary-cards" id="vitalsTypeCards">
+                            <div class="vital-summary-card active" data-metric="blood_pressure">
+                                <div class="text-muted" style="font-size: 0.8rem; font-weight: 600;"><i class="fas fa-heart text-danger"></i> BLOOD PRESSURE</div>
+                                <div class="vital-summary-val" id="vitalValBP">--/--</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">mmHg</div>
+                            </div>
+                            <div class="vital-summary-card" data-metric="blood_glucose">
+                                <div class="text-muted" style="font-size: 0.8rem; font-weight: 600;"><i class="fas fa-tint text-primary"></i> BLOOD GLUCOSE</div>
+                                <div class="vital-summary-val" id="vitalValGlucose">--</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">mg/dL</div>
+                            </div>
+                            <div class="vital-summary-card" data-metric="weight">
+                                <div class="text-muted" style="font-size: 0.8rem; font-weight: 600;"><i class="fas fa-weight text-info"></i> BODY WEIGHT</div>
+                                <div class="vital-summary-val" id="vitalValWeight">--</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">kg</div>
+                            </div>
+                            <div class="vital-summary-card" data-metric="heart_rate">
+                                <div class="text-muted" style="font-size: 0.8rem; font-weight: 600;"><i class="fas fa-heartbeat text-success"></i> HEART RATE</div>
+                                <div class="vital-summary-val" id="vitalValHR">--</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">bpm</div>
+                            </div>
+                        </div>
+
+                        <!-- Chart Container -->
+                        <div class="vital-chart-container">
+                            <div class="chart-header">
+                                <div>
+                                    <h4 id="chartTitle" style="margin: 0; font-size: 1.1rem; color: var(--text-primary);">Blood Pressure Trend</h4>
+                                    <span id="chartSubtitle" class="text-muted" style="font-size: 0.8rem;">Showing chronological entries</span>
+                                </div>
+                                <span id="chartSingleNotice" class="member-badge" style="display:none;">Single Measurement Logged</span>
+                            </div>
+                            <div class="chart-canvas-wrapper">
+                                <canvas id="vitalsChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Measurements Log Table -->
+                        <div class="card">
+                            <div class="card-header font-weight-bold flex-between">
+                                <span>Logged Entries</span>
+                            </div>
+                            <div class="card-body" style="padding: 0;">
+                                <div style="overflow-x: auto;">
+                                    <table class="table" style="width: 100%; border-collapse: collapse; margin: 0;">
+                                        <thead>
+                                            <tr style="border-bottom: 1px solid var(--border); background: var(--bg-surface-alt); text-align: left; font-size: 0.85rem; color: var(--text-secondary);">
+                                                <th style="padding: 0.75rem 1rem;">Date</th>
+                                                <th style="padding: 0.75rem 1rem;">Metric</th>
+                                                <th style="padding: 0.75rem 1rem;">Recorded Value</th>
+                                                <th style="padding: 0.75rem 1rem;">Notes</th>
+                                                <th style="padding: 0.75rem 1rem; text-align: right;">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="vitalsLogTableBody">
+                                            <tr>
+                                                <td colspan="5" class="text-center text-muted" style="padding: 2rem 1rem;">No entries logged yet.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 6: HEALTH TIMELINE -->
+                    <div id="tab-timeline" class="profile-tab-content">
+                        <div class="section-toolbar">
+                            <div>
+                                <h3 style="margin: 0; font-size: 1.15rem; color: var(--text-primary);">Chronological Health Timeline</h3>
+                                <p class="text-muted" style="margin: 0.2rem 0 0 0; font-size: 0.85rem;">Aggregated stream of records, diagnoses, prescriptions, and logged vitals.</p>
+                            </div>
+                        </div>
+                        <div class="timeline-container" id="profileTimelineContainer"></div>
+                        <div id="timelineEmptyState" class="card text-center" style="padding: 3rem 1rem;" hidden>
+                            <i class="fas fa-stream" style="font-size: 2.2rem; color: var(--text-muted); margin-bottom: 0.75rem;"></i>
+                            <h4 style="margin: 0 0 0.4rem 0;">No events in timeline</h4>
+                            <p class="text-muted" style="margin: 0; font-size: 0.9rem;">Events will automatically populate as you record documents, medications, and vitals.</p>
+                        </div>
+                    </div>
+
+                </div>
 
             </main>
         </div>
     </div>
+
+    <!-- ==========================================================================
+         MODAL 1: ADD / EDIT FAMILY MEMBER
+         ========================================================================== -->
+    <div id="memberModal" class="modal-overlay" data-lenis-prevent role="dialog" aria-modal="true" aria-labelledby="memberModalTitle">
+        <div class="modal-dialog" data-lenis-prevent>
+            <div class="modal-header">
+                <h3 class="modal-title" id="memberModalTitle">Add Family Member</h3>
+                <button class="modal-close-btn" data-close-modal>&times;</button>
+            </div>
+            <form id="memberForm" novalidate>
+                <input type="hidden" id="memberFormId">
+                <div class="modal-body" data-lenis-prevent>
+                    <div class="modal-form-alert" id="memberFormAlert"></div>
+
+                    <div class="form-group mb-3" id="group_memberFormName">
+                        <label class="form-label" for="memberFormName">Full Name *</label>
+                        <input type="text" id="memberFormName" class="form-control" placeholder="e.g. Meera Sharma" required maxlength="80">
+                        <div class="field-error-msg" id="err_memberFormName"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                    </div>
+
+                    <div class="grid mb-3" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group" id="group_memberFormRelation">
+                            <label class="form-label" for="memberFormRelation">Relationship *</label>
+                            <select id="memberFormRelation" class="form-control" required>
+                                <option value="">Select Relationship</option>
+                                <option value="Spouse">Spouse</option>
+                                <option value="Child">Child / Dependent</option>
+                                <option value="Parent">Parent (Mother / Father)</option>
+                                <option value="Sibling">Sibling (Brother / Sister)</option>
+                                <option value="Grandparent">Grandparent</option>
+                                <option value="Other">Other Family Member</option>
+                            </select>
+                            <div class="field-error-msg" id="err_memberFormRelation"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                        </div>
+                        <div class="form-group" id="group_memberFormDob">
+                            <label class="form-label" for="memberFormDob">Date of Birth</label>
+                            <input type="date" id="memberFormDob" class="form-control">
+                            <div class="field-error-msg" id="err_memberFormDob"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                            <small class="text-muted" style="display:block; margin-top:0.25rem;">Age is calculated automatically</small>
+                        </div>
+                    </div>
+
+                    <div class="grid mb-3" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group" id="group_memberFormGender">
+                            <label class="form-label" for="memberFormGender">Gender</label>
+                            <select id="memberFormGender" class="form-control">
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                                <option value="Prefer not to say">Prefer not to say</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="group_memberFormBlood">
+                            <label class="form-label" for="memberFormBlood">Blood Group</label>
+                            <select id="memberFormBlood" class="form-control">
+                                <option value="">Unknown / Select</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid mb-3" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group" id="group_memberFormPhone">
+                            <label class="form-label" for="memberFormPhone">Contact Phone</label>
+                            <input type="tel" id="memberFormPhone" class="form-control" placeholder="+91 98765 43210" maxlength="25">
+                            <div class="field-error-msg" id="err_memberFormPhone"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                        </div>
+                        <div class="form-group" id="group_memberFormEmergency">
+                            <label class="form-label" for="memberFormEmergency">Emergency Contact</label>
+                            <input type="text" id="memberFormEmergency" class="form-control" placeholder="Name & Phone" maxlength="100">
+                            <div class="field-error-msg" id="err_memberFormEmergency"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3" id="group_memberFormNotes">
+                        <label class="form-label" for="memberFormNotes">Relevant Notes / Allergies Summary</label>
+                        <textarea id="memberFormNotes" class="form-control" rows="2" placeholder="e.g. Penicillin allergy, wear glasses, diabetic" maxlength="500"></textarea>
+                        <div class="field-error-msg" id="err_memberFormNotes"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Profile Theme Color</label>
+                        <div style="display: flex; gap: 0.75rem; align-items: center;" id="colorPickerContainer">
+                            <label><input type="radio" name="memberColor" value="#0F766E" checked> <span style="display:inline-block; width:20px; height:20px; border-radius:50%; background:#0F766E; vertical-align:middle;"></span> Teal</label>
+                            <label><input type="radio" name="memberColor" value="#0284C7"> <span style="display:inline-block; width:20px; height:20px; border-radius:50%; background:#0284C7; vertical-align:middle;"></span> Blue</label>
+                            <label><input type="radio" name="memberColor" value="#7C3AED"> <span style="display:inline-block; width:20px; height:20px; border-radius:50%; background:#7C3AED; vertical-align:middle;"></span> Violet</label>
+                            <label><input type="radio" name="memberColor" value="#D97706"> <span style="display:inline-block; width:20px; height:20px; border-radius:50%; background:#D97706; vertical-align:middle;"></span> Amber</label>
+                            <label><input type="radio" name="memberColor" value="#DC2626"> <span style="display:inline-block; width:20px; height:20px; border-radius:50%; background:#DC2626; vertical-align:middle;"></span> Rose</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveMember">Save Member</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         MODAL 2: ADD / UPLOAD HEALTH RECORD
+         ========================================================================== -->
+    <div id="recordModal" class="modal-overlay" data-lenis-prevent role="dialog" aria-modal="true" aria-labelledby="recordModalTitle">
+        <div class="modal-dialog" data-lenis-prevent>
+            <div class="modal-header">
+                <h3 class="modal-title" id="recordModalTitle">Add Health Record</h3>
+                <button class="modal-close-btn" data-close-modal>&times;</button>
+            </div>
+            <form id="recordForm" novalidate>
+                <input type="hidden" id="recordFormId">
+                <div class="modal-body" data-lenis-prevent>
+                    <div class="modal-form-alert" id="recordFormAlert"></div>
+
+                    <div class="form-group mb-3" id="group_recordFormMember">
+                        <label class="form-label" for="recordFormMember">Family Member *</label>
+                        <select id="recordFormMember" class="form-control" required>
+                            <option value="">Select Family Member</option>
+                        </select>
+                        <div class="field-error-msg" id="err_recordFormMember"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                    </div>
+
+                    <div class="form-group mb-3" id="group_recordFormTitle">
+                        <label class="form-label" for="recordFormTitle">Record Title *</label>
+                        <input type="text" id="recordFormTitle" class="form-control" placeholder="e.g. Complete Blood Count (CBC) Report" required maxlength="120">
+                        <div class="field-error-msg" id="err_recordFormTitle"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                    </div>
+
+                    <div class="grid mb-3" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group" id="group_recordFormCategory">
+                            <label class="form-label" for="recordFormCategory">Category *</label>
+                            <select id="recordFormCategory" class="form-control" required>
+                                <option value="">Select Category</option>
+                                <option value="Lab Report">Laboratory Report</option>
+                                <option value="Imaging Report">Imaging (X-Ray, MRI, CT, USG)</option>
+                                <option value="Prescription">Prescription</option>
+                                <option value="Discharge Summary">Discharge Summary</option>
+                                <option value="Doctor Consultation">Doctor Consultation Notes</option>
+                                <option value="Vaccination">Vaccination Record</option>
+                                <option value="Other">Other Medical Document</option>
+                            </select>
+                            <div class="field-error-msg" id="err_recordFormCategory"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                        </div>
+                        <div class="form-group" id="group_recordFormDate">
+                            <label class="form-label" for="recordFormDate">Date of Record *</label>
+                            <input type="date" id="recordFormDate" class="form-control" required>
+                            <div class="field-error-msg" id="err_recordFormDate"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3" id="group_recordFormProvider">
+                        <label class="form-label" for="recordFormProvider">Issuing Hospital / Lab / Doctor</label>
+                        <input type="text" id="recordFormProvider" class="form-control" placeholder="e.g. City Diagnostic Center, Dr. Gupta" maxlength="120">
+                        <div class="field-error-msg" id="err_recordFormProvider"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                    </div>
+
+                    <div class="form-group mb-3" id="group_recordFormNotes">
+                        <label class="form-label" for="recordFormNotes">Doctor's Findings / Notes</label>
+                        <textarea id="recordFormNotes" class="form-control" rows="2" placeholder="Summary of results, diagnosis, or recommendations" maxlength="1000"></textarea>
+                        <div class="field-error-msg" id="err_recordFormNotes"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                    </div>
+
+                    <div class="form-group mb-2" id="recordFormFileUploadGroup">
+                        <label class="form-label" id="recordFileLabel">Attach Medical Document / Report * (PDF, JPG, PNG)</label>
+                        <div class="file-dropzone" id="recordDropzone">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <div id="dropzoneText">Drag and drop document here, or <strong style="color:var(--primary);">browse file</strong></div>
+                            <small class="text-muted" style="display:block; margin-top:0.35rem;">Supported formats: PDF, JPG, PNG &bull; Max file size: 15 MB</small>
+                            <input type="file" id="recordFileInput" accept=".pdf,image/jpeg,image/png" style="display: none;">
+                        </div>
+                        <div class="file-error-alert" id="recordFileError">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span id="recordFileErrorMsg"></span>
+                        </div>
+                        <div id="fileSelectedDisplay" class="alert mt-2" style="display: none; padding: 0.6rem 0.85rem; font-size: 0.85rem; align-items: center; justify-content: space-between; border-color: var(--primary);">
+                            <span style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-check-circle" style="color: #059669;"></i>
+                                <strong id="selectedFileName">file.pdf</strong>
+                                <span class="file-badge-success" id="selectedFileSize"></span>
+                            </span>
+                            <button type="button" class="btn btn-sm btn-outline" id="btnRemoveSelectedFile" style="padding: 0.2rem 0.6rem; color: #DC2626; border-color: #FCA5A5;">Remove</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveRecord">Save Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         MODAL 3: ADD / EDIT MEDICAL HISTORY ITEM
+         ========================================================================== -->
+    <div id="historyModal" class="modal-overlay" data-lenis-prevent role="dialog" aria-modal="true" aria-labelledby="historyModalTitle">
+        <div class="modal-dialog" data-lenis-prevent>
+            <div class="modal-header">
+                <h3 class="modal-title" id="historyModalTitle">Add Medical History Entry</h3>
+                <button class="modal-close-btn" data-close-modal>&times;</button>
+            </div>
+            <form id="historyForm" novalidate>
+                <input type="hidden" id="historyFormId">
+                <div class="modal-body" data-lenis-prevent>
+                    <div class="modal-form-alert" id="historyFormAlert"></div>
+
+                    <div class="form-group mb-3" id="group_historyFormTitle">
+                        <label class="form-label" for="historyFormTitle">Condition / Allergy / Event Name *</label>
+                        <input type="text" id="historyFormTitle" class="form-control" placeholder="e.g. Type 2 Diabetes, Penicillin Allergy, Appendectomy" required maxlength="120">
+                        <div class="field-error-msg" id="err_historyFormTitle"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                    </div>
+
+                    <div class="grid mb-3" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group" id="group_historyFormCategory">
+                            <label class="form-label" for="historyFormCategory">Category *</label>
+                            <select id="historyFormCategory" class="form-control" required>
+                                <option value="">Select Category</option>
+                                <option value="condition">Existing Medical Condition</option>
+                                <option value="allergy">Known Allergy</option>
+                                <option value="surgery">Past Surgery / Procedure</option>
+                                <option value="family_history">Family History</option>
+                                <option value="other">Other Medical Event</option>
+                            </select>
+                            <div class="field-error-msg" id="err_historyFormCategory"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                        </div>
+                        <div class="form-group" id="group_historyFormStatus">
+                            <label class="form-label" for="historyFormStatus">Status *</label>
+                            <select id="historyFormStatus" class="form-control" required>
+                                <option value="">Select Status</option>
+                                <option value="ongoing">Ongoing / Active</option>
+                                <option value="in_management">Under Management</option>
+                                <option value="resolved">Resolved / Past</option>
+                            </select>
+                            <div class="field-error-msg" id="err_historyFormStatus"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                        </div>
+                    </div>
+
+                    <div class="grid mb-3" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group" id="group_historyFormDate">
+                            <label class="form-label" for="historyFormDate">Date Diagnosed / Event Date</label>
+                            <input type="date" id="historyFormDate" class="form-control">
+                            <div class="field-error-msg" id="err_historyFormDate"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                        </div>
+                        <div class="form-group" id="group_historyFormDoctor">
+                            <label class="form-label" for="historyFormDoctor">Treating Doctor / Clinic</label>
+                            <input type="text" id="historyFormDoctor" class="form-control" placeholder="e.g. Dr. Kulkarni" maxlength="100">
+                            <div class="field-error-msg" id="err_historyFormDoctor"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="group_historyFormNotes">
+                        <label class="form-label" for="historyFormNotes">Clinical Notes & Precautions</label>
+                        <textarea id="historyFormNotes" class="form-control" rows="2" placeholder="e.g. Severe rash on penicillin injection; avoids dairy" maxlength="500"></textarea>
+                        <div class="field-error-msg" id="err_historyFormNotes"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveHistory">Save Entry</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         MODAL 4: ADD / EDIT PRESCRIPTION & MEDICATION
+         ========================================================================== -->
+    <div id="medicationModal" class="modal-overlay" data-lenis-prevent role="dialog" aria-modal="true" aria-labelledby="medicationModalTitle">
+        <div class="modal-dialog" data-lenis-prevent>
+            <div class="modal-header">
+                <h3 class="modal-title" id="medicationModalTitle">Add Prescription / Medication</h3>
+                <button class="modal-close-btn" data-close-modal>&times;</button>
+            </div>
+            <form id="medicationForm" novalidate>
+                <input type="hidden" id="medicationFormId">
+                <div class="modal-body" data-lenis-prevent>
+                    <div class="modal-form-alert" id="medicationFormAlert"></div>
+
+                    <div class="form-group mb-3" id="group_medFormName">
+                        <label class="form-label" for="medFormName">Medication Name *</label>
+                        <input type="text" id="medFormName" class="form-control" placeholder="e.g. Metformin, Amlodipine, Paracetamol" required maxlength="100">
+                        <div class="field-error-msg" id="err_medFormName"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                    </div>
+
+                    <div class="grid mb-3" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group" id="group_medFormDosage">
+                            <label class="form-label" for="medFormDosage">Dosage *</label>
+                            <input type="text" id="medFormDosage" class="form-control" placeholder="e.g. 500 mg, 1 tablet" required maxlength="50">
+                            <div class="field-error-msg" id="err_medFormDosage"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                        </div>
+                        <div class="form-group" id="group_medFormFrequency">
+                            <label class="form-label" for="medFormFrequency">Frequency *</label>
+                            <input type="text" id="medFormFrequency" class="form-control" placeholder="e.g. Once daily after breakfast" required maxlength="50">
+                            <div class="field-error-msg" id="err_medFormFrequency"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                        </div>
+                    </div>
+
+                    <div class="grid mb-3" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group" id="group_medFormStartDate">
+                            <label class="form-label" for="medFormStartDate">Start Date</label>
+                            <input type="date" id="medFormStartDate" class="form-control">
+                            <div class="field-error-msg" id="err_medFormStartDate"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                        </div>
+                        <div class="form-group" id="group_medFormEndDate">
+                            <label class="form-label" for="medFormEndDate">End Date</label>
+                            <input type="date" id="medFormEndDate" class="form-control">
+                            <div class="field-error-msg" id="err_medFormEndDate"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                        </div>
+                    </div>
+
+                    <div class="grid mb-3" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group" id="group_medFormDoctor">
+                            <label class="form-label" for="medFormDoctor">Prescribing Doctor</label>
+                            <input type="text" id="medFormDoctor" class="form-control" placeholder="e.g. Dr. Anita Roy" maxlength="100">
+                            <div class="field-error-msg" id="err_medFormDoctor"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                        </div>
+                        <div class="form-group" id="group_medFormStatus">
+                            <label class="form-label" for="medFormStatus">Status *</label>
+                            <select id="medFormStatus" class="form-control" required>
+                                <option value="active">Active (Currently taking)</option>
+                                <option value="completed">Completed Course</option>
+                                <option value="paused">Paused / Discontinued</option>
+                            </select>
+                            <div class="field-error-msg" id="err_medFormStatus"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="group_medFormInstructions">
+                        <label class="form-label" for="medFormInstructions">Instructions & Special Notes</label>
+                        <textarea id="medFormInstructions" class="form-control" rows="2" placeholder="e.g. Take with full glass of water, do not take on empty stomach" maxlength="500"></textarea>
+                        <div class="field-error-msg" id="err_medFormInstructions"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveMedication">Save Medication</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         MODAL 5: LOG HEALTH MEASUREMENT
+         ========================================================================== -->
+    <div id="measurementModal" class="modal-overlay" data-lenis-prevent role="dialog" aria-modal="true" aria-labelledby="measurementModalTitle">
+        <div class="modal-dialog" data-lenis-prevent>
+            <div class="modal-header">
+                <h3 class="modal-title" id="measurementModalTitle">Log Health Measurement</h3>
+                <button class="modal-close-btn" data-close-modal>&times;</button>
+            </div>
+            <form id="measurementForm" novalidate>
+                <div class="modal-body" data-lenis-prevent>
+                    <div class="modal-form-alert" id="measurementFormAlert"></div>
+
+                    <div class="form-group mb-3" id="group_measFormType">
+                        <label class="form-label" for="measFormType">Measurement Type *</label>
+                        <select id="measFormType" class="form-control" required>
+                            <option value="blood_pressure">Blood Pressure (Systolic / Diastolic)</option>
+                            <option value="blood_glucose">Blood Glucose</option>
+                            <option value="weight">Body Weight</option>
+                            <option value="heart_rate">Heart Rate / Pulse</option>
+                            <option value="custom">Custom Lab Metric</option>
+                        </select>
+                        <div class="field-error-msg" id="err_measFormType"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                    </div>
+
+                    <div class="form-group mb-3" id="measCustomNameGroup" style="display: none;">
+                        <label class="form-label" for="measFormCustomName">Metric Name *</label>
+                        <input type="text" id="measFormCustomName" class="form-control" placeholder="e.g. Total Bilirubin, HbA1c, Serum Creatinine" maxlength="80">
+                        <div class="field-error-msg" id="err_measFormCustomName"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                    </div>
+
+                    <div class="grid mb-3" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group" id="group_measFormValue">
+                            <label class="form-label" id="measValLabel" for="measFormValue">Systolic (mmHg) *</label>
+                            <input type="number" step="any" id="measFormValue" class="form-control" placeholder="e.g. 120" required>
+                            <div class="field-error-msg" id="err_measFormValue"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                        </div>
+                        <div class="form-group" id="measValSecondaryGroup">
+                            <label class="form-label" id="measValSecondaryLabel" for="measFormValueSecondary">Diastolic (mmHg) *</label>
+                            <input type="number" step="any" id="measFormValueSecondary" class="form-control" placeholder="e.g. 80">
+                            <div class="field-error-msg" id="err_measFormValueSecondary"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                        </div>
+                    </div>
+
+                    <div class="grid mb-3" style="grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group" id="group_measFormUnit">
+                            <label class="form-label" for="measFormUnit">Unit *</label>
+                            <input type="text" id="measFormUnit" class="form-control" value="mmHg" required maxlength="25">
+                            <div class="field-error-msg" id="err_measFormUnit"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                        </div>
+                        <div class="form-group" id="group_measFormDate">
+                            <label class="form-label" for="measFormDate">Recorded Date *</label>
+                            <input type="date" id="measFormDate" class="form-control" required>
+                            <div class="field-error-msg" id="err_measFormDate"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="group_measFormNotes">
+                        <label class="form-label" for="measFormNotes">Notes / Context</label>
+                        <input type="text" id="measFormNotes" class="form-control" placeholder="e.g. Fasting, Post-workout, Resting" maxlength="200">
+                        <div class="field-error-msg" id="err_measFormNotes"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveMeasurement">Save Measurement</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         MODAL 6: CONFIRMATION DIALOG (FOR DELETION)
+         ========================================================================== -->
+    <div id="confirmModal" class="modal-overlay" data-lenis-prevent role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+        <div class="modal-dialog" data-lenis-prevent style="max-width: 440px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="confirmModalTitle">Confirm Action</h3>
+                <button class="modal-close-btn" data-close-modal>&times;</button>
+            </div>
+            <div class="modal-body" data-lenis-prevent>
+                <p id="confirmModalMessage" style="margin: 0; color: var(--text-secondary); line-height: 1.5;">Are you sure you want to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmAction">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         MODAL 7: SECURE DOCUMENT PREVIEW
+         ========================================================================== -->
+    <div id="previewModal" class="modal-overlay" data-lenis-prevent role="dialog" aria-modal="true" aria-labelledby="previewModalTitle">
+        <div class="modal-dialog" data-lenis-prevent style="max-width: 820px; width: 95%;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="previewModalTitle">Document Preview</h3>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <a id="previewDownloadLink" class="btn btn-sm btn-outline" download><i class="fas fa-download"></i> Download</a>
+                    <button class="modal-close-btn" data-close-modal>&times;</button>
+                </div>
+            </div>
+            <div class="modal-body" data-lenis-prevent style="padding: 1rem; min-height: 480px; max-height: 75vh; display: flex; align-items: center; justify-content: center; background: #0F172A;">
+                <iframe id="previewIframe" style="width: 100%; height: 500px; border: none; border-radius: 8px; background: #fff;" hidden></iframe>
+                <img id="previewImg" style="max-width: 100%; max-height: 500px; object-fit: contain; border-radius: 8px;" hidden alt="Medical Record Preview">
+                <div id="previewLoading" class="text-white text-center">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i>
+                    <p style="margin-top: 0.5rem;">Loading authorized document securely...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
     <script src="js/auth.js"></script>
     <script src="js/components.js"></script>
     <script src="js/family.js"></script>

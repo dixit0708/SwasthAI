@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="assets/images/logo.png">
-    <title>SwasthAI - Doctors</title>
-    <meta name="description" content="Find the right healthcare professional. Search verified doctors by specialty, location, experience, consultation type and availability.">
+    <title>SwasthAI - Find a Doctor</title>
+    <meta name="description" content="Find hospitals, clinics and doctors near you by specialty, and contact them directly.">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/main.css">
@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="css/landing.css">
     <link rel="stylesheet" href="css/nav.css">
     <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous">
     <link rel="stylesheet" href="css/doctors.css">
 </head>
 <body>
@@ -24,89 +25,116 @@
             <header id="header-container" class="top-header"></header>
             <main class="page-content">
                 <!-- PAGE CONTENT: doctors -->
+                <div class="dir-page dir-page--wide">
 
-    <!-- HERO with integrated search -->
-    <section class="page-hero page-hero--center">
-        <div class="container">
-            <span class="eyebrow animate-on-scroll"><i class="fas fa-stethoscope"></i> Doctor Discovery</span>
-            <h1 class="page-hero__title animate-on-scroll" data-delay="100">Find the right healthcare professional.</h1>
-            <p class="page-hero__subtitle animate-on-scroll" data-delay="200">Search verified specialists by condition, location, experience and consultation type, demo profiles shown below.</p>
+                    <header class="dir-header">
+                        <span class="eyebrow"><i class="fas fa-stethoscope"></i> Doctor Discovery</span>
+                        <h1 class="dir-header__title">Find the right care near you.</h1>
+                        <p class="dir-header__subtitle">Search hospitals, clinics and doctors by specialty, then contact them directly by phone, on Google Maps, or with directions.</p>
+                    </header>
 
-            <div class="doctor-search animate-on-scroll" data-delay="300">
-                <div class="doctor-search__input">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="doctorSearchInput" class="form-control" placeholder="Search by doctor name or specialty...">
+                    <div class="dir-emergency" role="note">
+                        <i class="fas fa-truck-medical" aria-hidden="true"></i>
+                        <span><strong>Medical emergency?</strong> Don't search, call for help now.</span>
+                        <span class="dir-emergency__links">
+                            <a href="tel:112"><i class="fas fa-phone"></i> 112</a>
+                            <a href="tel:108"><i class="fas fa-ambulance"></i> 108 Ambulance</a>
+                        </span>
+                    </div>
+
+                    <section class="dir-context" id="dirContext" hidden aria-live="polite">
+                        <div class="dir-context__icon" aria-hidden="true"><i class="fas fa-heart-pulse"></i></div>
+                        <div>
+                            <p class="dir-context__title" id="dirContextTitle"></p>
+                            <p class="dir-context__text" id="dirContextText"></p>
+                        </div>
+                        <button type="button" class="dir-context__close" id="dirContextClose" aria-label="Dismiss"><i class="fas fa-xmark"></i></button>
+                    </section>
+
+                    <form class="dir-search" id="dirSearchForm" role="search">
+                        <div class="dir-search__field">
+                            <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+                            <label for="dirQuery" class="sr-only">Search by name, clinic or area</label>
+                            <input type="search" id="dirQuery" class="form-control" placeholder="Name, clinic or area (e.g. Civil Lines)" maxlength="80" autocomplete="off">
+                        </div>
+                        <div class="dir-search__field">
+                            <i class="fas fa-user-doctor" aria-hidden="true"></i>
+                            <label for="dirSpecialty" class="sr-only">Specialty</label>
+                            <select id="dirSpecialty" class="form-control">
+                                <option value="">All specialties</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-magnifying-glass"></i> Search</button>
+                    </form>
+
+                    <div class="dir-chips" id="dirChips" role="group" aria-label="Quick filters"></div>
+
+                    <div class="dir-location" id="dirLocationBar">
+                        <span class="dir-location__icon" aria-hidden="true"><i class="fas fa-location-crosshairs"></i></span>
+                        <span class="dir-location__text" id="dirLocationText" aria-live="polite">Sorted by distance from Moradabad city centre</span>
+                        <button type="button" class="btn btn-primary btn-sm" id="dirUseLocation"><i class="fas fa-location-arrow"></i> Use my location</button>
+                        <button type="button" class="btn btn-ghost btn-sm dir-map-toggle" id="dirMapToggle" aria-controls="dirMapPanel" aria-expanded="true"><i class="fas fa-map"></i> Hide map</button>
+                    </div>
+
+                    <div class="dir-views" role="tablist" aria-label="Where results come from">
+                        <button type="button" class="dir-view" role="tab" id="dirTabGoogle" aria-selected="true" aria-controls="dirGooglePanel"><i class="fab fa-google"></i> Google Maps</button>
+                        <button type="button" class="dir-view" role="tab" id="dirTabDirectory" aria-selected="false" aria-controls="dirLayout" tabindex="-1"><i class="fas fa-list"></i> SwasthAI directory</button>
+                    </div>
+
+                    <section class="dir-google" id="dirGooglePanel" role="tabpanel" aria-labelledby="dirTabGoogle">
+                        <div class="dir-google__head">
+                            <p class="dir-google__text">Live results from Google Maps for <strong id="dirGoogleQuery">doctors near you</strong>. Change the specialty or area to search again, or select a place on the map for its phone number, reviews and opening hours.</p>
+                        </div>
+                        <div class="dir-google__controls">
+                            <label for="dirGoogleArea" class="dir-google__label"><i class="fas fa-map-pin" aria-hidden="true"></i> Area</label>
+                            <select id="dirGoogleArea" class="form-control dir-google__select"></select>
+                            <button type="button" class="btn btn-outline btn-sm" id="dirGooglePrev"><i class="fas fa-chevron-left"></i><span class="sr-only">Previous area</span></button>
+                            <button type="button" class="btn btn-outline btn-sm" id="dirGoogleNext">Next area <i class="fas fa-chevron-right"></i></button>
+                            <span class="dir-google__step" id="dirGoogleStep" aria-live="polite"></span>
+                        </div>
+                        <div class="dir-google__cta">
+                            <span class="dir-google__cta-icon" aria-hidden="true"><i class="fas fa-list-ul"></i></span>
+                            <div class="dir-google__cta-body">
+                                <p class="dir-google__cta-title">See the complete list</p>
+                                <p class="dir-google__cta-text">The map below previews Google's top results. Google Maps lists every result for this search, with phone numbers, ratings, timings and a Call button.</p>
+                            </div>
+                            <a class="btn btn-primary btn-lg dir-google__cta-btn" id="dirGoogleOpen" href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer"><i class="fab fa-google" aria-hidden="true"></i> <span id="dirGoogleOpenLabel">See all results on Google Maps</span> <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i><span class="sr-only"> (opens in a new tab)</span></a>
+                        </div>
+                        <iframe class="dir-google__frame" id="dirGoogleFrame" title="Google Maps search results" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                        <p class="dir-google__note">Results, ratings and contact details are provided by Google Maps and may change. SwasthAI doesn't store them, and doesn't verify or endorse any provider. Google's privacy policy applies inside this map.</p>
+                    </section>
+
+                    <div class="dir-layout" id="dirLayout" role="tabpanel" aria-labelledby="dirTabDirectory" hidden>
+                        <section class="dir-results" aria-labelledby="dirCount">
+                            <div class="dir-results__head">
+                                <span class="dir-results__count" id="dirCount" aria-live="polite">Loading listings…</span>
+                                <span class="dir-results__scope"><i class="fas fa-location-dot"></i> Covering Moradabad district</span>
+                            </div>
+
+                            <div class="dir-list" id="dirList" aria-busy="true"></div>
+
+                            <div class="dir-more" id="dirMore" hidden>
+                                <button type="button" class="btn btn-outline" id="dirMoreBtn">Load more</button>
+                            </div>
+                        </section>
+
+                        <aside class="dir-map-panel" id="dirMapPanel" aria-label="Map of results">
+                            <div class="dir-map" id="dirMap"></div>
+                        </aside>
+                    </div>
+
+                    <p class="dir-footnote">
+                        Public listings: data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a> (ODbL). Listings marked “Listed with consent” were provided by the doctor, who agreed to appear on SwasthAI.
+                        SwasthAI does not verify or endorse healthcare providers, and listing order is not a recommendation. Contact details open in Google Maps, where availability may change.
+                    </p>
                 </div>
-                <div class="doctor-search__input">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <input type="text" class="form-control" placeholder="Location (optional)" style="padding-left: var(--sp-8);">
-                </div>
-                <button id="doctorSearchBtn" class="btn btn-primary btn-lg"><i class="fas fa-search"></i> Search</button>
-            </div>
-        </div>
-    </section>
-
-    <!-- DIRECTORY -->
-    <section class="section" style="padding-top: 0;">
-        <div class="container">
-            <div class="doctor-directory">
-                <!-- FILTERS -->
-                <aside class="filter-panel animate-on-scroll">
-                    <div class="filter-group">
-                        <div class="filter-group__title">Specialty</div>
-                        <label class="filter-option"><input type="checkbox" class="js-doctor-filter js-filter-specialty" value="cardiology"> Cardiology</label>
-                        <label class="filter-option"><input type="checkbox" class="js-doctor-filter js-filter-specialty" value="endocrinology"> Endocrinology</label>
-                        <label class="filter-option"><input type="checkbox" class="js-doctor-filter js-filter-specialty" value="dermatology"> Dermatology</label>
-                        <label class="filter-option"><input type="checkbox" class="js-doctor-filter js-filter-specialty" value="general"> General Physician</label>
-                        <label class="filter-option"><input type="checkbox" class="js-doctor-filter js-filter-specialty" value="pediatrics"> Pediatrics</label>
-                        <label class="filter-option"><input type="checkbox" class="js-doctor-filter js-filter-specialty" value="neurology"> Neurology</label>
-                    </div>
-                    <div class="filter-group">
-                        <div class="filter-group__title">Experience</div>
-                        <label class="filter-option"><input type="radio" name="experience" class="js-doctor-filter js-filter-experience" value="0" checked> Any</label>
-                        <label class="filter-option"><input type="radio" name="experience" class="js-doctor-filter js-filter-experience" value="5"> 5+ years</label>
-                        <label class="filter-option"><input type="radio" name="experience" class="js-doctor-filter js-filter-experience" value="10"> 10+ years</label>
-                        <label class="filter-option"><input type="radio" name="experience" class="js-doctor-filter js-filter-experience" value="15"> 15+ years</label>
-                    </div>
-                    <div class="filter-group">
-                        <div class="filter-group__title">Consultation Type</div>
-                        <label class="filter-option"><input type="checkbox" class="js-doctor-filter js-filter-mode" value="video"> <i class="fas fa-video"></i>&nbsp; Video Consult</label>
-                        <label class="filter-option"><input type="checkbox" class="js-doctor-filter js-filter-mode" value="in-person"> <i class="fas fa-hospital"></i>&nbsp; In-Person</label>
-                    </div>
-                    <div class="filter-group">
-                        <div class="filter-group__title">Availability</div>
-                        <label class="filter-option"><input type="checkbox" class="js-doctor-filter js-filter-availability" value="today"> Available Today</label>
-                        <label class="filter-option"><input type="checkbox" class="js-doctor-filter js-filter-availability" value="week"> Available This Week</label>
-                    </div>
-                    <button type="button" id="doctorFilterReset" class="btn btn-ghost btn-sm btn-block">Reset Filters</button>
-                </aside>
-
-                <!-- RESULTS -->
-                <div>
-                    <div class="doctor-results__head">
-                        <span class="doctor-results__count" id="doctorCount">8 doctors found</span>
-                        <span class="badge badge-neutral"><i class="fas fa-user-friends"></i> Demo profiles for illustration</span>
-                    </div>
-                    <div class="doctor-list" id="doctorList"></div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA -->
-    <section class="section text-center" style="background: var(--bg-surface);">
-        <div class="container animate-on-scroll">
-            <h2 class="section-heading">Not sure who to book?</h2>
-            <p class="section-subtitle" style="max-width: 560px; margin: 0 auto var(--sp-8);">Complete your Health Profile and share your health data so we can suggest the right specialist for you.</p>
-            <a href="health-profile.html" class="btn btn-primary btn-lg">Complete Health Profile <i class="fas fa-arrow-right"></i></a>
-        </div>
-    </section>
-
             </main>
         </div>
     </div>
     <script src="js/auth.js"></script>
     <script src="js/components.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+    <script src="js/doctor-ui.js"></script>
     <script src="js/doctors.js"></script>
     <script src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>
     <script src="js/main.js"></script>

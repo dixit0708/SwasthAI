@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     # report analyzer's plain-language explanation step and AI Health Assistant.
     # Optional: if left empty, offline/fallback responses are returned.
     GEMINI_API_KEY: str = ""
+    # Machine Learning / AI model versions
+    SKIN_MODEL_VERSION: str = "skin-densenet121-v1"
 
     model_config = SettingsConfigDict(
         env_file=(str(_ENV_FILE), ".env"),

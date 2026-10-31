@@ -1,18 +1,29 @@
 import logging
+from typing import Optional, List, Dict, Any
+from pydantic import BaseModel
 
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, Request
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
+from datetime import datetime, timezone
+
 from app.ai.inference.image_processing import validate_and_decode_image, preprocess_for_cnn
 from app.ai.models.pneumonia_cnn import load_pneumonia_model, predict_pneumonia
-from app.api.v1.deps import get_current_user
+from app.api.v1.deps import get_current_user, get_optional_current_user
+from app.db.collections import prediction_repo
 from app.models.prediction import (
-    DiabetesPimaPredictionInput, DiabetesPredictionInput, LiverIlpdPredictionInput,
-    LiverPredictionInput, RiskPredictionOut,
-    HeartPredictionInput, HeartRiskPredictionOut,
+    DiabetesPimaPredictionInput,
+    DiabetesPredictionInput,
     HeartClinicalInput,
+    HeartPredictionInput,
+    HeartRiskPredictionOut,
+    LiverIlpdPredictionInput,
+    LiverLifestylePredictionInput,
+    LiverPredictionInput,
+    RiskPredictionOut,
 )
+from app.core.config import settings
 from app.models.user import UserOut
 from app.services import prediction_service
 
@@ -20,6 +31,18 @@ from app.services import prediction_service
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+class SaveSkinPredictionInput(BaseModel):
+    label: str
+    confidence: float
+    confidence_level: str
+    clinical_label: Optional[str] = None
+    top_3: Optional[List[Dict[str, Any]]] = None
+    differential_diagnosis: Optional[List[Dict[str, Any]]] = None
+    family_member_id: Optional[str] = None
+    family_member_name: Optional[str] = None
+    notes: Optional[str] = None
+
 
 
 async def _get_pneumonia_model(app):
@@ -248,33 +271,76 @@ async def predict_liver_ilpd_endpoint(
 
 
 @router.post("/skin", summary="Predict Skin Disease from Image")
-async def predict_skin_endpoint(request: Request, file: UploadFile = File(...)):
+async def predict_skin_endpoint(
+    request: Request, 
+    file: UploadFile = File(...),
+    current_user: UserOut | None = Depends(get_optional_current_user)
+):
     try:
         # Read file contents
         contents = await file.read()
 
-        # 1. Validate and decode into OpenCV numpy array
-        image_np = validate_and_decode_image(contents, file.content_type)
-
-        # 2. Preprocess specifically for the Skin Disease CNN
-        # Note: image_processing.py needs to import cv2 and np, which it already does.
-        from app.ai.inference.image_processing import preprocess_for_skin
-        preprocessed_img = preprocess_for_skin(image_np)
-
-        # 3. Fetch the eagerly loaded model from app state
+        # 1. Fetch the eagerly loaded model from app state (return 503 early if unavailable)
         model = getattr(request.app.state, "skin_model", None)
         idx_to_class = getattr(request.app.state, "skin_idx_to_class", None)
-        
         if model is None or idx_to_class is None:
             logger.error("Skin Disease model is not loaded in app state.")
             raise HTTPException(status_code=503, detail="Skin Disease model is currently unavailable")
 
-        # 4. Run inference
+        # 2. Validate and decode into OpenCV numpy array
+        image_np = validate_and_decode_image(contents, file.content_type)
+
+        # 3. Guardrail: Validate that image contains human skin before CNN inference
+        from app.ai.inference.image_processing import validate_skin_guardrail
+        is_valid, reason, meta = validate_skin_guardrail(image_np)
+        if not is_valid:
+            logger.warning(f"Skin image rejected by guardrail: {meta.get('rejection_type')} - {reason}")
+            raise HTTPException(status_code=400, detail=reason)
+
+        # 4. Preprocess specifically for the Skin Disease CNN
+        from app.ai.inference.image_processing import preprocess_for_skin
+        preprocessed_img = preprocess_for_skin(image_np)
+
+        # 5. Run inference with Grad-CAM visual heatmap generation
         from app.ai.models.skin_model import predict_skin
-        result = predict_skin(model, idx_to_class, preprocessed_img)
-        
-        if result.get("prediction") == "OOD":
-            raise ValueError(result.get("message"))
+        result = predict_skin(model, idx_to_class, preprocessed_img, original_image_bgr=image_np)
+
+        # 6. Secondary gating for ambiguous borderline cases
+        skin_cov = meta.get("skin_coverage", 100.0)
+        conf = result.get("confidence", 0.0)
+        label = result.get("label", "")
+
+        # Catch default-class confusion (DenseNet-121 defaults to Pigmentation when confused on non-medical photos)
+        if "pigmentation" in label.lower() and conf < 0.65 and skin_cov < 60.0:
+            raise HTTPException(
+                status_code=400,
+                detail="Unable to identify clear skin patterns. Please upload a closer, well-lit photo focused on the affected skin lesion."
+            )
+        if skin_cov < 35.0 and conf < 0.50:
+            raise HTTPException(
+                status_code=400,
+                detail="Unable to identify clear skin patterns. Please upload a closer, well-lit photo focused on the affected skin lesion."
+            )
+        # Low-confidence / healthy skin check
+        if conf < 0.42:
+            raise HTTPException(
+                status_code=400,
+                detail=f"No distinct dermatological condition identified (AI confidence: {conf*100:.1f}%). The image does not show clear clinical disease patterns. Please upload a clear, focused photo of the affected area."
+            )
+
+        result["skin_coverage"] = skin_cov
+
+        # Categorize confidence level: High >= 70%, Medium 40-70%, Low < 40%
+        if conf >= 0.70:
+            result["confidence_level"] = "High"
+        elif conf >= 0.40:
+            result["confidence_level"] = "Medium"
+        else:
+            result["confidence_level"] = "Low"
+
+        # Note: In accordance with privacy & single-save architecture,
+        # predictions are not automatically saved during inference.
+        # Authenticated users explicitly save via /skin/save.
 
         return JSONResponse(status_code=200, content=result)
 
@@ -285,4 +351,93 @@ async def predict_skin_endpoint(request: Request, file: UploadFile = File(...)):
     except Exception as e:
         logger.error(f"Skin Prediction failed: {e}")
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+
+
+@router.post("/skin/save", summary="Explicitly Save Skin Prediction to Health Records")
+async def save_skin_prediction_endpoint(
+    payload: SaveSkinPredictionInput,
+    current_user: UserOut = Depends(get_current_user),
+):
+    """Saves a skin prediction result (label, top-3, confidence level, timestamp) to the predictions collection."""
+    # Verify family member belongs to current user before saving
+    family_id = None
+    if payload.family_member_id and payload.family_member_id != "self":
+        from bson import ObjectId
+        from app.db.collections import family_member_repo
+        if not ObjectId.is_valid(payload.family_member_id):
+            raise HTTPException(
+                status_code=403,
+                detail="Forbidden: Invalid family profile ID."
+            )
+        member = await family_member_repo.collection.find_one({
+            "_id": ObjectId(payload.family_member_id),
+            "user_id": current_user.id
+        })
+        if not member:
+            raise HTTPException(
+                status_code=403,
+                detail="Forbidden: Family profile does not belong to the authenticated user."
+            )
+        family_id = payload.family_member_id
+
+    try:
+        diff = payload.top_3 or payload.differential_diagnosis or []
+        record = {
+            "user_id": current_user.id,
+            "condition": "skin",
+            "model_version": settings.SKIN_MODEL_VERSION,
+            "result": {
+                "label": payload.label,
+                "clinical_label": payload.clinical_label or payload.label,
+                "confidence": payload.confidence,
+                "confidence_level": payload.confidence_level,
+                "top_3": diff,
+                "differential_diagnosis": diff,
+            },
+            "family_member_id": family_id,
+            "family_member_name": payload.family_member_name,
+            "notes": payload.notes,
+            "created_at": datetime.now(timezone.utc),
+        }
+        created_id = await prediction_repo.create(record)
+        return {"status": "saved", "id": created_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to save skin prediction to health records: {e}")
+        raise HTTPException(status_code=500, detail="Could not save prediction to health records.")
+
+
+@router.get("/family-profiles", summary="Get User and Family Profiles for Saving")
+async def get_family_profiles_endpoint(
+    current_user: UserOut = Depends(get_current_user),
+):
+    """Returns available profiles for the current user (personal self profile and any registered family members)."""
+    from app.db.collections import family_member_repo
+    profiles = [{"id": "self", "name": "Myself (Personal Profile)", "relation": "Self"}]
+    try:
+        family_docs = await family_member_repo.collection.find({"user_id": current_user.id}).to_list(length=100)
+        for f in family_docs:
+            profiles.append({
+                "id": str(f.get("_id")),
+                "name": f.get("name", "Family Member"),
+                "relation": f.get("relation", "Family"),
+            })
+    except Exception as e:
+        logger.warning(f"Could not fetch family profiles for user {current_user.id}: {e}")
+    return {"profiles": profiles}
+
+
+
+@router.post("/liver-lifestyle", summary="Predict Liver Disease Risk from Lifestyle", response_model=RiskPredictionOut)
+async def predict_liver_lifestyle_endpoint(
+    payload: LiverLifestylePredictionInput,
+    request: Request,
+    current_user: UserOut = Depends(get_current_user),
+):
+    try:
+        return await prediction_service.predict_liver_lifestyle_risk(current_user.id, payload)
+    except Exception as e:
+        logger.error(f"Liver lifestyle prediction failed: {e}")
+        raise HTTPException(status_code=500, detail="Prediction failed. Please try again later.")
 

@@ -31,7 +31,7 @@ def load_pneumonia_model(ckpt_path: str, device: str = "cpu"):
         raise FileNotFoundError(f"Model checkpoint not found at {ckpt_path}")
 
     model = build_pneumonia_model()
-    checkpoint = torch.load(ckpt_path, map_location=device)
+    checkpoint = torch.load(ckpt_path, map_location=device, weights_only=False)
 
     # Support loading both full checkpoint dicts or just the state_dict
     if "model_state_dict" in checkpoint:

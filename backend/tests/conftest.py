@@ -23,6 +23,10 @@ async def client():
     await db_manager.db["users"].delete_many({"email": {"$regex": "^swasthai-test-"}})
     await db_manager.db["health_profiles"].delete_many({})
     await db_manager.db["predictions"].delete_many({})
+    await db_manager.db["family_members"].delete_many({})
+    await db_manager.db["medical_records"].delete_many({})
+    await db_manager.db["medications"].delete_many({})
+    await db_manager.db["health_metrics"].delete_many({})
     await close_mongo_connection()
 
 

@@ -25,6 +25,8 @@ function initLenis() {
     touchMultiplier: 1.5
   });
 
+  window.lenis = lenis;
+
   function raf(time) {
     lenis.raf(time);
     requestAnimationFrame(raf);

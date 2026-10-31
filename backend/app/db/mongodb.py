@@ -17,6 +17,10 @@ async def connect_to_mongo():
         db_manager.client = AsyncIOMotorClient(settings.MONGODB_URL, serverSelectionTimeoutMS=2000)
         db_manager.db = db_manager.client[settings.DATABASE_NAME]
         await db_manager.db["users"].create_index("email", unique=True)
+        doctors = db_manager.db["doctors"]
+        await doctors.create_index("source_id", unique=True)
+        await doctors.create_index([("is_active", 1), ("listing_priority", 1), ("name", 1)])
+        await doctors.create_index("specialties")
         logger.info("Connected to MongoDB.")
     except Exception as e:
         logger.warning(f"Could not connect to MongoDB. App will run in UI-only mode. Error: {e}")

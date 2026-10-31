@@ -90,6 +90,7 @@ function swasthaiRenderAppHeader(activeSection) {
                     </div>
                     <ul class="app-profile-menu__list">
                         <li role="none"><a role="menuitem" href="health-profile.html"><i class="fas fa-user-md"></i> Health Profile</a></li>
+                        <li role="none"><a role="menuitem" href="family.html"><i class="fas fa-user-friends"></i> Family Records</a></li>
                         <li role="none"><a role="menuitem" href="medications.html"><i class="fas fa-pills"></i> Medications</a></li>
                         <li role="none"><a role="menuitem" href="medical-records.html"><i class="fas fa-folder-open"></i> Medical Records</a></li>
                     </ul>

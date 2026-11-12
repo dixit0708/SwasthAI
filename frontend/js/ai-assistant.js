@@ -89,16 +89,28 @@ document.addEventListener('DOMContentLoaded', () => {
             bubble.style.color = 'var(--text-primary)';
             bubble.style.borderBottomLeftRadius = '0';
             bubble.style.border = '1px solid var(--border)';
-            
-            let html = `<div>${text.replace(/\n/g, '<br>')}</div>`;
+
+            // Parse Markdown → HTML, then sanitize to prevent XSS
+            const parsedMarkdown = (typeof marked !== 'undefined' && marked.parse)
+                ? marked.parse(text)
+                : text.replace(/\n/g, '<br>');
+            const safeHtml = (typeof DOMPurify !== 'undefined')
+                ? DOMPurify.sanitize(parsedMarkdown)
+                : parsedMarkdown;
+
+            let html = `<div class="markdown-body">${safeHtml}</div>`;
             if (disclaimer) {
-                html += `<div style="margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px dashed var(--border); font-size: 0.75rem; color: var(--text-muted);"><i class="fas fa-shield-halved text-primary"></i> ${disclaimer}</div>`;
+                const safeDisclaimer = (typeof DOMPurify !== 'undefined')
+                    ? DOMPurify.sanitize(disclaimer)
+                    : disclaimer;
+                html += `<div style="margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px dashed var(--border); font-size: 0.75rem; color: var(--text-muted);"><i class="fas fa-shield-halved text-primary"></i> ${safeDisclaimer}</div>`;
             }
             bubble.innerHTML = html;
         }
 
         chatMessages.appendChild(bubble);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        // Smooth-scroll to the latest message
+        bubble.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
 
     function appendLoadingBubble() {

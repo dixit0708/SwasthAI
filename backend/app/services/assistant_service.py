@@ -22,7 +22,9 @@ from app.db.collections import (
 logger = logging.getLogger(__name__)
 
 # Reusing exact Gemini model name from existing report analyzer
+# Primary model; fallbacks are tried in order if 503/429 is returned.
 MODEL_NAME = "gemini-3.5-flash-lite"
+_FALLBACK_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-1.5-flash-latest"]
 
 ASSISTANT_DISCLAIMER = (
     "SwasthAI Health Assistant is an AI-powered health information and decision-support tool. "

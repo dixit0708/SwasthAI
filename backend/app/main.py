@@ -212,12 +212,29 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# CORS must be added before any routers are included.
+# In development we allow all localhost ports so that VS Code Live Server
+# (port 5500), Vite (5173), Python http.server (any port) and the API itself
+# (8000) all work without editing .env every time the port changes.
+# allow_origins=["*"] combined with allow_credentials=True is rejected by
+# browsers, so we keep credentials=True and list origins explicitly from .env
+# PLUS always include the common local dev ports as a convenience fallback.
+_dev_origins = [
+    "http://localhost:5500", "http://127.0.0.1:5500",
+    "http://localhost:5173", "http://127.0.0.1:5173",
+    "http://localhost:3000", "http://127.0.0.1:3000",
+    "http://localhost:8000", "http://127.0.0.1:8000",
+    "http://localhost:4173", "http://127.0.0.1:4173",
+]
+_all_origins = list(dict.fromkeys(settings.cors_origins_list + _dev_origins))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
+    allow_origins=_all_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 from app.api.v1.router import api_router

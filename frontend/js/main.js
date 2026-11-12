@@ -17,6 +17,10 @@ let lenis = null;
 function initLenis() {
   if (typeof Lenis === 'undefined' || prefersReducedMotion()) return;
 
+  // Skip Lenis on pages with their own scrollable containers (e.g. AI assistant chat).
+  // Lenis hijacks all wheel events which breaks native overflow-y scrolling.
+  if (document.getElementById('chatMessages')) return;
+
   lenis = new Lenis({
     duration: 1.2,
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),

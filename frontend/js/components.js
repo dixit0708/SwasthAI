@@ -23,8 +23,8 @@ const SWASTHAI_APP_NAV_LINKS = [
     label: 'AI Insights',
     href: 'predictions.html',
     subnav: [
-      { label: 'Health Risk Predictions', href: 'predictions.html',   icon: 'fa-chart-line' },
-      { label: 'AI Assistant',            href: 'ai-assistant.html',  icon: 'fa-robot' },
+      { label: 'Risk Assessments',        href: 'predictions.html',   icon: 'fa-chart-line' },
+      { label: 'Health Assistant',        href: 'ai-assistant.html',  icon: 'fa-comments' },
       { label: 'Report Analyzer',         href: 'report-analyzer.html', icon: 'fa-file-medical' },
     ]
   },
@@ -40,7 +40,6 @@ const SWASTHAI_APP_PAGE_SECTIONS = {
   'medical-records.html': 'my-health',
   'medications.html': 'my-health',
   'diet-lifestyle.html': 'my-health',
-  'health-tracking.html': 'my-health',
   'predictions.html': 'ai-insights',
   'prediction-diabetes.html': 'ai-insights',
   'prediction-diabetes-choose.html': 'ai-insights',
@@ -171,9 +170,10 @@ function swasthaiRenderAppHeader(activeSection) {
                 </button>
                 <div class="app-popover" id="notifPanel" role="region" aria-label="Notifications">
                     <div class="app-notif__header">Notifications</div>
-                    <div class="app-notif__empty">
+                    <ul class="app-notif__list" id="notifList" hidden></ul>
+                    <div class="app-notif__empty" id="notifEmpty">
                         <i class="fas fa-bell-slash"></i>
-                        <p>You're all caught up — no new notifications yet.</p>
+                        <p>You're all caught up. Appointment reminders will appear here.</p>
                     </div>
                 </div>
             </div>
@@ -352,3 +352,56 @@ document.addEventListener('DOMContentLoaded', () => {
     closeAllPopovers();
   });
 });
+
+/**
+ * Notifications: reminders for the user's appointments in the next three
+ * days. Content stays minimal (who and when, no health details), and the
+ * bell shows a dot only when there is something to see.
+ */
+async function swasthaiLoadNotifications() {
+  const list = document.getElementById('notifList');
+  const empty = document.getElementById('notifEmpty');
+  const toggle = document.getElementById('notifToggle');
+  if (!list || !empty || typeof SwasthAPI === 'undefined' || !SwasthAPI.appointments) return;
+
+  let items = [];
+  try {
+    items = (await SwasthAPI.appointments.list('upcoming', 1, 10)).items || [];
+  } catch (err) {
+    return; // The bell stays in its empty state; nothing else depends on it.
+  }
+
+  const pad = (n) => String(n).padStart(2, '0');
+  const dayKey = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const today = new Date();
+  const soon = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 3);
+  const due = items.filter((a) => a.appointment_date <= dayKey(soon));
+  if (!due.length) return;
+
+  const esc = typeof swasthaiEscapeHtml === 'function' ? swasthaiEscapeHtml : (v) => String(v);
+  const whenText = (a) => {
+    const [y, m, d] = a.appointment_date.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    const days = Math.round((date - new Date(today.getFullYear(), today.getMonth(), today.getDate())) / 86400000);
+    const day = days === 0 ? 'Today' : days === 1 ? 'Tomorrow' : date.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
+    const [hh, mm] = a.appointment_time.split(':').map(Number);
+    return `${day}, ${hh % 12 || 12}:${pad(mm)} ${hh >= 12 ? 'pm' : 'am'}`;
+  };
+
+  list.innerHTML = due.map((a) => `
+    <li><a href="appointments.html" class="app-notif__item">
+      <i class="fas fa-calendar-day" aria-hidden="true"></i>
+      <span><strong>${esc(a.doctor_name)}</strong><span>${esc(whenText(a))}${a.status === 'scheduled' ? ' &middot; confirm with the clinic' : ''}</span></span>
+    </a></li>`).join('');
+  list.hidden = false;
+  empty.hidden = true;
+  if (toggle) {
+    toggle.classList.add('has-unread');
+    toggle.setAttribute('aria-label', `Notifications: ${due.length} upcoming appointment${due.length === 1 ? '' : 's'}`);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (document.getElementById('notifList')) swasthaiLoadNotifications();
+});
+

@@ -19,8 +19,8 @@ def test_evaluate_diet_rules_bmi_over_25():
 def test_evaluate_diet_rules_normal_bmi_no_weight_loss_rules():
     result = evaluate_diet_rules(bmi=22.0)
     assert "Weight Management & Caloric Balance" not in result["diet_types"]
-    # Should fall back to Mediterranean baseline if no other risks
-    assert "Balanced Mediterranean Wellness Diet" in result["diet_types"]
+    # Should fall back to the balanced Indian thali baseline if no other risks
+    assert "Balanced Indian Thali" in result["diet_types"]
 
 
 def test_evaluate_diet_rules_high_heart_risk_triggers_dash_and_low_sodium():
@@ -75,7 +75,7 @@ def test_evaluate_diet_rules_baseline_healthy_user():
         fasting_glucose=85.0,
         conditions=[],
     )
-    assert result["diet_types"] == ["Balanced Mediterranean Wellness Diet"]
+    assert result["diet_types"] == ["Balanced Indian Thali"]
     assert len(result["recommendations"]) == 1
     assert result["recommendations"][0]["category"] == "General Preventive Health"
 
@@ -94,7 +94,8 @@ async def test_get_diet_guidance_extracts_from_user_db_records():
         },
         {
             "condition": "diabetes_pima",
-            "input_snapshot": {"Glucose": 120.0, "BMI": 27.5},
+            # The lab-value diabetes assessment records a 2-hour OGTT reading.
+            "input_snapshot": {"Glucose": 160.0, "BMI": 27.5},
             "result": {"risk_probability": 0.40, "risk_level": "screening_negative"},
         },
     ]
@@ -122,5 +123,83 @@ async def test_get_diet_guidance_extracts_from_user_db_records():
         assert "Diabetic Low-GI Diet" in guidance["diet_types"]
         assert guidance["metrics_evaluated"]["bmi"] == 27.5
         assert guidance["metrics_evaluated"]["high_bp"] is True
-        assert guidance["metrics_evaluated"]["fasting_glucose"] == 120.0
+        # A 2-hour OGTT reading is never treated as a fasting reading.
+        assert guidance["metrics_evaluated"]["fasting_glucose"] is None
+        assert guidance["metrics_evaluated"]["two_hour_glucose"] == 160.0
+        assert [a["assessment"] for a in guidance["assessments_used"]] == ["heart", "diabetes"]
 
+
+
+# ── Assessment results feeding the plan ─────────────────────────────────────
+from app.services.diet_service import (  # noqa: E402
+    _assessments_used,
+    _latest_per_assessment,
+    _signals_from_assessments,
+)
+
+
+def _pred(condition, elevated, snapshot=None, prob=0.3, **extra):
+    return {
+        "condition": condition,
+        "input_snapshot": snapshot or {},
+        "result": {"risk_probability": prob, "is_elevated": elevated},
+        **extra,
+    }
+
+
+def test_heart_models_own_verdict_triggers_heart_friendly_plan():
+    # 30% is below the old fixed 50% cut-off, but the model flagged it.
+    signals = _signals_from_assessments(_latest_per_assessment([_pred("heart_disease", True, prob=0.30)]))
+    assert signals["heart_elevated"] is True
+    result = evaluate_diet_rules(heart_risk=signals["heart_risk"], heart_risk_elevated=True)
+    assert "DASH Diet" in result["diet_types"]
+    assert result["metrics_evaluated"]["heart_risk_elevated"] is True
+    assert "heart disease risk assessment" in result["recommendations"][0]["reason"].lower()
+
+
+def test_each_model_keeps_its_own_latest_result():
+    newest_first = [
+        _pred("diabetes", False),        # newer lifestyle-question result
+        _pred("diabetes_pima", True),    # older lab-value result, still current for that model
+        _pred("diabetes", True),         # superseded by the newer lifestyle result
+    ]
+    latest = _latest_per_assessment(newest_first)
+    assert [p["condition"] for p in latest] == ["diabetes", "diabetes_pima"]
+    assert _signals_from_assessments(latest)["diabetes_elevated"] is True
+
+
+def test_newer_result_of_same_model_replaces_older_one():
+    latest = _latest_per_assessment([_pred("liver_disease", False), _pred("liver_disease", True)])
+    assert _signals_from_assessments(latest)["liver_elevated"] is False
+
+
+def test_skin_results_do_not_shape_diet():
+    assert _latest_per_assessment([_pred("skin", True)]) == []
+
+
+def test_two_hour_glucose_uses_its_own_range():
+    normal = evaluate_diet_rules(two_hour_glucose=120.0)
+    assert "Diabetic Low-GI Diet" not in normal["diet_types"]
+    high = evaluate_diet_rules(two_hour_glucose=165.0)
+    assert "Diabetic Low-GI Diet" in high["diet_types"]
+    assert "2-hour glucose" in high["recommendations"][0]["reason"]
+
+
+def test_cholesterol_and_yes_no_answers_are_read():
+    latest = _latest_per_assessment([
+        _pred("diabetes", False, {"HighChol": 1}),
+        _pred("liver_disease", False, {"hypertension": "Yes"}),
+    ])
+    signals = _signals_from_assessments(latest)
+    assert signals["high_cholesterol"] is True
+    assert signals["high_bp"] is True
+    result = evaluate_diet_rules(high_cholesterol=True)
+    assert "DASH Diet" in result["diet_types"]
+    assert "cholesterol" in result["recommendations"][0]["reason"].lower()
+
+
+def test_assessments_used_explains_effect():
+    items = _assessments_used([_pred("liver_disease_ilpd", True), _pred("heart_disease_clinical", False)])
+    assert items[0]["assessment"] == "liver" and items[0]["is_elevated"] is True
+    assert "alcohol" in items[0]["plan_effect"]
+    assert items[1]["plan_effect"].startswith("No extra changes")

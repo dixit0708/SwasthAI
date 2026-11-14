@@ -4,15 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="assets/images/logo.png">
-    <title>SwasthAI - Medications</title>
+    <title>Medications | SwasthAI</title>
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/app-pages.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js for visualizations -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <script src="js/auth-guard.js"></script>
@@ -21,28 +20,114 @@
         <div class="main-content">
             <header id="header-container" class="top-header"></header>
             <main class="page-content">
-                <!-- PAGE CONTENT: medications -->
-                
-    <div class="flex-between mb-4">
-        <div>
-            <h1 style="margin:0;">Medications</h1>
-            <p class="text-secondary">Track your active prescriptions and reminders.</p>
-        </div>
-        <button class="btn btn-primary"><i class="fas fa-plus"></i> Add Medication</button>
-    </div>
-    <div class="card">
-        <div class="card-body text-center" style="padding: 3rem 1.5rem;">
-            <i class="fas fa-pills" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
-            <h3 style="margin-bottom: 0.5rem;">No medications added yet</h3>
-            <p class="text-muted">Add a prescription to track dosage, schedule and reminders here.</p>
-        </div>
-    </div>
+
+                <div class="page-head">
+                    <div>
+                        <span class="page-head__eyebrow">My Health</span>
+                        <h1>Medications</h1>
+                        <p>One clear list of the medicines you and your family take, with dose and schedule, ready to show any doctor.</p>
+                    </div>
+                    <div class="page-head__actions">
+                        <button type="button" class="btn btn-primary" id="medAddBtn"><i class="fas fa-plus" aria-hidden="true"></i>&nbsp; Add medication</button>
+                    </div>
+                </div>
+
+                <section class="panel" aria-labelledby="medListTitle">
+                    <div class="panel__head">
+                        <h2 class="panel__title" id="medListTitle">Your list</h2>
+                        <div style="display:flex; gap: var(--sp-3); flex-wrap:wrap; align-items:center;">
+                            <label class="visually-hidden" for="medMemberFilter">Show medicines for</label>
+                            <select class="field__control" id="medMemberFilter" style="min-height:40px; width:auto; padding:6px 12px;">
+                                <option value="">Everyone</option>
+                            </select>
+                            <div class="tabs" role="group" aria-label="Filter medications">
+                                <button type="button" class="tabs__btn" data-status="active" aria-pressed="true">Current</button>
+                                <button type="button" class="tabs__btn" data-status="past" aria-pressed="false">Past</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel__body panel__body--flush" id="medList" aria-live="polite"></div>
+                </section>
+
+                <div class="notice notice--quiet" style="margin-top: var(--sp-6);">
+                    <i class="fas fa-shield-heart" aria-hidden="true"></i>
+                    <span>This list is a record of what your doctor has prescribed. Do not start, stop or change a medicine without speaking to your doctor. General safe-use tips are on your <a href="diet-lifestyle.html#medication">Diet &amp; Lifestyle</a> page.</span>
+                </div>
 
             </main>
         </div>
     </div>
+
+    <dialog class="sheet" id="medDialog" aria-labelledby="medDialogTitle">
+        <form id="medForm" novalidate style="display:flex; flex-direction:column; min-height:0;">
+            <div class="sheet__head">
+                <h2 id="medDialogTitle">Add medication</h2>
+                <button type="button" class="icon-btn" data-close aria-label="Close"><i class="fas fa-xmark" aria-hidden="true"></i></button>
+            </div>
+            <div class="sheet__body" data-lenis-prevent>
+                <div class="form-grid">
+                    <label class="field field--full">
+                        <span class="field__label">Who takes this medicine?</span>
+                        <select class="field__control" id="medMember" required></select>
+                    </label>
+                    <label class="field field--full">
+                        <span class="field__label">Medicine name</span>
+                        <input type="text" class="field__control" id="medName" maxlength="200" required autocomplete="off" placeholder="As written on the prescription">
+                    </label>
+                    <label class="field">
+                        <span class="field__label">Dose</span>
+                        <input type="text" class="field__control" id="medDosage" maxlength="100" required autocomplete="off" placeholder="e.g. 500 mg, 1 tablet">
+                    </label>
+                    <label class="field">
+                        <span class="field__label">How often</span>
+                        <input type="text" class="field__control" id="medFrequency" maxlength="100" required autocomplete="off" list="medFrequencyOptions" placeholder="e.g. Twice daily">
+                        <datalist id="medFrequencyOptions">
+                            <option value="Once daily"></option>
+                            <option value="Twice daily"></option>
+                            <option value="Three times daily"></option>
+                            <option value="At bedtime"></option>
+                            <option value="Once a week"></option>
+                            <option value="Only when needed"></option>
+                        </datalist>
+                    </label>
+                    <label class="field field--full">
+                        <span class="field__label">Instructions <small>(optional)</small></span>
+                        <input type="text" class="field__control" id="medInstructions" maxlength="500" autocomplete="off" placeholder="e.g. After breakfast, with water">
+                    </label>
+                    <label class="field field--full">
+                        <span class="field__label">Prescribed by <small>(optional)</small></span>
+                        <input type="text" class="field__control" id="medDoctor" maxlength="200" autocomplete="off" placeholder="Doctor's name">
+                    </label>
+                    <label class="field">
+                        <span class="field__label">Start date <small>(optional)</small></span>
+                        <input type="date" class="field__control" id="medStart">
+                    </label>
+                    <label class="field">
+                        <span class="field__label">End date <small>(optional)</small></span>
+                        <input type="date" class="field__control" id="medEnd">
+                    </label>
+                    <label class="field field--full">
+                        <span class="field__label">Status</span>
+                        <select class="field__control" id="medStatus">
+                            <option value="active">Currently taking</option>
+                            <option value="completed">Course completed</option>
+                            <option value="paused">Paused or stopped</option>
+                        </select>
+                    </label>
+                </div>
+                <p class="form-status form-status--error" id="medFormError" role="alert" style="margin: var(--sp-4) 0 0;" hidden></p>
+            </div>
+            <div class="sheet__foot">
+                <button type="button" class="btn btn-outline btn-compact" data-close>Cancel</button>
+                <button type="submit" class="btn btn-primary btn-compact" id="medSubmit">Save medication</button>
+            </div>
+        </form>
+    </dialog>
+
     <script src="js/auth.js"></script>
     <script src="js/components.js"></script>
+    <script src="js/app-ui.js"></script>
+    <script src="js/care-profiles.js"></script>
     <script src="js/medications.js"></script>
     <script src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>
     <script src="js/main.js"></script>

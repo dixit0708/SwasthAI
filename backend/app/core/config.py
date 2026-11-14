@@ -18,6 +18,16 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = ""
     # Machine Learning / AI model versions
     SKIN_MODEL_VERSION: str = "skin-densenet121-v1"
+    # Outgoing email (password reset links). Any SMTP account works. Left
+    # empty, password reset by email is reported as unavailable instead
+    # of pretending a message was sent.
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USERNAME: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM: str = ""
+    # Where the frontend is served, used to build links in emails.
+    FRONTEND_BASE_URL: str = "http://localhost:5500"
 
     model_config = SettingsConfigDict(
         env_file=(str(_ENV_FILE), ".env"),

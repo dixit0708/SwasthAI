@@ -88,15 +88,37 @@ const SwasthAPI = {
       headers: { Authorization: `Bearer ${token}` }
     });
   },
+  forgotPassword(email) {
+    return swasthaiApiRequest('/auth/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+  },
+  resetPassword(token, newPassword) {
+    return swasthaiApiRequest('/auth/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, new_password: newPassword })
+    });
+  },
+  changePassword(currentPassword, newPassword) {
+    return swasthaiAuthedRequest('/auth/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ current_password: currentPassword, new_password: newPassword })
+    });
+  },
   healthProfile: {
     get() {
       return swasthaiAuthedRequest('/health-profile/me');
     },
-    update({ date_of_birth, blood_group }) {
+    // Partial update: only the fields passed are changed; "" or null clears one.
+    update(fields) {
       return swasthaiAuthedRequest('/health-profile/me', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date_of_birth: date_of_birth || null, blood_group: blood_group || null })
+        body: JSON.stringify(fields)
       });
     },
     addCondition(label) {
@@ -113,6 +135,18 @@ const SwasthAPI = {
     }
   },
   predictions: {
+    // params: { assessment, page, page_size }
+    history(params = {}) {
+      const query = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') query.set(key, value);
+      });
+      const qs = query.toString();
+      return swasthaiAuthedRequest(`/predict/history${qs ? `?${qs}` : ''}`);
+    },
+    deleteHistory(id) {
+      return swasthaiAuthedRequest(`/predict/history/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    },
     diabetes(payload) {
       return swasthaiAuthedRequest('/predict/diabetes', {
         method: 'POST',
@@ -192,6 +226,43 @@ const SwasthAPI = {
         method: 'POST',
         body: formData
       });
+    },
+    history(page = 1, pageSize = 10) {
+      return swasthaiAuthedRequest(`/report-analysis/history?page=${page}&page_size=${pageSize}`);
+    },
+    get(id) {
+      return swasthaiAuthedRequest(`/report-analysis/history/${encodeURIComponent(id)}`);
+    },
+    remove(id) {
+      return swasthaiAuthedRequest(`/report-analysis/history/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    }
+  },
+  diet: {
+    recommendations() {
+      return swasthaiAuthedRequest('/diet/recommendations');
+    }
+  },
+  appointments: {
+    // view: 'upcoming' | 'past' | 'all'
+    list(view = 'upcoming', page = 1, pageSize = 10) {
+      return swasthaiAuthedRequest(`/appointments?view=${encodeURIComponent(view)}&page=${page}&page_size=${pageSize}`);
+    },
+    create(payload) {
+      return swasthaiAuthedRequest('/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    },
+    update(id, payload) {
+      return swasthaiAuthedRequest(`/appointments/${encodeURIComponent(id)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    },
+    remove(id) {
+      return swasthaiAuthedRequest(`/appointments/${encodeURIComponent(id)}`, { method: 'DELETE' });
     }
   },
   doctors: {

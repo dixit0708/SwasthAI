@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from app.api.v1.endpoints import (
+    appointments,
     assistant,
     auth,
     diet,
@@ -20,6 +21,7 @@ api_router.include_router(report_analysis.router, prefix="/report-analysis", tag
 api_router.include_router(assistant.router, prefix="/assistant", tags=["assistant"])
 api_router.include_router(diet.router, prefix="/diet", tags=["diet"])
 api_router.include_router(doctors.router, prefix="/doctors", tags=["doctors"])
+api_router.include_router(appointments.router, prefix="/appointments", tags=["appointments"])
 # Placeholders for future routers
 # api_router.include_router(users.router, prefix="/users", tags=["users"])
 

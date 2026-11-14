@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import ANY, MagicMock, patch
 
 from app.ai.inference.lab_report_analysis import (
     LAB_PARAMETERS, PARAMETER_DESCRIPTIONS, QUALITATIVE_DESCRIPTIONS, QUALITATIVE_TESTS,
@@ -710,7 +710,7 @@ def test_explanation_returns_model_text_on_success():
         with patch("google.genai.Client", return_value=mock_client) as mock_client_cls:
             result = generate_plain_language_explanation(_SAMPLE_CLASSIFIED, "1 of 1 value is low.")
             assert result == "Your hemoglobin is a little low. Consider discussing with your doctor."
-            mock_client_cls.assert_called_once_with(api_key="test-key")
+            mock_client_cls.assert_called_once_with(api_key="test-key", http_options=ANY)
             _, kwargs = mock_client.interactions.create.call_args
             assert kwargs["model"]
             assert "Hemoglobin" in kwargs["input"]

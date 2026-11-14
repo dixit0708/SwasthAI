@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 from bson import ObjectId
 
+from app.db import document_store
 from app.db.collections import (
     family_member_repo,
     medical_record_repo,
@@ -30,7 +31,9 @@ from app.models.family import (
     TimelineEventOut,
 )
 
-# Storage location for medical documents
+# Legacy on-disk location. New uploads go to MongoDB GridFS (see
+# app/db/document_store.py); this path is only read for records uploaded
+# before that change.
 BASE_DIR = Path(__file__).resolve().parents[3]
 STORAGE_DIR = BASE_DIR / "storage" / "documents"
 
@@ -262,13 +265,7 @@ async def delete_member(user_id: str, member_id: str, cascade: bool = True) -> b
             {"user_id": user_id, "member_id": member_id}
         ).to_list(length=500)
         for r in records:
-            if r.get("file_path"):
-                fp = STORAGE_DIR / r["file_path"]
-                if fp.exists():
-                    try:
-                        fp.unlink()
-                    except OSError:
-                        pass
+            await _remove_stored_document(r)
         await medical_record_repo.collection.delete_many(
             {"user_id": user_id, "member_id": member_id}
         )
@@ -386,7 +383,7 @@ async def create_record(
         raise ValueError("Family member not found or access denied.")
 
     now = datetime.now(timezone.utc)
-    stored_path = None
+    stored_file_id = None
     stored_filename = None
     file_size = None
 
@@ -398,15 +395,14 @@ async def create_record(
         if ext not in ALLOWED_EXTENSIONS:
             raise ValueError(f"Unsupported file format '{ext}'. Allowed: PDF, JPG, PNG.")
 
-        # Save to user storage
-        user_dir = _ensure_storage_dir(user_id)
-        unique_name = f"{uuid.uuid4().hex}{ext}"
-        target_path = user_dir / unique_name
+        # The extension alone is not trusted: the file's leading bytes must
+        # match the type it claims to be (AGENTS.md Section 48).
+        if not document_store.matches_signature(ext, file_bytes):
+            raise ValueError("This file does not look like a valid PDF, JPG or PNG.")
 
-        with open(target_path, "wb") as f:
-            f.write(file_bytes)
-
-        stored_path = f"{user_id}/{unique_name}"
+        stored_file_id = await document_store.save_document(
+            file_bytes, original_filename, user_id, content_type
+        )
         stored_filename = original_filename
         file_size = len(file_bytes)
 
@@ -419,7 +415,8 @@ async def create_record(
         "record_date": payload.record_date,
         "provider": payload.provider.strip() if payload.provider else None,
         "notes": payload.notes.strip() if payload.notes else None,
-        "file_path": stored_path,
+        "file_id": stored_file_id,
+        "file_path": None,
         "file_name": stored_filename,
         "file_size": file_size,
         "file_type": content_type,
@@ -446,7 +443,7 @@ def _to_record_out(doc: Dict[str, Any]) -> MedicalRecordOut:
         file_name=doc.get("file_name"),
         file_size=doc.get("file_size"),
         file_type=doc.get("file_type"),
-        has_document=bool(doc.get("file_path")),
+        has_document=bool(doc.get("file_id") or doc.get("file_path")),
         created_at=doc.get("created_at"),
     )
 
@@ -513,25 +510,49 @@ async def get_record(user_id: str, record_id: str) -> Optional[MedicalRecordOut]
     return _to_record_out(doc)
 
 
+async def _remove_stored_document(doc: Dict[str, Any]) -> None:
+    """Deletes a record's stored file, wherever it lives."""
+    if doc.get("file_id"):
+        await document_store.delete_document(doc["file_id"])
+    if doc.get("file_path"):
+        fp = STORAGE_DIR / doc["file_path"]
+        if fp.exists():
+            try:
+                fp.unlink()
+            except OSError:
+                pass
+
+
 async def get_document_file(
     user_id: str, record_id: str
-) -> Optional[Tuple[Path, str, str]]:
-    """Returns (file_path, file_name, content_type) for authorized download/preview."""
+) -> Optional[Tuple[bytes, str, str]]:
+    """Returns (content, file_name, content_type) for authorized download/preview.
+
+    The record is looked up with the owner's user_id first, so a file can
+    only be reached through a record the caller owns.
+    """
     if not ObjectId.is_valid(record_id):
         return None
     doc = await medical_record_repo.collection.find_one(
         {"_id": ObjectId(record_id), "user_id": user_id}
     )
-    if not doc or not doc.get("file_path"):
+    if not doc:
         return None
 
-    physical_path = STORAGE_DIR / doc["file_path"]
-    if not physical_path.exists():
+    content: Optional[bytes] = None
+    if doc.get("file_id"):
+        content = await document_store.read_document(doc["file_id"])
+    elif doc.get("file_path"):
+        # Uploaded before documents moved to GridFS.
+        physical_path = STORAGE_DIR / doc["file_path"]
+        if physical_path.exists():
+            content = physical_path.read_bytes()
+    if content is None:
         return None
 
-    file_name = doc.get("file_name", physical_path.name)
-    content_type = doc.get("file_type", "application/octet-stream")
-    return physical_path, file_name, content_type
+    file_name = doc.get("file_name") or "document"
+    content_type = doc.get("file_type") or "application/octet-stream"
+    return content, file_name, content_type
 
 
 async def update_record(
@@ -574,14 +595,8 @@ async def delete_record(user_id: str, record_id: str) -> bool:
     if not doc:
         return False
 
-    # Delete physical file if attached
-    if doc.get("file_path"):
-        fp = STORAGE_DIR / doc["file_path"]
-        if fp.exists():
-            try:
-                fp.unlink()
-            except OSError:
-                pass
+    # Delete the stored file if one is attached
+    await _remove_stored_document(doc)
 
     res = await medical_record_repo.collection.delete_one(
         {"_id": ObjectId(record_id), "user_id": user_id}

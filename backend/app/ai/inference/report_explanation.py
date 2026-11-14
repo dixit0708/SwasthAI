@@ -32,6 +32,9 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 MODEL_NAME = "gemini-3.5-flash-lite"
+# Hard ceiling in milliseconds. This step is optional, so on timeout it
+# fails open to None like any other failure here.
+GEMINI_TIMEOUT_MS = 30_000
 
 SYSTEM_INSTRUCTION = """You are a medical report explainer inside a healthcare information app.
 
@@ -93,7 +96,11 @@ def generate_plain_language_explanation(
     )
 
     try:
-        client = genai.Client(api_key=settings.GEMINI_API_KEY)
+        from google.genai import types
+        client = genai.Client(
+            api_key=settings.GEMINI_API_KEY,
+            http_options=types.HttpOptions(timeout=GEMINI_TIMEOUT_MS),
+        )
         interaction = client.interactions.create(
             model=MODEL_NAME,
             system_instruction=SYSTEM_INSTRUCTION,

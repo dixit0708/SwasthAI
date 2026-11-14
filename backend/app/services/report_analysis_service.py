@@ -1,4 +1,7 @@
 from datetime import datetime, timezone
+from typing import Any, Dict, Optional
+
+from bson import ObjectId
 
 from starlette.concurrency import run_in_threadpool
 
@@ -64,3 +67,63 @@ async def analyze_report(user_id: str, contents: bytes, content_type: str, filen
     })
 
     return response
+
+
+# ---------------------------------------------------------------------------
+# History: every query is scoped to the owning user_id (AGENTS.md Section 14)
+# ---------------------------------------------------------------------------
+
+MAX_PAGE_SIZE = 50
+
+
+def _flagged_count(result: Dict[str, Any]) -> int:
+    numeric = sum(1 for v in result.get("values", []) if v.get("status") in ("low", "high"))
+    qualitative = sum(1 for q in result.get("qualitative_results", []) if q.get("status") == "abnormal")
+    return numeric + qualitative
+
+
+async def list_reports(user_id: str, page: int = 1, page_size: int = 10) -> Dict[str, Any]:
+    page = max(page, 1)
+    page_size = min(max(page_size, 1), MAX_PAGE_SIZE)
+    query = {"user_id": user_id}
+
+    total = await medical_report_repo.collection.count_documents(query)
+    cursor = (
+        medical_report_repo.collection.find(query)
+        .sort("created_at", -1)
+        .skip((page - 1) * page_size)
+        .limit(page_size)
+    )
+    items = []
+    for doc in await cursor.to_list(length=page_size):
+        result = doc.get("result") or {}
+        items.append({
+            "id": str(doc["_id"]),
+            "filename": doc.get("filename") or "Report",
+            "created_at": doc.get("created_at"),
+            "summary": result.get("summary", ""),
+            "values_count": len(result.get("values", [])) + len(result.get("qualitative_results", [])),
+            "flagged_count": _flagged_count(result),
+        })
+    return {"items": items, "total": total, "page": page, "page_size": page_size}
+
+
+async def get_report(user_id: str, report_id: str) -> Optional[Dict[str, Any]]:
+    if not ObjectId.is_valid(report_id):
+        return None
+    doc = await medical_report_repo.collection.find_one({"_id": ObjectId(report_id), "user_id": user_id})
+    if not doc:
+        return None
+    return {
+        **(doc.get("result") or {}),
+        "id": str(doc["_id"]),
+        "filename": doc.get("filename") or "Report",
+        "created_at": doc.get("created_at"),
+    }
+
+
+async def delete_report(user_id: str, report_id: str) -> bool:
+    if not ObjectId.is_valid(report_id):
+        return False
+    res = await medical_report_repo.collection.delete_one({"_id": ObjectId(report_id), "user_id": user_id})
+    return res.deleted_count > 0

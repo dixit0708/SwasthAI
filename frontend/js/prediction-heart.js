@@ -366,7 +366,7 @@ async function submitAssessment() {
         } else if (err.status === 503) {
             message = 'The heart risk model is temporarily unavailable. Please try again in a moment.';
         } else if (isNetwork) {
-            message = 'Could not reach the server. Please check that the backend is running and try again.';
+            message = "We couldn't connect right now. Please check your internet connection and try again.";
         } else {
             message = err.message || 'An unexpected error occurred. Please try again.';
         }

@@ -4,15 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="assets/images/logo.png">
-    <title>SwasthAI - Health Profile</title>
+    <title>Health Profile | SwasthAI</title>
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/app-pages.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js for visualizations -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <script src="js/auth-guard.js"></script>
@@ -21,51 +20,216 @@
         <div class="main-content">
             <header id="header-container" class="top-header"></header>
             <main class="page-content">
-                <!-- PAGE CONTENT: health-profile -->
-                
-    <div class="mb-4">
-        <h1>Health Profile</h1>
-        <p class="text-secondary">Manage your personal and health information.</p>
-    </div>
-    <div class="grid" style="grid-template-columns: 2fr 1fr;">
-        <div class="card">
-            <div class="card-header">Basic Information</div>
-            <div class="card-body">
-                <form id="hpForm">
-                    <div id="hpFormAlert" class="auth-alert" style="display: none;"><i class="fas fa-circle-exclamation"></i> <span id="hpFormAlertText"></span></div>
-                    <div class="grid" style="grid-template-columns: 1fr 1fr;">
-                        <div class="form-group"><label class="form-label">First Name</label><input type="text" class="form-control" id="hpFirstName" placeholder="First name"></div>
-                        <div class="form-group"><label class="form-label">Last Name</label><input type="text" class="form-control" id="hpLastName" placeholder="Last name"></div>
-                        <div class="form-group"><label class="form-label">Date of Birth</label><input type="date" class="form-control" id="hpDob"></div>
-                        <div class="form-group"><label class="form-label">Blood Group</label>
-                            <select class="form-control" id="hpBloodGroup">
-                                <option value="">Not set</option>
-                                <option>O+</option><option>O-</option>
-                                <option>A+</option><option>A-</option>
-                                <option>B+</option><option>B-</option>
-                                <option>AB+</option><option>AB-</option>
-                            </select>
+
+                <div class="page-head">
+                    <div>
+                        <span class="page-head__eyebrow">My Health</span>
+                        <h1>Health profile</h1>
+                        <p>The more complete your profile, the more closely your diet, activity and health guidance can be tailored to you.</p>
+                    </div>
+                    <div class="page-head__actions">
+                        <a href="diet-lifestyle.html" class="btn btn-outline"><i class="fas fa-apple-whole" aria-hidden="true"></i>&nbsp; View my plan</a>
+                    </div>
+                </div>
+
+                <div id="hpLoadError" hidden></div>
+
+                <div class="layout-split" id="hpContent">
+                    <div class="stack">
+                        <section class="panel" aria-labelledby="hpBasicTitle">
+                            <div class="panel__head"><h2 class="panel__title" id="hpBasicTitle">About you</h2></div>
+                            <form class="panel__body" id="hpForm" novalidate>
+                                <div class="form-grid">
+                                    <label class="field">
+                                        <span class="field__label">Date of birth</span>
+                                        <input type="date" class="field__control" id="hpDob">
+                                    </label>
+                                    <label class="field">
+                                        <span class="field__label">Gender</span>
+                                        <select class="field__control" id="hpGender">
+                                            <option value="">Not set</option>
+                                            <option value="female">Female</option>
+                                            <option value="male">Male</option>
+                                            <option value="other">Other</option>
+                                            <option value="prefer_not_to_say">Prefer not to say</option>
+                                        </select>
+                                    </label>
+                                    <label class="field">
+                                        <span class="field__label">Height <small>(cm)</small></span>
+                                        <input type="number" class="field__control" id="hpHeight" min="30" max="260" step="0.1" inputmode="decimal" placeholder="e.g. 165">
+                                    </label>
+                                    <label class="field">
+                                        <span class="field__label">Weight <small>(kg)</small></span>
+                                        <input type="number" class="field__control" id="hpWeight" min="1" max="400" step="0.1" inputmode="decimal" placeholder="e.g. 62">
+                                    </label>
+                                    <label class="field">
+                                        <span class="field__label">Blood group</span>
+                                        <select class="field__control" id="hpBloodGroup">
+                                            <option value="">Not set</option>
+                                            <option>O+</option><option>O-</option>
+                                            <option>A+</option><option>A-</option>
+                                            <option>B+</option><option>B-</option>
+                                            <option>AB+</option><option>AB-</option>
+                                        </select>
+                                    </label>
+                                    <div class="field">
+                                        <span class="field__label">Body mass index (BMI)</span>
+                                        <div class="field__control" id="hpBmi" aria-live="polite" style="display:flex; align-items:center; gap: var(--sp-3); background: var(--bg-primary);">Add height and weight</div>
+                                    </div>
+                                </div>
+
+                                <h3 style="font-size: var(--text-base); margin: var(--sp-8) 0 var(--sp-4);">Lifestyle</h3>
+                                <div class="form-grid">
+                                    <label class="field">
+                                        <span class="field__label">Your daily routine</span>
+                                        <select class="field__control" id="hpOccupation">
+                                            <option value="">Not set</option>
+                                            <option value="student">Student</option>
+                                            <option value="working_professional">Working professional (day job)</option>
+                                            <option value="night_shift">Night or rotating shifts</option>
+                                            <option value="homemaker">Homemaker</option>
+                                            <option value="physical_work">Physically active job</option>
+                                            <option value="retired">Retired</option>
+                                        </select>
+                                    </label>
+                                    <label class="field">
+                                        <span class="field__label">Food you usually eat at home</span>
+                                        <select class="field__control" id="hpRegion">
+                                            <option value="">Not set</option>
+                                            <option value="north">North Indian</option>
+                                            <option value="south">South Indian</option>
+                                            <option value="east">East Indian</option>
+                                            <option value="west">West Indian</option>
+                                            <option value="mixed">A mix</option>
+                                        </select>
+                                    </label>
+                                    <label class="field">
+                                        <span class="field__label">Physical activity</span>
+                                        <select class="field__control" id="hpActivity">
+                                            <option value="">Not set</option>
+                                            <option value="sedentary">Mostly sitting, little exercise</option>
+                                            <option value="light">Light: walks or light exercise 1 to 2 days a week</option>
+                                            <option value="moderate">Moderate: exercise 3 to 5 days a week</option>
+                                            <option value="active">Very active: exercise 6 to 7 days a week</option>
+                                        </select>
+                                    </label>
+                                    <label class="field">
+                                        <span class="field__label">Food preference</span>
+                                        <select class="field__control" id="hpDiet">
+                                            <option value="">Not set</option>
+                                            <option value="vegetarian">Vegetarian</option>
+                                            <option value="eggetarian">Vegetarian + eggs</option>
+                                            <option value="non_vegetarian">Non-vegetarian</option>
+                                            <option value="vegan">Vegan</option>
+                                            <option value="jain">Jain (no onion, garlic or root vegetables)</option>
+                                        </select>
+                                    </label>
+                                    <label class="field">
+                                        <span class="field__label">Tobacco (cigarette, bidi, gutka, khaini)</span>
+                                        <select class="field__control" id="hpSmoking">
+                                            <option value="">Not set</option>
+                                            <option value="never">Never used</option>
+                                            <option value="former">Used to, but stopped</option>
+                                            <option value="current">Currently use</option>
+                                        </select>
+                                    </label>
+                                    <label class="field">
+                                        <span class="field__label">Alcohol</span>
+                                        <select class="field__control" id="hpAlcohol">
+                                            <option value="">Not set</option>
+                                            <option value="none">Do not drink</option>
+                                            <option value="occasional">Occasionally</option>
+                                            <option value="regular">Regularly</option>
+                                        </select>
+                                    </label>
+                                    <label class="field">
+                                        <span class="field__label">Sleep <small>(hours per night)</small></span>
+                                        <input type="number" class="field__control" id="hpSleep" min="0" max="24" step="0.5" inputmode="decimal" placeholder="e.g. 7">
+                                    </label>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary" id="hpSaveBtn">Save profile</button>
+                                    <span class="form-status" id="hpFormStatus" role="status" aria-live="polite"></span>
+                                </div>
+                            </form>
+                        </section>
+
+                        <section class="panel" aria-labelledby="hpAccountTitle">
+                            <div class="panel__head"><h2 class="panel__title" id="hpAccountTitle">Account and security</h2></div>
+                            <div class="panel__body">
+                                <dl class="kv" style="margin-bottom: var(--sp-6);">
+                                    <dt>Name</dt><dd id="hpAccountName"></dd>
+                                    <dt>Email</dt><dd id="hpAccountEmail"></dd>
+                                </dl>
+                                <form id="hpPasswordForm" novalidate>
+                                    <h3 style="font-size: var(--text-base); margin: 0 0 var(--sp-4);">Change password</h3>
+                                    <div class="form-grid">
+                                        <label class="field field--full">
+                                            <span class="field__label">Current password</span>
+                                            <input type="password" class="field__control" id="hpCurrentPassword" autocomplete="current-password" required>
+                                        </label>
+                                        <label class="field">
+                                            <span class="field__label">New password</span>
+                                            <input type="password" class="field__control" id="hpNewPassword" autocomplete="new-password" minlength="8" maxlength="128" required>
+                                        </label>
+                                        <label class="field">
+                                            <span class="field__label">Confirm new password</span>
+                                            <input type="password" class="field__control" id="hpConfirmPassword" autocomplete="new-password" required>
+                                        </label>
+                                    </div>
+                                    <p class="field__hint" style="margin-top: var(--sp-3);">At least 8 characters, with an uppercase letter, a lowercase letter, a number and a special character. Changing your password signs you out on other devices.</p>
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn btn-outline" id="hpPasswordBtn">Update password</button>
+                                        <span class="form-status" id="hpPasswordStatus" role="status" aria-live="polite"></span>
+                                    </div>
+                                </form>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="stack">
+                        <section class="panel" aria-labelledby="hpConditionsTitle">
+                            <div class="panel__head"><h2 class="panel__title" id="hpConditionsTitle">Health conditions</h2></div>
+                            <div class="panel__body">
+                                <p class="field__hint" style="margin:0 0 var(--sp-3);">Conditions a doctor has told you about, such as hypertension, diabetes or asthma.</p>
+                                <ul class="chips" id="hpConditionsList" aria-label="Your health conditions"></ul>
+                                <p class="field__hint" id="hpConditionsEmpty" hidden>None added yet.</p>
+                                <form id="hpConditionForm" class="field__row" style="margin-top: var(--sp-4);">
+                                    <label class="visually-hidden" for="hpConditionInput">Add a health condition</label>
+                                    <input type="text" class="field__control" id="hpConditionInput" maxlength="200" placeholder="Add a condition" autocomplete="off">
+                                    <button type="submit" class="btn btn-outline btn-compact" style="height:46px;">Add</button>
+                                </form>
+                            </div>
+                        </section>
+
+                        <section class="panel" aria-labelledby="hpAllergiesTitle">
+                            <div class="panel__head"><h2 class="panel__title" id="hpAllergiesTitle">Allergies</h2></div>
+                            <div class="panel__body">
+                                <p class="field__hint" style="margin:0 0 var(--sp-3);">Foods, medicines or anything else you are allergic to.</p>
+                                <ul class="chips" id="hpAllergiesList" aria-label="Your allergies"></ul>
+                                <p class="field__hint" id="hpAllergiesEmpty" hidden>None added yet.</p>
+                                <form id="hpAllergyForm" class="field__row" style="margin-top: var(--sp-4);">
+                                    <label class="visually-hidden" for="hpAllergyInput">Add an allergy</label>
+                                    <input type="text" class="field__control" id="hpAllergyInput" maxlength="100" placeholder="Add an allergy" autocomplete="off">
+                                    <button type="submit" class="btn btn-outline btn-compact" style="height:46px;">Add</button>
+                                </form>
+                            </div>
+                        </section>
+
+                        <div class="notice notice--quiet">
+                            <i class="fas fa-lock" aria-hidden="true"></i>
+                            <span>Your profile is private to your account and is used only to personalise your guidance within SwasthAI.</span>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary mt-4" id="hpSaveBtn">Save Changes</button>
-                </form>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-header">Known Conditions & Allergies</div>
-            <div class="card-body">
-                <p class="text-muted" style="font-size: 0.9rem; display: none;" id="hpConditionsEmpty"><i class="fas fa-circle-info"></i> No conditions or allergies added yet.</p>
-                <ul id="hpConditionsList" style="list-style: none; padding: 0;"></ul>
-                <button type="button" class="btn btn-outline btn-block mt-4" id="hpAddConditionBtn"><i class="fas fa-plus"></i> Add Condition</button>
-            </div>
-        </div>
-    </div>
+                </div>
 
             </main>
         </div>
     </div>
     <script src="js/auth.js"></script>
     <script src="js/components.js"></script>
+    <script src="js/app-ui.js"></script>
     <script src="js/health-profile.js"></script>
     <script src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>
     <script src="js/main.js"></script>

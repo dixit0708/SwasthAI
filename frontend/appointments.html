@@ -4,15 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="assets/images/logo.png">
-    <title>SwasthAI - Appointments</title>
+    <title>My Appointments | SwasthAI</title>
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/app-pages.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js for visualizations -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <script src="js/auth-guard.js"></script>
@@ -21,16 +20,48 @@
         <div class="main-content">
             <header id="header-container" class="top-header"></header>
             <main class="page-content">
-                <!-- PAGE CONTENT: appointments -->
-                <div class="container">
-                    <h1>Appointments</h1>
-                    <p>This is the Appointments page prototype.</p>
+
+                <div class="page-head">
+                    <div>
+                        <span class="page-head__eyebrow">Doctors</span>
+                        <h1>My appointments</h1>
+                        <p>Keep track of your doctor visits in one place. Reschedule, confirm or cancel whenever your plans change.</p>
+                    </div>
+                    <div class="page-head__actions">
+                        <a href="doctors.html" class="btn btn-primary"><i class="fas fa-plus" aria-hidden="true"></i>&nbsp; Schedule a visit</a>
+                    </div>
                 </div>
+
+                <div class="notice" style="margin-bottom: var(--sp-6);">
+                    <i class="fas fa-circle-info" aria-hidden="true"></i>
+                    <span>Appointments here are your personal schedule. SwasthAI does not contact the clinic, so please <strong>call the clinic to confirm your slot</strong>, then mark the visit as confirmed.</span>
+                </div>
+
+                <section class="panel" aria-labelledby="apptListTitle">
+                    <div class="panel__head">
+                        <h2 class="panel__title" id="apptListTitle">Visits</h2>
+                        <div class="tabs" role="group" aria-label="Show appointments">
+                            <button type="button" class="tabs__btn" data-view="upcoming" aria-pressed="true">Upcoming</button>
+                            <button type="button" class="tabs__btn" data-view="past" aria-pressed="false">Past and cancelled</button>
+                        </div>
+                    </div>
+                    <div class="panel__body panel__body--flush" id="apptList" aria-live="polite"></div>
+                    <div class="pager" id="apptPager" hidden>
+                        <span id="apptCount"></span>
+                        <div class="pager__btns">
+                            <button type="button" class="btn btn-outline btn-compact" id="apptPrev">Previous</button>
+                            <button type="button" class="btn btn-outline btn-compact" id="apptNext">Next</button>
+                        </div>
+                    </div>
+                </section>
+
             </main>
         </div>
     </div>
     <script src="js/auth.js"></script>
     <script src="js/components.js"></script>
+    <script src="js/app-ui.js"></script>
+    <script src="js/appointment-form.js"></script>
     <script src="js/appointments.js"></script>
     <script src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>
     <script src="js/main.js"></script>

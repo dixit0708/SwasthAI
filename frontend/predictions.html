@@ -4,15 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="assets/images/logo.png">
-    <title>SwasthAI - Predictions</title>
+    <title>Health Risk Assessments | SwasthAI</title>
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/app-pages.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js for visualizations -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <script src="js/auth-guard.js"></script>
@@ -21,80 +20,81 @@
         <div class="main-content">
             <header id="header-container" class="top-header"></header>
             <main class="page-content">
-                <!-- PAGE CONTENT: predictions -->
-                
-    <div class="mb-4">
-        <h1>AI Disease Risk Predictions</h1>
-        <p class="text-secondary">Select an AI model below to run an assessment. <br><strong class="text-warning"><i class="fas fa-exclamation-triangle"></i> Disclaimer:</strong> These are AI-assisted screening tools and do NOT provide definitive medical diagnoses.</p>
-    </div>
 
-    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
-        <div class="card">
-            <div class="card-body text-center">
-                <div style="background: #e0f2fe; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-                    <i class="fas fa-tint text-primary" style="font-size: 1.5rem;"></i>
+                <div class="page-head">
+                    <div>
+                        <span class="page-head__eyebrow">AI Insights</span>
+                        <h1>Health risk assessments</h1>
+                        <p>Choose an assessment to get an early risk indicator in a few minutes. Your results are saved below so you can track them over time.</p>
+                    </div>
                 </div>
-                <h3>Diabetes Risk</h3>
-                <p class="text-muted mb-4">Two models to choose from, depending on whether you have recent lab results (glucose, BP, BMI) or not.</p>
-                <div class="badge badge-primary mb-4">Tabular Data</div>
-                <a href="prediction-diabetes-choose.html" class="btn btn-primary btn-block">Start Assessment</a>
-            </div>
-        </div>
-        
-        <div class="card">
-            <div class="card-body text-center">
-                <div style="background: #fee2e2; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-                    <i class="fas fa-heart text-danger" style="font-size: 1.5rem;"></i>
-                </div>
-                <h3>Heart Disease Risk</h3>
-                <p class="text-muted mb-4">Evaluate cardiovascular risk factors using clinical parameters.</p>
-                <div class="badge badge-primary mb-4">Tabular Data</div>
-                <a href="prediction-heart.html" class="btn btn-primary btn-block">Start Assessment</a>
-            </div>
-        </div>
 
-        <div class="card">
-            <div class="card-body text-center">
-                <div style="background: #e0e7ff; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-                    <i class="fas fa-lungs text-info" style="font-size: 1.5rem;"></i>
-                </div>
-                <h3>Pneumonia Detection</h3>
-                <p class="text-muted mb-4">Upload a chest X-ray image for AI-assisted pneumonia screening.</p>
-                <div class="badge badge-warning mb-4">Image Upload</div>
-                <a href="prediction-pneumonia.html" class="btn btn-primary btn-block">Upload X-Ray</a>
-            </div>
-        </div>
+                <section class="assess-grid" aria-label="Available assessments">
+                    <a class="assess-card rise" href="prediction-diabetes-choose.html">
+                        <span class="assess-card__icon" style="background:#E0F2FE; color:#0369A1;"><i class="fas fa-droplet" aria-hidden="true"></i></span>
+                        <h3>Diabetes risk</h3>
+                        <p>Answer lifestyle questions, or enter recent lab values such as glucose and blood pressure if you have them.</p>
+                        <div class="assess-card__foot"><span>Questionnaire &middot; 3 min</span><i class="fas fa-arrow-right" aria-hidden="true"></i></div>
+                    </a>
+                    <a class="assess-card rise" href="prediction-heart.html">
+                        <span class="assess-card__icon" style="background:#FEE2E2; color:#B91C1C;"><i class="fas fa-heart-pulse" aria-hidden="true"></i></span>
+                        <h3>Heart disease risk</h3>
+                        <p>Review the everyday factors that affect your heart, with an option to add clinical measurements.</p>
+                        <div class="assess-card__foot"><span>Questionnaire &middot; 4 min</span><i class="fas fa-arrow-right" aria-hidden="true"></i></div>
+                    </a>
+                    <a class="assess-card rise" href="prediction-liver-choose.html">
+                        <span class="assess-card__icon" style="background:#EDE9FE; color:#6D28D9;"><i class="fas fa-flask" aria-hidden="true"></i></span>
+                        <h3>Liver disease risk</h3>
+                        <p>Use lifestyle answers alone, or enter the values from a Liver Function Test (LFT) report.</p>
+                        <div class="assess-card__foot"><span>Questionnaire &middot; 3 min</span><i class="fas fa-arrow-right" aria-hidden="true"></i></div>
+                    </a>
+                    <a class="assess-card rise" href="prediction-pneumonia.html">
+                        <span class="assess-card__icon" style="background:#CCFBF1; color:#0F766E;"><i class="fas fa-lungs" aria-hidden="true"></i></span>
+                        <h3>Pneumonia screening</h3>
+                        <p>Upload a chest X-ray image to check for visual signs that may suggest pneumonia.</p>
+                        <div class="assess-card__foot"><span>X-ray image</span><i class="fas fa-arrow-right" aria-hidden="true"></i></div>
+                    </a>
+                    <a class="assess-card rise" href="prediction-skin.html">
+                        <span class="assess-card__icon" style="background:#FEF3C7; color:#B45309;"><i class="fas fa-hand-dots" aria-hidden="true"></i></span>
+                        <h3>Skin concern check</h3>
+                        <p>Upload a clear photo of a skin concern to see which common conditions it most resembles.</p>
+                        <div class="assess-card__foot"><span>Photo</span><i class="fas fa-arrow-right" aria-hidden="true"></i></div>
+                    </a>
+                </section>
 
-        <div class="card">
-            <div class="card-body text-center">
-                <div style="background: #fdf4ff; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-                    <i class="fas fa-procedures text-purple" style="font-size: 1.5rem; color: #a855f7;"></i>
+                <div class="notice notice--warn" style="margin: var(--sp-6) 0 var(--sp-8);">
+                    <i class="fas fa-circle-info" aria-hidden="true"></i>
+                    <span><strong>These are screening tools, not a diagnosis.</strong> A result shows a risk indicator based on the information you give. Only a qualified doctor can confirm or rule out a condition.</span>
                 </div>
-                <h3>Liver Disease Risk</h3>
-                <p class="text-muted mb-4">Two models to choose from, depending on whether you have a Liver Function Test (LFT) report or not.</p>
-                <div class="badge badge-primary mb-4">Tabular Data</div>
-                <a href="prediction-liver-choose.html" class="btn btn-primary btn-block" style="background-color: #a855f7; border-color: #a855f7;">Start Assessment</a>
-            </div>
-        </div>
 
-        <div class="card">
-            <div class="card-body text-center">
-                <div style="background: #ffedd5; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-                    <i class="fas fa-camera text-warning" style="font-size: 1.5rem;"></i>
-                </div>
-                <h3>Skin Disease</h3>
-                <p class="text-muted mb-4">Upload an image of a skin lesion for AI-assisted classification.</p>
-                <div class="badge badge-warning mb-4">Image Upload</div>
-                <a href="prediction-skin.html" class="btn btn-primary btn-block">Upload Image</a>
-            </div>
-        </div>
-    </div>
-    
-                        </main>
+                <section class="panel" id="history" aria-labelledby="historyTitle">
+                    <div class="panel__head">
+                        <h2 class="panel__title" id="historyTitle">Your saved results</h2>
+                        <div class="tabs" role="group" aria-label="Filter saved results">
+                            <button type="button" class="tabs__btn" data-filter="" aria-pressed="true">All</button>
+                            <button type="button" class="tabs__btn" data-filter="diabetes" aria-pressed="false">Diabetes</button>
+                            <button type="button" class="tabs__btn" data-filter="heart" aria-pressed="false">Heart</button>
+                            <button type="button" class="tabs__btn" data-filter="liver" aria-pressed="false">Liver</button>
+                            <button type="button" class="tabs__btn" data-filter="skin" aria-pressed="false">Skin</button>
+                        </div>
+                    </div>
+                    <div class="panel__body panel__body--flush" id="historyList" aria-live="polite"></div>
+                    <div class="pager" id="historyPager" hidden>
+                        <span id="historyCount"></span>
+                        <div class="pager__btns">
+                            <button type="button" class="btn btn-outline btn-compact" id="historyPrev">Previous</button>
+                            <button type="button" class="btn btn-outline btn-compact" id="historyNext">Next</button>
+                        </div>
+                    </div>
+                </section>
+                <p class="field__hint" style="margin-top: var(--sp-3);">Pneumonia screening results are shown once and are not saved to your account.</p>
+
+            </main>
         </div>
     </div>
     <script src="js/auth.js"></script>
     <script src="js/components.js"></script>
+    <script src="js/app-ui.js"></script>
     <script src="js/predictions.js"></script>
     <script src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>
     <script src="js/main.js"></script>

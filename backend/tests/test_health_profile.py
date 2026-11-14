@@ -1,5 +1,6 @@
 import pytest
 
+from app.models.health_profile import HealthProfileOut
 from conftest import unique_email
 
 VALID_PASSWORD = "Correct-Horse9-Battery"
@@ -40,7 +41,12 @@ async def test_new_user_gets_empty_default_profile(client):
     res = await client.get("/api/v1/health-profile/me", headers=_auth(token))
     assert res.status_code == 200
     body = res.json()
-    assert body == {"date_of_birth": None, "blood_group": None, "conditions": []}
+    assert body["date_of_birth"] is None
+    assert body["blood_group"] is None
+    assert body["conditions"] == []
+    # Fields added later default to empty as well.
+    assert body["bmi"] is None
+    assert body["allergies"] == []
 
 
 @pytest.mark.asyncio
@@ -104,7 +110,8 @@ async def test_health_profiles_are_isolated_between_users(client):
 
     # User B must see their own empty profile, never User A's data.
     profile_b = (await client.get("/api/v1/health-profile/me", headers=_auth(token_b))).json()
-    assert profile_b == {"date_of_birth": None, "blood_group": None, "conditions": []}
+    # i.e. exactly an untouched default profile, with every field empty.
+    assert profile_b == HealthProfileOut().model_dump(mode="json")
 
     # User A must still see only their own data.
     profile_a = (await client.get("/api/v1/health-profile/me", headers=_auth(token_a))).json()

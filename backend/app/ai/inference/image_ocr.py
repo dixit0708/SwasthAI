@@ -23,6 +23,9 @@ Section 11 asks to avoid for the actual value extraction/classification.
 from app.core.config import settings
 
 MODEL_NAME = "gemini-3.5-flash-lite"
+# Hard ceiling on the OCR call, in milliseconds, so a stalled request fails
+# with the friendly "try again" error instead of hanging the upload.
+GEMINI_TIMEOUT_MS = 45_000
 
 SUPPORTED_IMAGE_TYPES = ("image/jpeg", "image/png", "image/jpg")
 MAX_FILE_SIZE_MB = 15
@@ -71,6 +74,7 @@ def extract_text_from_image(contents: bytes, content_type: str) -> str:
                 system_instruction=OCR_SYSTEM_INSTRUCTION,
                 temperature=0.0,
                 max_output_tokens=4000,
+                http_options=types.HttpOptions(timeout=GEMINI_TIMEOUT_MS),
             ),
         )
     except Exception as e:

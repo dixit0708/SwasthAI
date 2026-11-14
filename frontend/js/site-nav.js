@@ -69,7 +69,6 @@ function swasthaiRenderFooter() {
                 </ul></div>
                 <div class="footer__col"><h4>Healthcare</h4><ul>
                     <li><a href="doctors.html">Find a Doctor</a></li>
-                    <li><a href="appointments.html">Appointments</a></li>
                     <li><a href="how-it-works.html">How It Works</a></li>
                     <li><a href="diet-lifestyle.html">Diet &amp; Lifestyle</a></li>
                     <li><a href="medications.html">Medications</a></li>

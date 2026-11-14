@@ -9,7 +9,9 @@ from fastapi import (
     UploadFile,
     status,
 )
-from fastapi.responses import FileResponse
+from urllib.parse import quote
+
+from fastapi.responses import Response
 
 from app.api.v1.deps import get_current_user
 from app.models.family import (
@@ -233,13 +235,17 @@ async def get_medical_document(
             detail="Medical document not found or access denied",
         )
 
-    file_path, filename, media_type = doc_info
+    content, filename, media_type = doc_info
     disposition = "attachment" if download else "inline"
-    return FileResponse(
-        path=str(file_path),
-        filename=filename,
+    return Response(
+        content=content,
         media_type=media_type,
-        content_disposition_type=disposition,
+        headers={
+            # RFC 5987 form, so non-ASCII file names survive intact.
+            "Content-Disposition": f"{disposition}; filename*=UTF-8''{quote(filename)}",
+            "X-Content-Type-Options": "nosniff",
+            "Cache-Control": "private, no-store",
+        },
     )
 
 

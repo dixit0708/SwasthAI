@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 contextMetricsList.innerHTML = `
                     <div style="background: var(--bg-surface-alt); padding: 0.75rem; border-radius: var(--radius-sm); font-size: var(--text-xs); color: var(--text-secondary);">
-                        <i class="fas fa-info-circle text-primary"></i> Complete health assessments to enrich AI context.
+                        <i class="fas fa-info-circle text-primary"></i> Complete a risk assessment or your health profile so answers can be more relevant to you.
                     </div>
                 `;
             }
@@ -38,13 +38,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderContext(metrics) {
         if (!metrics) return;
-        const bmiText = metrics.bmi ? `${metrics.bmi} (Overweight)` : (metrics.bmi ? `${metrics.bmi}` : 'Not recorded');
+        const escapeText = (value) => (typeof swasthaiEscapeHtml === 'function' ? swasthaiEscapeHtml(value) : String(value));
+        const bmiBand = (bmi) => (bmi < 18.5 ? 'below the healthy range' : bmi <= 25 ? 'healthy range' : bmi < 30 ? 'above the healthy range' : 'well above the healthy range');
+        const bmiText = typeof metrics.bmi === 'number' ? `${metrics.bmi.toFixed(1)} (${bmiBand(metrics.bmi)})` : 'Not recorded';
         const heartText = metrics.heart_risk !== null && metrics.heart_risk !== undefined 
             ? `${Math.round(metrics.heart_risk * 100)}%` 
             : 'Not evaluated';
-        const bpText = metrics.high_bp ? 'Elevated / High' : 'Normal / Not flagged';
+        const bpText = metrics.high_bp ? 'Raised reading on record' : 'No raised reading on record';
         const glucoseText = metrics.fasting_glucose ? `${metrics.fasting_glucose} mg/dL` : 'Not recorded';
-        const conds = (metrics.conditions && metrics.conditions.length) ? metrics.conditions.join(', ') : 'None listed';
+        const conds = (metrics.conditions && metrics.conditions.length) ? metrics.conditions.map(escapeText).join(', ') : 'None listed';
 
         contextMetricsList.innerHTML = `
             <div style="display: grid; grid-template-columns: 1fr; gap: 0.5rem; font-size: var(--text-xs);">
@@ -68,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 2. Chat Bubble Helpers
-    function appendMessage(sender, text, disclaimer = null) {
+    function appendMessage(sender, text, disclaimer = null, emergency = false) {
         const bubble = document.createElement('div');
         bubble.style.maxWidth = '85%';
         bubble.style.padding = '0.9rem 1.25rem';
@@ -89,6 +91,11 @@ document.addEventListener('DOMContentLoaded', () => {
             bubble.style.color = 'var(--text-primary)';
             bubble.style.borderBottomLeftRadius = '0';
             bubble.style.border = '1px solid var(--border)';
+            if (emergency) {
+                bubble.setAttribute('role', 'alert');
+                bubble.style.border = '2px solid #DC2626';
+                bubble.style.background = '#FEF2F2';
+            }
 
             // Parse Markdown → HTML, then sanitize to prevent XSS
             const parsedMarkdown = (typeof marked !== 'undefined' && marked.parse)
@@ -123,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loading.style.border = '1px solid var(--border)';
         loading.style.fontSize = '0.85rem';
         loading.style.color = 'var(--text-secondary)';
-        loading.innerHTML = '<i class="fas fa-spinner fa-spin text-primary"></i> SwasthAI is thinking...';
+        loading.innerHTML = '<i class="fas fa-spinner fa-spin text-primary"></i> Preparing your answer...';
         chatMessages.appendChild(loading);
         chatMessages.scrollTop = chatMessages.scrollHeight;
         return loading;
@@ -156,17 +163,24 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (!res.ok) {
+                if (res.status === 401 && typeof swasthaiLogout === 'function') {
+                    swasthaiLogout();
+                    return;
+                }
                 const errData = await res.json().catch(() => ({}));
-                appendMessage('assistant', `I encountered an issue processing your request: ${errData.detail || 'Service unavailable'}. Please try again.`);
+                const detail = typeof errData.detail === 'string' ? errData.detail : '';
+                appendMessage('assistant', res.status === 429 && detail
+                    ? detail
+                    : "Sorry, I couldn't answer that just now. Please try again in a moment.");
             } else {
                 const data = await res.json();
-                appendMessage('assistant', data.response, data.disclaimer);
+                appendMessage('assistant', data.response, data.emergency ? null : data.disclaimer, Boolean(data.emergency));
             }
         } catch (e) {
             if (loadingBubble && loadingBubble.parentNode) {
                 loadingBubble.parentNode.removeChild(loadingBubble);
             }
-            appendMessage('assistant', 'Unable to reach the assistant service. Please check your connection and ensure the backend is running.');
+            appendMessage('assistant', "I can't connect right now. Please check your internet connection and try again.");
             console.error('Chat error:', e);
         } finally {
             if (sendBtn) sendBtn.disabled = false;

@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="assets/images/logo.png">
-    <title>SwasthAI - Health Insights</title>
-    <meta name="description" content="Dashboard-style health insights: trends across heart rate, weight, blood pressure, glucose, sleep and activity, plus wellness and preventive health guidance.">
+    <title>Health Insights | SwasthAI</title>
+    <meta name="description" content="How SwasthAI turns your answers, X-rays, photos and lab reports into clear, non-diagnostic health insights and a personal diet and activity plan.">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/variables.css">
     <link rel="stylesheet" href="css/main.css">
@@ -14,7 +14,6 @@
     <link rel="stylesheet" href="css/nav.css">
     <link rel="stylesheet" href="css/responsive.css">
     <link rel="stylesheet" href="css/health-insights.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body data-page="health-insights">
 
@@ -24,125 +23,73 @@
     <section class="page-hero page-hero--center">
         <div class="container">
             <span class="eyebrow animate-on-scroll"><i class="fas fa-chart-line"></i> Health Insights</span>
-            <h1 class="page-hero__title animate-on-scroll" data-delay="100">See your health as a story, not a spreadsheet.</h1>
-            <p class="page-hero__subtitle animate-on-scroll" data-delay="200">A dashboard view of the numbers that matter: heart rate, weight, blood pressure, glucose, sleep and activity, tracked over time.</p>
+            <h1 class="page-hero__title animate-on-scroll" data-delay="100">Understand your health before it becomes a problem.</h1>
+            <p class="page-hero__subtitle animate-on-scroll" data-delay="200">Answer a few questions, upload a report or an image, and SwasthAI explains what it finds in plain language, then helps you decide what to do next.</p>
         </div>
     </section>
 
-    <!-- HEALTH OVERVIEW -->
-    <section class="section" style="padding-top: 0;">
-        <div class="container">
-            <div class="stat-tiles animate-on-scroll">
-                <div class="stat-tile">
-                    <div class="stat-tile__icon"><i class="fas fa-heart-pulse"></i></div>
-                    <div class="stat-tile__value counter" data-target="85">0</div>
-                    <div class="stat-tile__label">Overall Health Score</div>
-                    <span class="stat-tile__trend stat-tile__trend--up"><i class="fas fa-arrow-up"></i> 3 pts this month</span>
-                </div>
-                <div class="stat-tile">
-                    <div class="stat-tile__icon"><i class="fas fa-heartbeat"></i></div>
-                    <div class="stat-tile__value counter" data-target="71">0</div>
-                    <div class="stat-tile__label">Resting Heart Rate (bpm)</div>
-                    <span class="stat-tile__trend stat-tile__trend--flat"><i class="fas fa-minus"></i> Stable</span>
-                </div>
-                <div class="stat-tile">
-                    <div class="stat-tile__icon"><i class="fas fa-moon"></i></div>
-                    <div class="stat-tile__value">6.8<span style="font-size: var(--text-lg);">h</span></div>
-                    <div class="stat-tile__label">Avg Sleep / Night</div>
-                    <span class="stat-tile__trend stat-tile__trend--down"><i class="fas fa-arrow-down"></i> Below your 8h goal</span>
-                </div>
-                <div class="stat-tile">
-                    <div class="stat-tile__icon"><i class="fas fa-walking"></i></div>
-                    <div class="stat-tile__value counter" data-target="7300">0</div>
-                    <div class="stat-tile__label">Avg Steps / Day</div>
-                    <span class="stat-tile__trend stat-tile__trend--up"><i class="fas fa-arrow-up"></i> 12% this week</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- HEALTH TRENDS -->
+    <!-- WHAT YOU CAN CHECK -->
     <section class="section" style="padding-top: 0;">
         <div class="container">
             <div class="animate-on-scroll">
-                <h2 class="section-heading">Trends across your key vitals</h2>
-                <p class="section-subtitle">Sample data shown for illustration. Your real dashboard reflects what you log.</p>
+                <h2 class="section-heading">What you can check</h2>
+                <p class="section-subtitle">Each assessment gives a risk indicator, not a diagnosis, and every result links you to the right kind of doctor.</p>
             </div>
-            <div class="chart-grid">
-                <div class="chart-card animate-on-scroll" data-delay="0">
-                    <div class="chart-card__head"><h3><i class="fas fa-heartbeat" style="color: var(--danger); margin-right: var(--sp-2);"></i>Heart Rate (7 days)</h3></div>
-                    <div class="chart-card__wrap"><canvas id="chartHeartRate"></canvas></div>
-                </div>
-                <div class="chart-card animate-on-scroll" data-delay="80">
-                    <div class="chart-card__head"><h3><i class="fas fa-weight" style="color: var(--info); margin-right: var(--sp-2);"></i>Weight (8 weeks)</h3></div>
-                    <div class="chart-card__wrap"><canvas id="chartWeight"></canvas></div>
-                </div>
-                <div class="chart-card animate-on-scroll" data-delay="160">
-                    <div class="chart-card__head"><h3><i class="fas fa-lungs" style="color: var(--warning); margin-right: var(--sp-2);"></i>Blood Pressure (7 days)</h3></div>
-                    <div class="chart-card__wrap"><canvas id="chartBloodPressure"></canvas></div>
-                </div>
-                <div class="chart-card animate-on-scroll" data-delay="240">
-                    <div class="chart-card__head"><h3><i class="fas fa-tint" style="color: #7C3AED; margin-right: var(--sp-2);"></i>Blood Glucose (7 days)</h3></div>
-                    <div class="chart-card__wrap"><canvas id="chartGlucose"></canvas></div>
-                </div>
-                <div class="chart-card animate-on-scroll" data-delay="320">
-                    <div class="chart-card__head"><h3><i class="fas fa-moon" style="color: var(--primary); margin-right: var(--sp-2);"></i>Sleep (7 days)</h3></div>
-                    <div class="chart-card__wrap"><canvas id="chartSleep"></canvas></div>
-                </div>
-                <div class="chart-card animate-on-scroll" data-delay="400">
-                    <div class="chart-card__head"><h3><i class="fas fa-walking" style="color: var(--info); margin-right: var(--sp-2);"></i>Activity, Steps (7 days)</h3></div>
-                    <div class="chart-card__wrap"><canvas id="chartActivity"></canvas></div>
-                </div>
+            <div class="preventive-grid">
+                <div class="preventive-item animate-on-scroll" data-delay="0"><i class="fas fa-droplet"></i><div><strong>Diabetes risk</strong><span>From lifestyle answers, or from recent lab values if you have them</span></div></div>
+                <div class="preventive-item animate-on-scroll" data-delay="60"><i class="fas fa-heart-pulse"></i><div><strong>Heart disease risk</strong><span>From everyday health factors, with optional clinical measurements</span></div></div>
+                <div class="preventive-item animate-on-scroll" data-delay="120"><i class="fas fa-flask"></i><div><strong>Liver disease risk</strong><span>From lifestyle answers, or from a Liver Function Test report</span></div></div>
+                <div class="preventive-item animate-on-scroll" data-delay="180"><i class="fas fa-lungs"></i><div><strong>Pneumonia screening</strong><span>From a chest X-ray image</span></div></div>
+                <div class="preventive-item animate-on-scroll" data-delay="240"><i class="fas fa-hand-dots"></i><div><strong>Skin concern check</strong><span>From a clear photo of the affected skin</span></div></div>
             </div>
-            <div class="data-disclaimer"><i class="fas fa-info-circle"></i> Charts above use neutral sample data for illustration. SwasthAI does not fabricate or infer medical conclusions from this data. Always consult a healthcare provider for diagnosis.</div>
         </div>
     </section>
 
-    <!-- AI HEALTH INSIGHTS -->
+    <!-- HOW RESULTS ARE EXPLAINED -->
     <section class="section" style="background: var(--bg-surface); padding-top: 0;">
         <div class="container">
             <div class="animate-on-scroll">
-                <span class="eyebrow"><i class="fas fa-brain"></i> AI Health Insights</span>
-                <h2 class="section-heading">What your trends suggest</h2>
-                <p class="section-subtitle">Plain-language observations drawn from the patterns above: context, not a diagnosis.</p>
+                <span class="eyebrow"><i class="fas fa-brain"></i> Clear answers</span>
+                <h2 class="section-heading">Results you can actually understand</h2>
+                <p class="section-subtitle">No medical jargon, no false certainty. Just what the result means and what to do next.</p>
             </div>
             <div class="insight-grid">
                 <div class="insight-card animate-on-scroll" data-delay="0">
-                    <span class="insight-card__tag">Positive Trend</span>
-                    <p>Your resting heart rate has stayed within a stable, healthy range over the past week.</p>
+                    <span class="insight-card__tag">Risk indicator</span>
+                    <p>Each assessment shows whether your answers point to a lower or higher risk, with a short explanation of what that means for you.</p>
                 </div>
-                <div class="insight-card insight-card--warning animate-on-scroll" data-delay="80">
-                    <span class="insight-card__tag">Worth Watching</span>
-                    <p>Average sleep duration has dipped below your 8-hour goal three nights this week.</p>
+                <div class="insight-card insight-card--info animate-on-scroll" data-delay="80">
+                    <span class="insight-card__tag">Lab reports</span>
+                    <p>Upload a PDF or photo of a lab report. Each recognised value is compared with its reference range and explained in plain words.</p>
                 </div>
-                <div class="insight-card insight-card--info animate-on-scroll" data-delay="160">
-                    <span class="insight-card__tag">Improving</span>
-                    <p>Daily step count is trending upward compared to the previous two weeks.</p>
+                <div class="insight-card insight-card--warning animate-on-scroll" data-delay="160">
+                    <span class="insight-card__tag">Next step</span>
+                    <p>When something needs attention, SwasthAI suggests questions to ask and helps you find a matching specialist nearby.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- WELLNESS RECOMMENDATIONS + LIFESTYLE -->
+    <!-- PERSONAL PLAN -->
     <section class="section" style="padding-top: 0;">
         <div class="container">
             <div class="feature-split__grid" style="display:grid; grid-template-columns:1fr; gap: var(--sp-12); align-items:flex-start;">
                 <div class="animate-on-scroll">
-                    <h2 class="section-heading">Small, specific actions</h2>
+                    <h2 class="section-heading">A plan built around you</h2>
                     <ul class="feature-points">
-                        <li><i class="fas fa-check-circle"></i> Aim for a consistent bedtime to lift average sleep closer to 8 hours</li>
-                        <li><i class="fas fa-check-circle"></i> Maintain your current activity streak, it's trending in the right direction</li>
-                        <li><i class="fas fa-check-circle"></i> Recheck blood pressure mid-week if readings stay above your usual range</li>
-                        <li><i class="fas fa-check-circle"></i> Keep glucose logging consistent around meals for clearer trend data</li>
+                        <li><i class="fas fa-check-circle"></i> Eating guidance shaped by your weight, blood pressure, glucose and risk results</li>
+                        <li><i class="fas fa-check-circle"></i> A one-week activity plan matched to how active you are today</li>
+                        <li><i class="fas fa-check-circle"></i> Food suggestions that respect vegetarian, vegan and other preferences, and your allergies</li>
+                        <li><i class="fas fa-check-circle"></i> Safe-use tips for the medicines you already take</li>
                     </ul>
                 </div>
                 <div class="animate-on-scroll" data-delay="120">
-                    <h2 class="section-heading">Where your patterns come from</h2>
+                    <h2 class="section-heading">Everything in one place</h2>
                     <ul class="feature-points">
-                        <li><i class="fas fa-check-circle"></i> Nutrition: meal timing correlates with your glucose fluctuations</li>
-                        <li><i class="fas fa-check-circle"></i> Activity: weekday steps run lower than weekends</li>
-                        <li><i class="fas fa-check-circle"></i> Sleep: later weekday bedtimes align with lower sleep totals</li>
-                        <li><i class="fas fa-check-circle"></i> Stress: logged stress levels track loosely with heart rate variation</li>
+                        <li><i class="fas fa-check-circle"></i> Every assessment saved, so you can see how your results change over time</li>
+                        <li><i class="fas fa-check-circle"></i> Past lab report analyses kept and easy to reopen</li>
+                        <li><i class="fas fa-check-circle"></i> Prescriptions and documents stored for you and your family</li>
+                        <li><i class="fas fa-check-circle"></i> An assistant for general health questions, with emergency guidance when it matters</li>
                     </ul>
                 </div>
             </div>
@@ -154,23 +101,24 @@
         <div class="container">
             <div class="animate-on-scroll">
                 <h2 class="section-heading">Stay ahead, not behind</h2>
-                <p class="section-subtitle">General screening reminders, always confirm timing with your doctor.</p>
+                <p class="section-subtitle">General screening reminders. Always confirm the right timing for you with your doctor.</p>
             </div>
             <div class="preventive-grid">
-                <div class="preventive-item animate-on-scroll" data-delay="0"><i class="fas fa-tint"></i><div><strong>Blood Glucose Panel</strong><span>Recommended annually, or per your doctor's guidance</span></div></div>
-                <div class="preventive-item animate-on-scroll" data-delay="80"><i class="fas fa-heart"></i><div><strong>Cardiovascular Checkup</strong><span>Recommended annually for adults 30+</span></div></div>
-                <div class="preventive-item animate-on-scroll" data-delay="160"><i class="fas fa-lungs"></i><div><strong>Respiratory Screening</strong><span>As advised, especially after respiratory symptoms</span></div></div>
-                <div class="preventive-item animate-on-scroll" data-delay="240"><i class="fas fa-hand-dots"></i><div><strong>Skin Health Check</strong><span>Annual dermatology review recommended</span></div></div>
+                <div class="preventive-item animate-on-scroll" data-delay="0"><i class="fas fa-tint"></i><div><strong>Blood glucose check</strong><span>Commonly advised every year for adults, or as your doctor suggests</span></div></div>
+                <div class="preventive-item animate-on-scroll" data-delay="80"><i class="fas fa-heart"></i><div><strong>Blood pressure and cholesterol</strong><span>Commonly advised regularly from age 30</span></div></div>
+                <div class="preventive-item animate-on-scroll" data-delay="160"><i class="fas fa-flask"></i><div><strong>Liver function test</strong><span>As advised, especially with regular alcohol use or a raised risk indicator</span></div></div>
+                <div class="preventive-item animate-on-scroll" data-delay="240"><i class="fas fa-hand-dots"></i><div><strong>Skin check</strong><span>See a dermatologist about any mole or patch that changes</span></div></div>
             </div>
+            <div class="data-disclaimer"><i class="fas fa-info-circle"></i> SwasthAI provides health information and risk indicators, not a diagnosis. Always consult a qualified doctor about your health.</div>
         </div>
     </section>
 
     <!-- CTA -->
     <section class="section text-center">
         <div class="container animate-on-scroll">
-            <h2 class="section-heading">Start tracking your own trends.</h2>
-            <p class="section-subtitle" style="max-width: 560px; margin: 0 auto var(--sp-8);">Your dashboard fills in as you log, no fabricated data, just your actual numbers over time.</p>
-            <a href="register.html" class="btn btn-primary btn-lg">Create Your Profile <i class="fas fa-arrow-right"></i></a>
+            <h2 class="section-heading">See your own health insights.</h2>
+            <p class="section-subtitle" style="max-width: 560px; margin: 0 auto var(--sp-8);">Create a free account and run your first assessment in about three minutes.</p>
+            <a href="register.html" class="btn btn-primary btn-lg">Get started <i class="fas fa-arrow-right"></i></a>
         </div>
     </section>
 
@@ -179,6 +127,5 @@
     <script src="js/site-nav.js"></script>
     <script src="https://unpkg.com/lenis@1.3.26/dist/lenis.min.js"></script>
     <script src="js/main.js"></script>
-    <script src="js/health-insights-charts.js"></script>
 </body>
 </html>

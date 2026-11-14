@@ -14,8 +14,12 @@ def verify_password(password: str, hashed_password: str) -> bool:
 
 
 def create_access_token(subject: str) -> str:
-    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    payload = {"sub": subject, "exp": expire}
+    now = datetime.now(timezone.utc)
+    expire = now + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    # "iat" lets a password change invalidate every earlier token. It keeps
+    # sub-second precision (RFC 7519 allows a non-integer NumericDate), so a
+    # token issued moments before a password change is still caught.
+    payload = {"sub": subject, "exp": expire, "iat": now.timestamp()}
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
@@ -23,5 +27,13 @@ def decode_access_token(token: str) -> Optional[str]:
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         return payload.get("sub")
+    except jwt.PyJWTError:
+        return None
+
+
+def decode_access_token_claims(token: str) -> Optional[dict]:
+    """Like decode_access_token, but returns all verified claims."""
+    try:
+        return jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
     except jwt.PyJWTError:
         return None

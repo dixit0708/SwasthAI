@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Optional
 
 from starlette.concurrency import run_in_threadpool
 
+from app.ai.safety.emergency_detection import detect_emergency, emergency_response
 from app.core.config import settings
 from app.db.collections import (
     ai_conversation_repo,
@@ -25,6 +26,10 @@ logger = logging.getLogger(__name__)
 # Primary model; fallbacks are tried in order if 503/429 is returned.
 MODEL_NAME = "gemini-3.5-flash-lite"
 _FALLBACK_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-1.5-flash-latest"]
+# Hard ceiling on a single Gemini call, in milliseconds. Without it a stalled
+# upstream request held the chat open for minutes; on timeout the assistant
+# falls back to the "temporarily unavailable" reply below.
+GEMINI_TIMEOUT_MS = 20_000
 
 ASSISTANT_DISCLAIMER = (
     "SwasthAI Health Assistant is an AI-powered health information and decision-support tool. "
@@ -217,6 +222,7 @@ def _call_gemini_api(system_instruction: str, user_message: str) -> Optional[str
                     system_instruction=system_instruction,
                     temperature=0.3,
                     max_output_tokens=1200,
+                    http_options=types.HttpOptions(timeout=GEMINI_TIMEOUT_MS),
                 ),
             )
             text = (response.text or "").strip()
@@ -251,6 +257,26 @@ async def chat_with_assistant(user_id: str, message: str) -> Dict[str, Any]:
     4. Records conversation in database.
     5. Returns response with medical safety disclaimer.
     """
+    # 0. Emergency check, in code, before anything else (AGENTS.md Section 47).
+    #    No LLM call, no health-context lookup, and the message text itself is
+    #    not stored: only the fact that an emergency pattern was flagged.
+    emergency = detect_emergency(message)
+    if emergency:
+        try:
+            await ai_conversation_repo.create({
+                "user_id": user_id,
+                "emergency_flag": emergency,
+                "created_at": datetime.now(timezone.utc),
+            })
+        except Exception as e:
+            logger.warning(f"Failed to record emergency flag: {e}")
+        return {
+            "response": emergency_response(emergency),
+            "disclaimer": ASSISTANT_DISCLAIMER,
+            "context_used": {},
+            "emergency": True,
+        }
+
     # 1. Fetch user context
     context = await get_user_health_context(user_id)
 
@@ -260,37 +286,37 @@ async def chat_with_assistant(user_id: str, message: str) -> Dict[str, Any]:
     # 3. Call Gemini via run_in_threadpool
     gemini_reply = await run_in_threadpool(_call_gemini_api, system_instruction, message)
 
+    ai_available = bool(gemini_reply)
     if not gemini_reply:
-        # Fallback response when GEMINI_API_KEY is not configured or network issue occurs
-        bmi_display = f"{context['bmi']}" if context.get("bmi") else "unrecorded"
-        heart_display = (
-            f"{round(context['heart_risk'] * 100, 1)}%"
-            if context.get("heart_risk") is not None
-            else "unrecorded"
-        )
+        # Gemini is not configured, timed out, or failed. Say so plainly and
+        # point to what still works, rather than inventing an answer.
         gemini_reply = (
-            f"Hello, I am SwasthAI, your personalized health assistant. "
-            f"I have reviewed your available health context (BMI: {bmi_display}, Heart Risk: {heart_display}). "
-            f"While the AI conversational engine is currently operating in offline mode, you can explore "
-            f"your comprehensive personalized diet and lifestyle guidance in the Diet module, "
-            f"or consult your healthcare provider for clinical evaluation."
+            "I'm SwasthAI, your health assistant. I can't answer questions right now "
+            "because the assistant service is temporarily unavailable. Please try again "
+            "in a few minutes.\n\n"
+            "In the meantime, your Diet & Lifestyle plan and your saved risk assessments "
+            "are still available, and for anything that worries you, your doctor is the "
+            "best person to ask."
         )
 
-    # 4. Save conversation record in MongoDB
+    # 4. Save conversation metadata only. The free-text messages are not
+    #    stored: they can hold sensitive health details and nothing reads
+    #    them back.
     try:
         await ai_conversation_repo.create({
             "user_id": user_id,
-            "user_message": message,
-            "assistant_response": gemini_reply,
-            "context_snapshot": context,
+            "message_chars": len(message),
+            "ai_available": ai_available,
+            "emergency_flag": None,
             "created_at": datetime.now(timezone.utc),
         })
     except Exception as e:
-        logger.warning(f"Failed to persist assistant conversation: {e}")
+        logger.warning(f"Failed to persist assistant conversation metadata: {e}")
 
     # 5. Return structured response
     return {
         "response": gemini_reply,
         "disclaimer": ASSISTANT_DISCLAIMER,
         "context_used": context,
+        "emergency": False,
     }

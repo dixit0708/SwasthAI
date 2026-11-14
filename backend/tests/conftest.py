@@ -27,6 +27,12 @@ async def client():
     await db_manager.db["medical_records"].delete_many({})
     await db_manager.db["medications"].delete_many({})
     await db_manager.db["health_metrics"].delete_many({})
+    await db_manager.db["medical_reports"].delete_many({})
+    await db_manager.db["appointments"].delete_many({})
+    await db_manager.db["ai_conversations"].delete_many({})
+    await db_manager.db["password_resets"].delete_many({})
+    await db_manager.db["documents.files"].delete_many({})
+    await db_manager.db["documents.chunks"].delete_many({})
     await close_mongo_connection()
 
 

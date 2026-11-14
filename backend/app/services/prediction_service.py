@@ -176,12 +176,8 @@ async def predict_heart_clinical(
     # Pass the DataFrame to the scaler so it recognizes the feature names
     features_scaled = scaler.transform(df_features)
     
-    # Temporary print statement for debugging
-    print(f"=== [DEBUG] Scaled features passed to XGBoost: {features_scaled} ===")
-    
     # Predict probability
     prob = float(model.predict_proba(features_scaled)[0, 1])
-    print(f"=== [RAW XGBOOST PROB]: {prob} ===")
     
     # Scale empirical probability for UI representation
     # 1. Define the exact raw outputs we observe from the model

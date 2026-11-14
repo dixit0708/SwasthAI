@@ -2,6 +2,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.v1.deps import get_current_user
+from app.core.rate_limit import SlidingWindowRateLimiter
 from app.models.assistant import (
     AssistantChatRequest,
     AssistantChatResponse,
@@ -13,6 +14,10 @@ from app.services import assistant_service, diet_service
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+# The chat calls a quota-limited LLM and is the most misuse-prone route, so
+# it gets its own per-user limit (AGENTS.md Section 47).
+chat_rate_limiter = SlidingWindowRateLimiter(max_requests=15, window_seconds=60)
 
 
 @router.post(
@@ -31,6 +36,11 @@ async def chat_with_assistant_endpoint(
     risk scores, injects them into Google Gemini's system prompt, and returns
     personalized guidance accompanied by a medical safety disclaimer.
     """
+    if not chat_rate_limiter.allow(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="You're sending messages very quickly. Please wait a minute and try again.",
+        )
     try:
         return await assistant_service.chat_with_assistant(
             user_id=current_user.id,

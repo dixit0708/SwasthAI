@@ -2,7 +2,7 @@ import logging
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel
 
-from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, Request
+from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
@@ -25,7 +25,8 @@ from app.models.prediction import (
 )
 from app.core.config import settings
 from app.models.user import UserOut
-from app.services import prediction_service
+from app.models.history import PredictionHistoryResponse
+from app.services import prediction_history_service, prediction_service
 
 
 logger = logging.getLogger(__name__)
@@ -179,9 +180,6 @@ async def predict_heart_clinical_endpoint(
             status_code=503,
             detail="Heart clinical risk model is not loaded or currently unavailable",
         )
-
-    # Temporary print statement for debugging
-    print(f"=== [DEBUG] Incoming HeartClinicalInput payload: {payload.model_dump()} ===")
 
     try:
         return await prediction_service.predict_heart_clinical(
@@ -421,7 +419,7 @@ async def get_family_profiles_endpoint(
             profiles.append({
                 "id": str(f.get("_id")),
                 "name": f.get("name", "Family Member"),
-                "relation": f.get("relation", "Family"),
+                "relation": f.get("relationship", "Family"),
             })
     except Exception as e:
         logger.warning(f"Could not fetch family profiles for user {current_user.id}: {e}")
@@ -441,3 +439,33 @@ async def predict_liver_lifestyle_endpoint(
         logger.error(f"Liver lifestyle prediction failed: {e}")
         raise HTTPException(status_code=500, detail="Prediction failed. Please try again later.")
 
+
+@router.get(
+    "/history",
+    summary="List the current user's saved risk-assessment results",
+    response_model=PredictionHistoryResponse,
+)
+async def prediction_history_endpoint(
+    assessment: Optional[str] = Query(None, description="diabetes, heart, liver or skin"),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1, le=50),
+    current_user: UserOut = Depends(get_current_user),
+):
+    """Newest first. Returns outcomes only, never the raw inputs."""
+    try:
+        return await prediction_history_service.list_history(
+            current_user.id, assessment=assessment, page=page, page_size=page_size
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+
+
+@router.delete("/history/{prediction_id}", summary="Delete one saved risk-assessment result")
+async def delete_prediction_history_endpoint(
+    prediction_id: str,
+    current_user: UserOut = Depends(get_current_user),
+):
+    deleted = await prediction_history_service.delete_history_item(current_user.id, prediction_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Saved result not found")
+    return {"message": "Saved result deleted"}

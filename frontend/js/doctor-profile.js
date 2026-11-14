@@ -67,6 +67,16 @@ function dpRender(doc) {
         </section>
 
         <section class="profile-card">
+          <h2 class="profile-card__title">Plan your visit</h2>
+          ${doc.timings ? `<p style="margin:0 0 var(--sp-3);"><strong>Consultation timings:</strong> ${esc(doc.timings)}</p>` : ''}
+          <p class="text-muted" style="margin:0 0 var(--sp-4); line-height:1.55;">Pick a date and time and add the visit to your SwasthAI appointments. ${doc.phone ? 'Then call the clinic to confirm your slot.' : 'Then contact the clinic to confirm your slot.'}</p>
+          <div style="display:flex; gap: var(--sp-3); flex-wrap:wrap;">
+            <button type="button" class="btn btn-primary" id="dpSchedule"><i class="fas fa-calendar-plus" aria-hidden="true"></i>&nbsp; Schedule a visit</button>
+            <a class="btn btn-outline" href="appointments.html">My appointments</a>
+          </div>
+        </section>
+
+        <section class="profile-card">
           <h2 class="profile-card__title">Before your visit</h2>
           <ul class="profile-tips">
             <li><i class="fas fa-check"></i><span>Carry your previous prescriptions and recent test reports.</span></li>
@@ -81,6 +91,16 @@ function dpRender(doc) {
         ${dpMapHtml(doc)}
       </section>
     </div>`;
+
+  document.getElementById('dpSchedule')?.addEventListener('click', () => {
+    AppointmentForm.open({
+      doctor: doc,
+      onSaved: (saved) => {
+        AppUI.toast(`Visit added for ${AppUI.fmtDate(saved.appointment_date)}. Please confirm with the clinic.`);
+        setTimeout(() => { window.location.href = 'appointments.html'; }, 1400);
+      }
+    });
+  });
 }
 
 function dpRenderState({ error, title, text }) {
